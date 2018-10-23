@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/base_toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+
+    <LinearLayout
+        android:id="@+id/ll_toolbar"
+        android:layout_width="match_parent"
+        android:background="@color/pblue_bar_color"
+        android:layout_height="?attr/actionBarSize">
+
+        <ImageView
+            android:id="@+id/img_menu_toolbar"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:paddingRight="20dp"
+            android:visibility="gone"
+            android:src="@mipmap/icon_memu_in"/>
+
+        <TextView
+            android:id="@+id/tv_toolbar_title"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:text="智能靠尺"
+            android:layout_marginLeft="15dp"
+            android:textColor="@color/white_bar_word_color"
+            android:textSize="18sp"/>
+
+        <ImageView
+            android:id="@+id/img_icon_toolbar"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:paddingRight="20dp"
+            android:visibility="gone"
+            android:src="@mipmap/icon_scan_qr"/>
+        <!--<ImageView-->
+        <!--android:id="@+id/scanner_toolbar_more"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:paddingRight="20dp"-->
+        <!--android:src="@mipmap/abc_ic_menu_moreoverflow_mtrl_alpha"/>-->
+
+    </LinearLayout>
+
+
+</RelativeLayout>
+

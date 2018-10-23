@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:id="@+id/tv_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/word_color"
+        android:text="当请扫码连接设备"
+        android:layout_gravity="center_horizontal"
+        android:textSize="25sp"
+        android:layout_margin="10dp"
+        />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="15dp"
+
+        >
+        <TextView
+            android:id="@+id/tv_dev_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18dp"
+            android:text="名称：Vitecbeacon"
+            android:textColor="@color/pblue_bar_color"
+            android:textStyle="bold"
+            />
+        <TextView
+            android:id="@+id/tv_dev_uuid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15dp"
+            android:text="UUID：FDA50693-A4E2-4FB1-AFCF-C6EB07647825"
+            android:textColor="@color/pblue_bar_color"
+            />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/tv_dev_rssi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15dp"
+                android:text="RSSI：-31"
+                android:textColor="@color/pblue_bar_color"
+
+                />
+            <TextView
+                android:id="@+id/tv_dev_pw"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15dp"
+                android:layout_marginLeft="30dp"
+                android:textColor="@color/pblue_bar_color"
+                android:text="MPower:：-65"
+                />
+        </LinearLayout>
+        <TextView
+            android:id="@+id/tv_dev_mac"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15dp"
+            android:text="MAC:AKSDKKKFJDJJJ"
+            android:textColor="@color/pblue_bar_color"
+            />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="采集数据"
+            android:background="@drawable/btn_back"
+            android:textColor="@color/word_color"
+            android:textSize="20sp"
+            android:layout_marginTop="12dp"
+            android:layout_gravity="center_horizontal"
+            />
+
+    </LinearLayout>
+
+    <com.tuyenmonkey.mkloader.MKLoader
+        android:id="@+id/loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        app:mk_type="FishSpinner"
+        app:mk_color="#aaa"
+        android:layout_gravity="center"
+
+        />
+
+
+    <ListView
+        android:id="@+id/lv_ble_device"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/content_bg_color"
+        >
+    </ListView>
+</LinearLayout>
