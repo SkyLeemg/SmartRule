@@ -31,7 +31,11 @@
         <item name="colorPrimary">@color/pblue_bar_color</item>
         <item name="colorPrimaryDark">@color/pblue_bar_color</item>
         <item name="colorAccent">@color/colorAccent</item>
+    </style>
 
+    <style name="Text" >
+        <item name="android:textColor">@color/pblue_bar_color</item>
+        <item name="android:textSize">16sp</item>
     </style>
 
 </resources>

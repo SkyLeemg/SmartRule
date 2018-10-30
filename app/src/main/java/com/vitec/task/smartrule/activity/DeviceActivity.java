@@ -142,7 +142,7 @@ public class DeviceActivity extends BaseActivity implements MainActivityGettable
         initWidget();
         imgIcon.setVisibility(View.VISIBLE);
         tvMsg = findViewById(R.id.tv_msg);
-        lvBleDevice = (ListView) findViewById(R.id.lv_ble_device);
+//        lvBleDevice = (ListView) findViewById(R.id.lv_ble_device);
         imgIcon.setOnClickListener(this);
         mkLoader = findViewById(R.id.loading);
         mkLoader.setVisibility(View.GONE);

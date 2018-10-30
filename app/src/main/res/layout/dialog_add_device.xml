@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pblue_bar_color"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ListView
+        android:id="@+id/lv_bledev_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></ListView>
+
+    <TextView
+        android:id="@+id/tv_loading_tip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="正在搜索设备"
+        android:textColor="@color/white_bar_word_color"
+        />
+    <com.tuyenmonkey.mkloader.MKLoader
+        android:id="@+id/mkloader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/tv_loading_tip"
+        android:layout_centerHorizontal="true"
+        app:mk_type="Worm"
+        app:mk_color="#aaa"
+        />
+    <!--Sharingan
+TwinFishesSpinner
+ClassicSpinner
+LineSpinner
+FishSpinner
+PhoneWave
+ThreePulse
+FourPulse
+FivePulse
+Worm
+Whirlpool
+Radar-->
+
+</RelativeLayout>

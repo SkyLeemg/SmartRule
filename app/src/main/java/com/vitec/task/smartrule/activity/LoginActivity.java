@@ -8,8 +8,9 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+//import com.tencent.mm.opensdk.openapi.WXTextObject;
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.helper.WeChatHelper;
 
 public class LoginActivity extends BaseActivity implements View.OnClickListener{
     private Button btnLogin;
@@ -18,13 +19,18 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener{
     private CheckBox cbRemenberPwd;
     private TextView tvRegister;
     private ImageView imgWechat;
+    private WeChatHelper weChatHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        registerWeChat();
         initView();
+    }
+
+    private void registerWeChat() {
+        weChatHelper = new WeChatHelper(this);
     }
 
     private void initView() {
@@ -52,7 +58,8 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener{
 
                 break;
             case R.id.img_wechat:
-
+                weChatHelper.regToWx();
+                weChatHelper.sendLoginRequest();
                 break;
         }
     }

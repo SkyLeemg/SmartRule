@@ -22,6 +22,7 @@ import com.vitec.task.smartrule.aliyun.TopicHelper;
 import com.vitec.task.smartrule.bean.TestInfo;
 import com.vitec.task.smartrule.helper.TextToSpeechHelper;
 import com.vitec.task.smartrule.service.ConnectDeviceService;
+import com.vitec.task.smartrule.utils.BleParam;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -123,11 +124,11 @@ public class DealDeviceDataActivity extends BaseActivity {
     }
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectDeviceService.ACTION_GATT_CONNECTED);
-        intentFilter.addAction(ConnectDeviceService.ACTION_GATT_DISCONNECTED);
-        intentFilter.addAction(ConnectDeviceService.ACTION_GATT_SERVICES_DISCOVERED);
-        intentFilter.addAction(ConnectDeviceService.ACTION_DATA_AVAILABLE);
-        intentFilter.addAction(ConnectDeviceService.DEVICE_DOES_NOT_SUPPORT_UART);
+        intentFilter.addAction(BleParam.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BleParam.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BleParam.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BleParam.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BleParam.DEVICE_DOES_NOT_SUPPORT_UART);
         return intentFilter;
     }
 
@@ -167,7 +168,7 @@ public class DealDeviceDataActivity extends BaseActivity {
             String action = intent.getAction();
             final Intent mIntent = intent;
             //*********************//
-            if (action.equals(ConnectDeviceService.ACTION_GATT_CONNECTED)) {
+            if (action.equals(BleParam.ACTION_GATT_CONNECTED)) {
                 runOnUiThread(new Runnable() {
                     public void run() {
                         String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
@@ -182,7 +183,7 @@ public class DealDeviceDataActivity extends BaseActivity {
             }
 
             //*********************//
-            if (action.equals(ConnectDeviceService.ACTION_GATT_DISCONNECTED)) {
+            if (action.equals(BleParam.ACTION_GATT_DISCONNECTED)) {
                 runOnUiThread(new Runnable() {
                     public void run() {
                         String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
@@ -201,13 +202,13 @@ public class DealDeviceDataActivity extends BaseActivity {
 
 
             //*********************//
-            if (action.equals(ConnectDeviceService.ACTION_GATT_SERVICES_DISCOVERED)) {
+            if (action.equals(BleParam.ACTION_GATT_SERVICES_DISCOVERED)) {
                 mService.enableTXNotification();
             }
             //*********************//
-            if (action.equals(ConnectDeviceService.ACTION_DATA_AVAILABLE)) {
+            if (action.equals(BleParam.ACTION_DATA_AVAILABLE)) {
 
-                final byte[] txValue = intent.getByteArrayExtra(ConnectDeviceService.EXTRA_DATA);
+                final byte[] txValue = intent.getByteArrayExtra(BleParam.EXTRA_DATA);
                 runOnUiThread(new Runnable() {
                     public void run() {
                         try {
@@ -231,7 +232,7 @@ public class DealDeviceDataActivity extends BaseActivity {
                 });
             }
             //*********************//
-            if (action.equals(ConnectDeviceService.DEVICE_DOES_NOT_SUPPORT_UART)){
+            if (action.equals(BleParam.DEVICE_DOES_NOT_SUPPORT_UART)){
 //                showMessage("Device doesn't support UART. Disconnecting");
                 Log.e(TAG, "onReceive: 设备不支持UART,");
 //                mService.disconnect();

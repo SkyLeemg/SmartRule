@@ -20,9 +20,21 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.vitec.task.smartrule.bean.BleMessage;
+
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.UUID;
+
+import static com.vitec.task.smartrule.utils.BleParam.ACTION_DATA_AVAILABLE;
+import static com.vitec.task.smartrule.utils.BleParam.ACTION_GATT_CONNECTED;
+import static com.vitec.task.smartrule.utils.BleParam.ACTION_GATT_DISCONNECTED;
+import static com.vitec.task.smartrule.utils.BleParam.ACTION_GATT_SERVICES_DISCOVERED;
+import static com.vitec.task.smartrule.utils.BleParam.DEVICE_DOES_NOT_SUPPORT_UART;
+import static com.vitec.task.smartrule.utils.BleParam.EXTRA_DATA;
+import static com.vitec.task.smartrule.utils.BleParam.STAAE_DISCONNECTED;
+import static com.vitec.task.smartrule.utils.BleParam.STATE_CONNECTED;
+import static com.vitec.task.smartrule.utils.BleParam.STATE_CONNECTING;
 
 /**
  * Created by skyel on 2018/10/9.
@@ -35,21 +47,6 @@ public class ConnectDeviceService extends Service {
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STAAE_DISCONNECTED;
 
-    private static final int STAAE_DISCONNECTED = 0;
-    private static final int STATE_CONNECTING = 1;
-    private static final int STATE_CONNECTED = 2;
-
-    public final static String ACTION_GATT_CONNECTED = "com.nordicsemi.nrfUART.ACTION_GATT_CONNECTED";
-    public final static String ACTION_GATT_DISCONNECTED =
-            "com.nordicsemi.nrfUART.ACTION_GATT_DISCONNECTED";
-    public final static String ACTION_GATT_SERVICES_DISCOVERED =
-            "com.nordicsemi.nrfUART.ACTION_GATT_SERVICES_DISCOVERED";
-    public final static String ACTION_DATA_AVAILABLE =
-            "com.nordicsemi.nrfUART.ACTION_DATA_AVAILABLE";
-    public final static String EXTRA_DATA =
-            "com.nordicsemi.nrfUART.EXTRA_DATA";
-    public final static String DEVICE_DOES_NOT_SUPPORT_UART =
-            "com.nordicsemi.nrfUART.DEVICE_DOES_NOT_SUPPORT_UART";
 
     public static final UUID TX_POWER_UUID = UUID.fromString("00001804-0000-1000-8000-00805f9b34fb");
     public static final UUID TX_POWER_LEVEL_UUID = UUID.fromString("00002a07-0000-1000-8000-00805f9b34fb");
@@ -180,15 +177,18 @@ public class ConnectDeviceService extends Service {
                 intentAction = ACTION_GATT_CONNECTED;
                 mConnectionState = STATE_CONNECTED;
                 broadcastUpdate(intentAction);
-                Log.e(TAG, "连接成功onConnectionStateChange: Connected to gatt server" );
-                EventBus.getDefault().post(true);
-                Log.e(TAG, "连接成功onConnectionStateChange: attempting to start service discovery:"+mBluetoothGatt.discoverServices() );
+                BleMessage message = new BleMessage();
+                message.setAction(ACTION_GATT_CONNECTED);
+                message.setConnectState(STATE_CONNECTED);
+                Log.e(TAG, "vitec 连接成功onConnectionStateChange: Connected to gatt server" );
+//                EventBus.getDefault().post(message);
+                Log.e(TAG, "vitec 连接成功onConnectionStateChange: attempting to start service discovery:"+mBluetoothGatt.discoverServices() );
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STAAE_DISCONNECTED;
-                Log.e(TAG, "断开连接onConnectionStateChange: Disconnect from gatt server" );
+                Log.e(TAG, "vitec 断开连接onConnectionStateChange: Disconnect from gatt server" );
                 broadcastUpdate(intentAction);
-                EventBus.getDefault().post(false);
+//                EventBus.getDefault().post(false);
             }
         }
 

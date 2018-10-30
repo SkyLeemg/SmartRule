@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_margin="10dp"
+    android:layout_marginBottom="20dp"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="项目名称："
+            style="@style/Text"
+            />
+        <AutoCompleteTextView
+            android:id="@+id/tv_project_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入项目名称"
+            android:completionThreshold="1"
+            />
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="检查部位："
+            style="@style/Text"
+            />
+        <AutoCompleteTextView
+            android:id="@+id/tv_check_position"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入检查位置"
+            android:completionThreshold="1"
+        />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="工程类型："
+            style="@style/Text"
+            />
+        <Spinner
+            android:id="@+id/spinner_project_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem"
+            >
+        </Spinner>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="检查人：    "
+            style="@style/Text"
+            />
+        <TextView
+            android:id="@+id/tv_check_person"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="张三(个人中心实名制) "
+            style="@style/Text"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="检查时间："
+            style="@style/Text"
+            />
+        <TextView
+            android:id="@+id/tv_check_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2018.10.24  10:20"
+            style="@style/Text"
+            />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_enter_measure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_back"
+       android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:text="开始测量"
+        android:textColor="@color/white_bar_word_color"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_marginBottom="20dp"
+        />
+
+</LinearLayout>

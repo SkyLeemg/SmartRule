@@ -2,7 +2,6 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:state_pressed="true"
-
         android:state_active="true"
         />
     <item android:drawable="@color/pblue_bar_color"/>

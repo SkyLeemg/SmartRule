@@ -24,6 +24,7 @@ import com.vitec.task.smartrule.activity.DealDeviceDataActivity;
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.interfaces.MainActivityGettable;
 import com.vitec.task.smartrule.service.ConnectDeviceService;
+import com.vitec.task.smartrule.utils.BleParam;
 
 /**
  * Created by admin on 2018/10/10.
@@ -124,8 +125,8 @@ public class DeviceItemClickListener implements AdapterView.OnItemClickListener 
 
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectDeviceService.ACTION_GATT_CONNECTED);
-        intentFilter.addAction(ConnectDeviceService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BleParam.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BleParam.ACTION_GATT_DISCONNECTED);
         return intentFilter;
     }
 
@@ -138,7 +139,7 @@ public class DeviceItemClickListener implements AdapterView.OnItemClickListener 
 
             final Intent mIntent = intent;
             //*********************//
-            if (action.equals(ConnectDeviceService.ACTION_GATT_CONNECTED)) {
+            if (action.equals(BleParam.ACTION_GATT_CONNECTED)) {
                 Toast.makeText(context,"连接成功", Toast.LENGTH_SHORT).show();
                 Intent startIntent = new Intent(context, DealDeviceDataActivity.class);
                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -151,7 +152,7 @@ public class DeviceItemClickListener implements AdapterView.OnItemClickListener 
             }
 
             //*********************//
-            if (action.equals(ConnectDeviceService.ACTION_GATT_DISCONNECTED)) {
+            if (action.equals(BleParam.ACTION_GATT_DISCONNECTED)) {
                 Toast.makeText(context,"连接失败", Toast.LENGTH_SHORT).show();
                 if (!hasUnbind) {
                     hasUnbind = true;

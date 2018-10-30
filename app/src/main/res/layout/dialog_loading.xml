@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:gravity="center"
+    android:background="@color/pblue_bar_color"
+    android:orientation="vertical">
+
+    <com.tuyenmonkey.mkloader.MKLoader
+        android:id="@+id/dialog_mkloader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/tv_loading_tip"
+        android:layout_centerHorizontal="true"
+        app:mk_type="Worm"
+        app:mk_color="#aaa"
+        />
+    <TextView
+        android:id="@+id/dialog_tv_loading_tip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="正在搜索设备"
+        android:textColor="#aaa"
+        />
+
+
+</LinearLayout>

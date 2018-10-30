@@ -42,11 +42,21 @@
 
         </activity>
         <activity android:name=".activity.MainActivity"/>
+        <activity android:name=".activity.ChooseMeasureMsgActivity"/>
 
         <activity android:name=".activity.DealDeviceDataActivity"/>
         <activity
             android:name="com.google.zxing.activity.CaptureActivity"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"/>
+        <activity android:name=".activity.MeasureManagerAcitivty"/>
+
+
+        <!--注册微信回调 WXEntryActivity -->
+        <activity
+            android:name=".wxapi.WXEntryActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@android:style/Theme.Translucent" />
 
         <service android:name=".service.BleScanService"/>
         <service android:name=".service.ConnectDeviceService"/>

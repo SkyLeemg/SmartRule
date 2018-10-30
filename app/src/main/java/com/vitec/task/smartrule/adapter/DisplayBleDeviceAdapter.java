@@ -9,15 +9,21 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.bean.BleDevice;
 
 import java.util.List;
 
-public class DeviceGridViewAdapter extends BaseAdapter{
+/**
+ * 靠尺设备管理界面  显示靠尺的Adapter
+ *
+ * item为上面靠尺图片+下面设备名
+ */
+public class DisplayBleDeviceAdapter extends BaseAdapter{
 
-    private List<String> devs;
+    private List<BleDevice> devs;
     private Context context;
 
-    public DeviceGridViewAdapter(Context context, List<String> devs) {
+    public DisplayBleDeviceAdapter(Context context, List<BleDevice> devs) {
         this.context = context;
         this.devs = devs;
     }
@@ -52,7 +58,7 @@ public class DeviceGridViewAdapter extends BaseAdapter{
             holder = (ViewHolder) view.getTag();
         }
         holder.imgDev.setImageResource(R.mipmap.rule);
-        holder.tvDevName.setText(devs.get(i));
+        holder.tvDevName.setText(devs.get(i).getBleName());
 
         return view;
     }

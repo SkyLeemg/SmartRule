@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -21,14 +21,24 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_margin="15dp"
+        android:layout_below="@+id/tv_msg"
 
         >
+        <TextView
+            android:id="@+id/tv_stat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18dp"
+            android:text="当前连接设备信息："
+            android:textColor="@color/pblue_bar_color"
+            android:textStyle="bold"
+            />
         <TextView
             android:id="@+id/tv_dev_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="18dp"
-            android:text="名称：Vitecbeacon"
+            android:text="蓝牙：Vitecbeacon"
             android:textColor="@color/pblue_bar_color"
             android:textStyle="bold"
             />
@@ -74,16 +84,7 @@
             android:text="MAC:AKSDKKKFJDJJJ"
             android:textColor="@color/pblue_bar_color"
             />
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="采集数据"
-            android:background="@drawable/btn_back"
-            android:textColor="@color/word_color"
-            android:textSize="20sp"
-            android:layout_marginTop="12dp"
-            android:layout_gravity="center_horizontal"
-            />
+
 
     </LinearLayout>
 
@@ -95,15 +96,30 @@
         app:mk_type="FishSpinner"
         app:mk_color="#aaa"
         android:layout_gravity="center"
+        android:visibility="gone"
+        />
+
+    <Button
+        android:id="@+id/btn_enter_measure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="进入测量"
+        android:background="@drawable/btn_back"
+        android:textColor="@color/white_bar_word_color"
+        android:textSize="20sp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="50dp"
 
         />
 
 
-    <ListView
-        android:id="@+id/lv_ble_device"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/content_bg_color"
-        >
-    </ListView>
-</LinearLayout>
+    <!--<ListView-->
+        <!--android:id="@+id/lv_ble_device"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:background="@color/content_bg_color"-->
+        <!--&gt;-->
+    <!--</ListView>-->
+</RelativeLayout>
