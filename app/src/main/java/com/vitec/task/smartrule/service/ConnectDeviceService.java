@@ -24,6 +24,7 @@ import com.vitec.task.smartrule.bean.BleMessage;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
 import static com.vitec.task.smartrule.utils.BleParam.ACTION_DATA_AVAILABLE;
@@ -254,7 +255,16 @@ public class ConnectDeviceService extends Service {
     private void broadcastUpdate(final String action, final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
         if (TX_CHAR_UUID.equals(characteristic.getUuid())) {
-            intent.putExtra(EXTRA_DATA, characteristic.getValue());
+            final byte[] txValue = characteristic.getValue();
+            intent.putExtra(EXTRA_DATA,txValue );
+            String text = null;
+            try {
+                text = new String(txValue, "UTF-8");
+                Log.e(TAG, "broadcastUpdate: 服务端收到一个数据："+text);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }

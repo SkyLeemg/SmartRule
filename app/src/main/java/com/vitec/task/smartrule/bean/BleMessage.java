@@ -31,4 +31,6 @@ public class BleMessage {
     public void setConnectState(int connectState) {
         this.connectState = connectState;
     }
+
+
 }

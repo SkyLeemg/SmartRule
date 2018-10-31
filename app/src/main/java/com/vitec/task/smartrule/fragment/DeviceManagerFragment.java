@@ -1,6 +1,7 @@
 package com.vitec.task.smartrule.fragment;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
@@ -23,6 +25,9 @@ import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.activity.MeasureManagerAcitivty;
 import com.vitec.task.smartrule.adapter.DisplayBleDeviceAdapter;
 import com.vitec.task.smartrule.bean.BleDevice;
+import com.vitec.task.smartrule.db.BleDeviceDbHelper;
+import com.vitec.task.smartrule.db.DataBaseParams;
+import com.vitec.task.smartrule.helper.ServiceConnecteHelper;
 import com.vitec.task.smartrule.interfaces.IDialogCommunicableWithDevice;
 import com.vitec.task.smartrule.utils.BleParam;
 import com.vitec.task.smartrule.view.ConnectDialog;
@@ -55,6 +60,8 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
     private LoadingDialog mLoadingDialog;
     private boolean hasUnbind = false;
     private Beacon beacon;//点击添加设备时，用户点击的那个蓝牙设备
+    private BleDeviceDbHelper deviceDbHelper;
+    private ServiceConnecteHelper serviceConnecteHelper;
 
     @Nullable
     @Override
@@ -82,9 +89,11 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
 
     private void initViewData() {
         rules = new ArrayList<>();
+        deviceDbHelper = new BleDeviceDbHelper(getActivity());
 //        for (int i=0;i<5;i++) {
 //            rules.add(i + "号设备");
 //        }
+        getRuleDevicefromDB();
         ruleDevAdapter = new DisplayBleDeviceAdapter(getActivity(), rules);
         gvRule.setAdapter(ruleDevAdapter);
         if (rules.size() != 0) {
@@ -95,6 +104,17 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
         setListViewHeighBaseOnChildren(gvRule);
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(UARTStatusChangeReceiver, makeGattUpdateIntentFilter());
+        gvRule.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                serviceConnecteHelper = new ServiceConnecteHelper(getActivity(),rules.get(i).getBleMac());
+            }
+        });
+
+    }
+
+    private void getRuleDevicefromDB() {
+        rules = deviceDbHelper.queryAllDevice();
     }
 
     private void setListViewHeighBaseOnChildren(GridView gridView) {
@@ -178,24 +198,51 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
+                mLoadingDialog.dismiss();
+            }
 
-            mLoadingDialog.dismiss();
             final Intent mIntent = intent;
             //*********************//
             if (action.equals(BleParam.ACTION_GATT_CONNECTED)) {
                 Toast.makeText(context,"连接成功", Toast.LENGTH_SHORT).show();
-                Intent startIntent = new Intent(context, MeasureManagerAcitivty.class);
-                startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(startIntent);
-                rules.add(new BleDevice(beacon.getBluetoothName(),beacon.getBluetoothAddress()));
-                ruleDevAdapter.notifyDataSetChanged();
-                if (!hasUnbind) {
-                    hasUnbind = true;
+                /**
+                 * 连接成功后，判断该设备是否已经保存过数据库，如果没有则将该设备保存到数据库
+                 */
+                boolean isExist = false;
+                if (beacon != null) {
+                    for(int i=0;i<rules.size();i++) {
+                        if (rules.get(i).getBleMac().equals(beacon.getBluetoothAddress())) {
+                            isExist = true;
+                        }
+                    }
+                    if (!isExist) {
+                        ContentValues values = new ContentValues();
+                        values.put(DataBaseParams.ble_device_name,beacon.getBluetoothName());
+                        values.put(DataBaseParams.ble_device_mac, beacon.getBluetoothAddress());
+                        values.put(DataBaseParams.ble_device_last_connect_time,System.currentTimeMillis());
+                        deviceDbHelper.insertDevToSqlite(values);
+                    }
+                    if (!hasUnbind) {
+                        hasUnbind = true;
 //                    ServiceConnecteHelper serviceConnecteHelper = new ServiceConnecteHelper(getActivity());
 //                    serviceConnecteHelper.stopServiceConnection();
-                    ConnectDialog.serviceConnecteHelper.stopServiceConnection();
+                        ConnectDialog.serviceConnecteHelper.stopServiceConnection();
 //                    getActivity().unbindService(mServiceConnection);
+                    }
                 }
+
+
+
+//                Intent startIntent = new Intent(context, MeasureManagerAcitivty.class);
+//                startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                context.startActivity(startIntent);
+//                更新一下列表
+                getRuleDevicefromDB();
+                ruleDevAdapter.setDevs(rules);
+//                rules.add(new BleDevice(beacon.getBluetoothName(),beacon.getBluetoothAddress()));
+                ruleDevAdapter.notifyDataSetChanged();
+
 
             }
 
@@ -208,7 +255,6 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
                 }
 
             }
-
 
         }
     };

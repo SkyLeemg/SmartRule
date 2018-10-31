@@ -7,10 +7,15 @@ public class BleDevice {
 
     private String bleName;//蓝牙名称
     private String bleMac;//蓝牙mac地址
+    private int lastConnectTime;
 
     public BleDevice(String bleName, String bleMac) {
         this.bleName = bleName;
         this.bleMac = bleMac;
+    }
+
+    public BleDevice() {
+
     }
 
     public String getBleName() {
@@ -27,5 +32,13 @@ public class BleDevice {
 
     public void setBleMac(String bleMac) {
         this.bleMac = bleMac;
+    }
+
+    public int getLastConnectTime() {
+        return lastConnectTime;
+    }
+
+    public void setLastConnectTime(int lastConnectTime) {
+        this.lastConnectTime = lastConnectTime;
     }
 }

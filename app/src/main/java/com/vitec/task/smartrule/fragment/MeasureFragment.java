@@ -1,6 +1,5 @@
 package com.vitec.task.smartrule.fragment;
 
-import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -21,16 +20,16 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.vitec.task.smartrule.R;
-import com.vitec.task.smartrule.bean.MeasureBean;
+import com.vitec.task.smartrule.bean.OptionBean;
 import com.vitec.task.smartrule.bean.OnceMeasureData;
 import com.vitec.task.smartrule.helper.TextToSpeechHelper;
 import com.vitec.task.smartrule.service.ConnectDeviceService;
 import com.vitec.task.smartrule.utils.BleParam;
 import com.vitec.task.smartrule.utils.HeightUtils;
 import com.vitec.task.smartrule.utils.ParameterKey;
+import com.vitec.task.smartrule.utils.ServiceUtils;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -45,7 +44,7 @@ public class MeasureFragment extends Fragment{
 
     private static final String TAG = "MeasureFragment";
     private View view;
-    private List<MeasureBean> measureBeanList;
+    private List<OptionBean> measureBeanList;
     private List<OnceMeasureData> dataList;
     private GridView gvMeasureData;
     private TextView tvProjectName;//项目类型
@@ -75,10 +74,10 @@ public class MeasureFragment extends Fragment{
     }
 
     private void service_init() {
-
         Intent bindIntent = new Intent(getActivity(), ConnectDeviceService.class);
         getActivity().bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(BleDeviceReceiver,makeGattUpdateIntentFilter());
+        ServiceUtils.startConnectDeviceSerivce(getActivity());
     }
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
@@ -100,8 +99,8 @@ public class MeasureFragment extends Fragment{
                 Log.e(TAG, "onServiceConnected: 不能初始化蓝牙" );
 
             }
-//            byte[] bytes = "abcd".getBytes();
-//            mService.writeRxCharacteristic(bytes);
+            byte[] bytes = "abcd".getBytes();
+            mService.writeRxCharacteristic(bytes);
             Log.e(TAG, "onServiceConnected: 服务绑定完成");
         }
 
@@ -157,9 +156,7 @@ public class MeasureFragment extends Fragment{
                     public void run() {
                         String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                         Log.e(TAG, "广播收到了UART_CONNECT_MSG");
-//                        stringBuffer.append("[" + currentDateTimeString + "]Connected to: " + mDevice.getName());
-//                        stringBuffer.append("\n");
-
+                        mTextToSpeechHelper.speakChinese("蓝牙连接成功");
                         mState = UART_PROFILE_CONNECTED;
                     }
                 });
@@ -174,11 +171,10 @@ public class MeasureFragment extends Fragment{
                     public void run() {
                         String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                         Log.e(TAG, "广播收到了UART_DISCONNECT_MSG");
-//                        stringBuffer.append("[" + currentDateTimeString + "]" + "连接失败");
-//                        stringBuffer.append("\n");
                         mState = UART_PROFILE_DISCONNECTED;
                         mTextToSpeechHelper.speakChinese("蓝牙连接断开");
-                        mService.close();
+//                        mService.connect();
+//                        mService.close();
                         //setUiState();
 
                     }

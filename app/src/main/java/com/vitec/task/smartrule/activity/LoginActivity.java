@@ -10,7 +10,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 //import com.tencent.mm.opensdk.openapi.WXTextObject;
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.db.CopyDbFileFromAsset;
+import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.helper.WeChatHelper;
+
+import java.io.IOException;
 
 public class LoginActivity extends BaseActivity implements View.OnClickListener{
     private Button btnLogin;
@@ -20,6 +24,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener{
     private TextView tvRegister;
     private ImageView imgWechat;
     private WeChatHelper weChatHelper;
+    private CopyDbFileFromAsset copyDbFileFromAsset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +32,18 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener{
         setContentView(R.layout.activity_login);
         registerWeChat();
         initView();
+        initDb();
     }
+
+    private void initDb() {
+        copyDbFileFromAsset = new CopyDbFileFromAsset(getApplicationContext());
+        try {
+            copyDbFileFromAsset.CopySqliteFileFromRawToDatabases(DataBaseParams.databaseName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private void registerWeChat() {
         weChatHelper = new WeChatHelper(this);

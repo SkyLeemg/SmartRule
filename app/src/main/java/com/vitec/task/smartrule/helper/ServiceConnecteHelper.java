@@ -10,6 +10,9 @@ import android.util.Log;
 
 import com.vitec.task.smartrule.interfaces.IDialogCommunicableWithDevice;
 import com.vitec.task.smartrule.service.ConnectDeviceService;
+import com.vitec.task.smartrule.utils.ServiceUtils;
+
+import static com.aliyun.alink.linksdk.tmp.TmpSdk.getContext;
 
 public class ServiceConnecteHelper {
 
@@ -29,6 +32,7 @@ public class ServiceConnecteHelper {
         mContext = context;
         this.macAddress = macAddress;
         this.communicable = communicable;
+        ServiceUtils.startConnectDeviceSerivce(context);
         service_init();
 
     }
@@ -55,9 +59,10 @@ public class ServiceConnecteHelper {
             if (!mService.initialize()) {
                 Log.e(TAG, "onServiceConnected: 不能初始化蓝牙" );
             }
-            Log.e(TAG, "onServiceConnected: 服务绑定完成");
-            mService.connect(macAddress);
+
+            boolean connectResult = mService.connect(macAddress);
 //            context.unbindService(mServiceConnection)
+            Log.e(TAG, "onServiceConnected: 服务绑定完成,查看是否连接成功：" + connectResult);
         }
 
         @Override

@@ -2,9 +2,13 @@ package com.vitec.task.smartrule.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -13,29 +17,51 @@ import android.widget.TextView;
 
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.activity.MeasureManagerAcitivty;
-import com.vitec.task.smartrule.bean.MeasureBean;
+import com.vitec.task.smartrule.bean.EngineerBean;
+import com.vitec.task.smartrule.bean.OptionBean;
 
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *  选择测量工程的页面的Adapter，当用户点击新增项目的时候，Adapter数据增多
+ */
 public class ChooseMeasureProjectAdapter extends BaseAdapter {
 
+    private static final String TAG = "ChooseMeasureProjectAdapter";
     private Context context;
     private int count;
-    private List<MeasureBean> projects;
+    private List<EngineerBean> engineerBeanList;
+    private List<String> spinnerList;
+    private String chooseEngineer;
 
-    public ChooseMeasureProjectAdapter(Context context,List<MeasureBean> projects) {
+//    private List<String> engineers;
+
+    public ChooseMeasureProjectAdapter(Context context,List<EngineerBean> engineerBeanList) {
         this.context = context;
-        this.projects = projects;
+        this.engineerBeanList = engineerBeanList;
+        initSpinnerData();
     }
+
+    private void initSpinnerData() {
+        /**
+         *获取集合中所有的工程名字，用于选择工程的spinner控件
+         */
+        spinnerList = new ArrayList<>();
+        for (EngineerBean engineerBean : engineerBeanList) {
+            spinnerList.add(engineerBean.getProjectEngineer());
+        }
+    }
+
 
     @Override
     public int getCount() {
-        return projects.size();
+        return engineerBeanList.size();
     }
 
     @Override
     public Object getItem(int i) {
-        return projects.get(i);
+        return engineerBeanList.get(i);
     }
 
     @Override
@@ -44,8 +70,8 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int i, View view, ViewGroup viewGroup) {
-        ViewHolder holder;
+    public View getView(final int i, View view, ViewGroup viewGroup) {
+        final ViewHolder holder;
         if (view == null) {
             LayoutInflater inflater = LayoutInflater.from(context);
             view = inflater.inflate(R.layout.item_single_project_choose, null);
@@ -62,23 +88,40 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
             holder = (ViewHolder) view.getTag();
         }
 
+        final ArrayAdapter listArrayAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, spinnerList);
+        holder.spinnerCheckProjectType.setAdapter(listArrayAdapter);
+
+//        holder.spinnerCheckProjectType.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                chooseEngineer = spinnerList.get(i);
+//            }
+//        });
         holder.btnEnterMeasure.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                chooseEngineer = spinnerList.get(0);
+                engineerBeanList.get(i).setProjectEngineer(chooseEngineer);
+                engineerBeanList.get(i).setProjectName(holder.autoTvProjectName.getText().toString());
+                engineerBeanList.get(i).setCheckPositon(holder.autoTvCheckPosition.getText().toString());
                 Intent startIntent = new Intent(context, MeasureManagerAcitivty.class);
                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startIntent.putExtra("projectMsg", engineerBeanList.get(i));
+                Log.e("", "onClick: 准备发给另外一个界面的数据信息："+engineerBeanList.get(i).toString() );
                 context.startActivity(startIntent);
             }
         });
+
+
         return view;
     }
 
-    public List<MeasureBean> getProjects() {
-        return projects;
+    public List<EngineerBean> getEngineerBeanList() {
+        return engineerBeanList;
     }
 
-    public void setProjects(List<MeasureBean> projects) {
-        this.projects = projects;
+    public void setEngineerBeanList(List<EngineerBean> engineerBeanList) {
+        this.engineerBeanList = engineerBeanList;
     }
 
     class ViewHolder{

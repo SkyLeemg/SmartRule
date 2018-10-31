@@ -11,7 +11,8 @@ import android.util.Log;
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
 import com.vitec.task.smartrule.R;
-import com.vitec.task.smartrule.bean.MeasureBean;
+import com.vitec.task.smartrule.bean.EngineerBean;
+import com.vitec.task.smartrule.bean.OptionBean;
 import com.vitec.task.smartrule.interfaces.IFragmentController;
 import com.vitec.task.smartrule.interfaces.ISettable;
 import com.vitec.task.smartrule.utils.ParameterKey;
@@ -19,6 +20,9 @@ import com.vitec.task.smartrule.utils.ParameterKey;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ */
 public class MeasureFragmentControllerImpl implements IFragmentController,BottomNavigationBar.OnTabSelectedListener {
 
     private static final String TAG = "MeasureFragmentControllerImpl";
@@ -31,7 +35,8 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
     private List<Fragment> fragments;
     private List<String> tags;
     private ISettable settable;
-    private List<MeasureBean> measureBeanList;
+    private List<OptionBean> options;
+    private EngineerBean engineers;
 
     public MeasureFragmentControllerImpl(FragmentActivity activity, BottomNavigationBar bottomNavigationBar, ISettable settable) {
         this.activity = activity;
@@ -39,10 +44,15 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
         this.settable = settable;
     }
 
-    public MeasureFragmentControllerImpl(FragmentActivity activity, BottomNavigationBar bottomNavigationBar, List<MeasureBean> measureBeanList) {
+//    public MeasureFragmentControllerImpl(FragmentActivity activity, BottomNavigationBar bottomNavigationBar, List<OptionBean> measureBeanList) {
+//        this.activity = activity;
+//        this.bottomNavigationBar = bottomNavigationBar;
+//        this.options = measureBeanList;
+//    }
+    public MeasureFragmentControllerImpl(FragmentActivity activity, BottomNavigationBar bottomNavigationBar, EngineerBean engineers) {
         this.activity = activity;
         this.bottomNavigationBar = bottomNavigationBar;
-        this.measureBeanList = measureBeanList;
+        this.engineers = engineers;
     }
 
 
@@ -59,17 +69,19 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
     private void initFragmentData() {
         fragments = new ArrayList<>();
         tags = new ArrayList<>();
-        for (int i=0;i<measureBeanList.size();i++) {
+        options = engineers.getMeasureBeanList();
+        for (int i = 0; i< options.size(); i++) {
             MeasureFragment fragment = new MeasureFragment();
             Bundle bundle = new Bundle();
-            bundle.putString(ParameterKey.projectNameKey,measureBeanList.get(i).getProjectName());
-            bundle.putString(ParameterKey.checkPersonKey,measureBeanList.get(i).getCheckPerson());
-            bundle.putString(ParameterKey.checkPositonKey,measureBeanList.get(i).getCheckPositon());
-            bundle.putString(ParameterKey.projectTypeKey,measureBeanList.get(i).getProjectType());
-            bundle.putString(ParameterKey.measureItemKey,measureBeanList.get(i).getMeasureItem());
+            bundle.putString(ParameterKey.projectNameKey,engineers.getProjectName());
+            bundle.putString(ParameterKey.checkPersonKey, engineers.getCheckPerson());
+            bundle.putString(ParameterKey.checkPositonKey, engineers.getCheckPositon());
+            bundle.putString(ParameterKey.projectTypeKey, engineers.getProjectEngineer());
+            bundle.putString(ParameterKey.measureItemKey, options.get(i).getMeasureItemName());
+            bundle.putString(ParameterKey.standardKey,options.get(i).getPassStandard());
             fragment.setArguments(bundle);
             fragments.add(fragment);
-            tags.add(measureBeanList.get(i).getMeasureItemName());
+            tags.add(options.get(i).getMeasureItemName());
         }
 
     }
@@ -77,8 +89,8 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
     @Override
     public void addBottomNav() {
 
-        for (int i=0;i<measureBeanList.size();i++) {
-            bottomNavigationBar.addItem(new BottomNavigationItem(measureBeanList.get(i).getResourceID(), measureBeanList.get(i).getMeasureItemName()));
+        for (int i = 0; i< options.size(); i++) {
+            bottomNavigationBar.addItem(new BottomNavigationItem(options.get(i).getResourceID(), options.get(i).getMeasureItemName()));
         }
         bottomNavigationBar.setFirstSelectedPosition(lastSelectedPosition)
                 .initialise();//定要放在 所有设置的最后一项

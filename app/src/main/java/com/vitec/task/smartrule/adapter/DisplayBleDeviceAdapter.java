@@ -63,6 +63,14 @@ public class DisplayBleDeviceAdapter extends BaseAdapter{
         return view;
     }
 
+    public List<BleDevice> getDevs() {
+        return devs;
+    }
+
+    public void setDevs(List<BleDevice> devs) {
+        this.devs = devs;
+    }
+
     class ViewHolder {
         TextView tvDevName;
         ImageView imgDev;

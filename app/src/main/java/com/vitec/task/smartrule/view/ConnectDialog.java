@@ -96,7 +96,7 @@ public class ConnectDialog extends Dialog {
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             Beacon beacon = devices.get(i);
             String macAddress = beacon.getBluetoothAddress();
-            ConnectDeviceService.startDeviceService(getContext());
+
             serviceConnecteHelper = new ServiceConnecteHelper(getContext(), macAddress);
             communicableWithDevice.connectingDevice();
             communicableWithDevice.setConnectingDevice(beacon);//将用户点击的设备发给管理界面

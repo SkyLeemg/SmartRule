@@ -28,5 +28,6 @@ public class ParameterKey {
     public static final String checkTimeKey = "checkTime";//检查时间，自动获取系统时间
     public static final String measureItemNameKey = "measureItemName";//底部导航的名称，例如垂直度，平整度，为管控要点的简称
     public static final String measureItemKey = "measureItem";//管控要点，例如立面垂直度
+    public static final String standardKey = "standard";//合格标准
 
 }
