@@ -15,7 +15,9 @@ public class OptionBean implements Serializable{
     private String passStandard;//合格标准
     private StringBuffer checkWay;//检查方法
     private int enginId;//关联的工程id
-
+    private int optionId;
+    private int checkId;
+    private int checkOptionId;
     private int actualMeasureNum;//实测数
     private int qualifiedNum;//合格数
     private int qualifiedRate;//合格率
@@ -104,6 +106,30 @@ public class OptionBean implements Serializable{
         this.enginId = enginId;
     }
 
+    public int getOptionId() {
+        return optionId;
+    }
+
+    public void setOptionId(int optionId) {
+        this.optionId = optionId;
+    }
+
+    public int getCheckId() {
+        return checkId;
+    }
+
+    public void setCheckId(int checkId) {
+        this.checkId = checkId;
+    }
+
+    public int getCheckOptionId() {
+        return checkOptionId;
+    }
+
+    public void setCheckOptionId(int checkOptionId) {
+        this.checkOptionId = checkOptionId;
+    }
+
     @Override
     public String toString() {
         return "OptionBean{" +
@@ -112,6 +138,13 @@ public class OptionBean implements Serializable{
                 ", measureItem='" + measureItem + '\'' +
                 ", passStandard='" + passStandard + '\'' +
                 ", checkWay=" + checkWay +
+                ", enginId=" + enginId +
+                ", optionId=" + optionId +
+                ", checkId=" + checkId +
+                ", checkOptionId=" + checkOptionId +
+                ", actualMeasureNum=" + actualMeasureNum +
+                ", qualifiedNum=" + qualifiedNum +
+                ", qualifiedRate=" + qualifiedRate +
                 '}';
     }
 }

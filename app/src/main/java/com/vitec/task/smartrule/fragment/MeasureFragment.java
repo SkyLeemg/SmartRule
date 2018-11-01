@@ -17,17 +17,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.TextView;
 
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.bean.EngineerBean;
+import com.vitec.task.smartrule.bean.MeasureData;
 import com.vitec.task.smartrule.bean.OptionBean;
 import com.vitec.task.smartrule.bean.OnceMeasureData;
+import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.helper.TextToSpeechHelper;
 import com.vitec.task.smartrule.service.ConnectDeviceService;
 import com.vitec.task.smartrule.utils.BleParam;
 import com.vitec.task.smartrule.utils.HeightUtils;
+import com.vitec.task.smartrule.utils.OperateDbUtil;
 import com.vitec.task.smartrule.utils.ParameterKey;
 import com.vitec.task.smartrule.utils.ServiceUtils;
 
@@ -44,7 +49,6 @@ public class MeasureFragment extends Fragment{
 
     private static final String TAG = "MeasureFragment";
     private View view;
-    private List<OptionBean> measureBeanList;
     private List<OnceMeasureData> dataList;
     private GridView gvMeasureData;
     private TextView tvProjectName;//项目类型
@@ -55,6 +59,12 @@ public class MeasureFragment extends Fragment{
     private TextToSpeechHelper mTextToSpeechHelper;
     private ConnectDeviceService mService = null;
     private int currentDataNum = 0;
+
+    private Button btnTest;
+    private EngineerBean engineerBean;
+    private List<MeasureData> measurelist;//蓝牙收到的数据保存到这里
+    private MeasureData measureData;
+    private int checkID;//绑定的管控要点
 
     @Nullable
     @Override
@@ -71,6 +81,16 @@ public class MeasureFragment extends Fragment{
         tvProjectName = view.findViewById(R.id.tv_project_type);
         tvMeasureItem = view.findViewById(R.id.tv_measure_item);
         mTextToSpeechHelper = new TextToSpeechHelper(getActivity(),"");
+
+        btnTest = view.findViewById(R.id.btn_test);
+        btnTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                byte[] bytes = "test".getBytes();
+                mService.writeRxCharacteristic(bytes);
+                Log.e(TAG, "onClick: 点击了测试按钮" );
+            }
+        });
     }
 
     private void service_init() {
@@ -88,6 +108,7 @@ public class MeasureFragment extends Fragment{
         intentFilter.addAction(BleParam.DEVICE_DOES_NOT_SUPPORT_UART);
         return intentFilter;
     }
+
 
 
     private ServiceConnection mServiceConnection=new ServiceConnection() {
@@ -119,19 +140,35 @@ public class MeasureFragment extends Fragment{
         for (int i =0;i<12 ;i++) {
             dataList.add(new OnceMeasureData(""));
         }
-        /**
-         * 初始化接受数据的gridview
-         */
-        measureDataAdapter = new MeasureDataAdapter();
-        gvMeasureData.setAdapter(measureDataAdapter);
-        HeightUtils.setGridViewHeighBaseOnChildren(gvMeasureData,6);
+
         /**
          * 接收在创建Fragment时发来的数据
          */
         bundle = getArguments();
         tvProjectName.setText(bundle.getString(ParameterKey.projectNameKey)+":");
         tvMeasureItem.setText("管控要点："+bundle.getString(ParameterKey.measureItemKey));
+        measureData = new MeasureData();
+        checkID = bundle.getInt(DataBaseParams.options_data_check_options_id);
+        measureData.setCheckOptionsId(checkID);
+
+        /**
+         * 初始化保存蓝牙数据的集合对象
+         */
+        measurelist = new ArrayList<>();
+        measurelist = OperateDbUtil.queryMeasureDataFromSqlite(getActivity(), checkID);
+        currentDataNum = measurelist.size();
+        if (measurelist.size() == 0) {
+            for (int i =0;i<12 ;i++) {
+                measurelist.add(new MeasureData());
+            }
+        }
         service_init();
+        /**
+         * 初始化接受数据的gridview
+         */
+        measureDataAdapter = new MeasureDataAdapter();
+        gvMeasureData.setAdapter(measureDataAdapter);
+        HeightUtils.setGridViewHeighBaseOnChildren(gvMeasureData,6);
 
     }
 
@@ -187,6 +224,8 @@ public class MeasureFragment extends Fragment{
              * 发现服务
              */
             if (action.equals(BleParam.ACTION_GATT_SERVICES_DISCOVERED)) {
+//                发现一个服务
+                Log.e(TAG, "测量页面中。onReceive: 发现一个服务" );
                 mService.enableTXNotification();
             }
             //*********************//
@@ -203,9 +242,22 @@ public class MeasureFragment extends Fragment{
                             String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                             Log.e(TAG, "run: 收到蓝牙数据："+text );
                             if (currentDataNum < dataList.size()) {
-                                dataList.get(currentDataNum).setDataContent(text);
+//                                dataList.get(currentDataNum).setDataContent(text);
+                                measurelist.get(currentDataNum).setData(text);
+                                measurelist.get(currentDataNum).setCreateTime((int)System.currentTimeMillis());
+                                measurelist.get(currentDataNum).setUpdateFlag(0);
+                                measurelist.get(currentDataNum).setCheckOptionsId(checkID);
+                                OperateDbUtil.addRealMeasureDataToSqlite(getActivity(),measurelist.get(currentDataNum));
+
                             } else {
-                                dataList.add(new OnceMeasureData(text));
+//                                dataList.add(new OnceMeasureData(text));
+                                MeasureData data = new MeasureData();
+                                data.setData(text);
+                                data.setCreateTime((int)System.currentTimeMillis());
+                                data.setUpdateFlag(0);
+                                data.setCheckOptionsId(checkID);
+                                measurelist.add(data);
+                                OperateDbUtil.addRealMeasureDataToSqlite(getActivity(),data);
                             }
                             currentDataNum++;
                             measureDataAdapter.notifyDataSetChanged();
@@ -232,12 +284,12 @@ public class MeasureFragment extends Fragment{
 
         @Override
         public int getCount() {
-            return dataList.size();
+            return measurelist.size();
         }
 
         @Override
         public Object getItem(int i) {
-            return dataList.get(i);
+            return measurelist.get(i);
         }
 
         @Override
@@ -259,7 +311,7 @@ public class MeasureFragment extends Fragment{
                 holder = (ViewHolder) view.getTag();
             }
 
-            holder.etData.setText(dataList.get(i).getDataContent());
+            holder.etData.setText(measurelist.get(i).getData());
             return view;
         }
     }

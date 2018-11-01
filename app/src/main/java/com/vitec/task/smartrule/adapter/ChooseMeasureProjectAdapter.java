@@ -19,6 +19,7 @@ import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.activity.MeasureManagerAcitivty;
 import com.vitec.task.smartrule.bean.EngineerBean;
 import com.vitec.task.smartrule.bean.OptionBean;
+import com.vitec.task.smartrule.utils.OperateDbUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +50,11 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
          */
         spinnerList = new ArrayList<>();
         for (EngineerBean engineerBean : engineerBeanList) {
-            spinnerList.add(engineerBean.getProjectEngineer());
+            String enginName = engineerBean.getProjectEngineer();
+            if (enginName != null) {
+                spinnerList.add(enginName);
+            }
+
         }
     }
 
@@ -87,10 +92,10 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) view.getTag();
         }
-
-        final ArrayAdapter listArrayAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, spinnerList);
-        holder.spinnerCheckProjectType.setAdapter(listArrayAdapter);
-
+        if (spinnerList.size() > 0) {
+            final ArrayAdapter listArrayAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, spinnerList);
+            holder.spinnerCheckProjectType.setAdapter(listArrayAdapter);
+        }
 //        holder.spinnerCheckProjectType.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 //            @Override
 //            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -101,12 +106,22 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
             @Override
             public void onClick(View view) {
                 chooseEngineer = spinnerList.get(0);
-                engineerBeanList.get(i).setProjectEngineer(chooseEngineer);
-                engineerBeanList.get(i).setProjectName(holder.autoTvProjectName.getText().toString());
-                engineerBeanList.get(i).setCheckPositon(holder.autoTvCheckPosition.getText().toString());
+                EngineerBean engineer = engineerBeanList.get(i);
+                engineer.setProjectEngineer(chooseEngineer);
+                engineer.setProjectName(holder.autoTvProjectName.getText().toString());
+                engineer.setCheckPositon(holder.autoTvCheckPosition.getText().toString());
+                engineer.setPersonId(2);
+                engineer.setCheckPerson("张三");
+                engineer.setCheckTime(holder.tvCheckTime.getText().toString());
+//                添加一个测量工程，相当于创建一个表格的表头
+                int checkid = OperateDbUtil.addMeasureDataToSqlite(context, engineer);
+                for (int i = 0; i < engineer.getMeasureBeanList().size(); i++) {
+                    engineer.getMeasureBeanList().get(i).setCheckId(checkid);
+                    engineer.getMeasureBeanList().get(i).setResourceID(R.mipmap.icon_data_selected);
+                }
                 Intent startIntent = new Intent(context, MeasureManagerAcitivty.class);
                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startIntent.putExtra("projectMsg", engineerBeanList.get(i));
+                startIntent.putExtra("projectMsg", engineer);
                 Log.e("", "onClick: 准备发给另外一个界面的数据信息："+engineerBeanList.get(i).toString() );
                 context.startActivity(startIntent);
             }

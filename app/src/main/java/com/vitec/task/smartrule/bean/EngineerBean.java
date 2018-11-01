@@ -13,6 +13,7 @@ public class EngineerBean implements Serializable {
     private String projectEngineer;//项目工程,例如混凝土工程，固定选项
     private String checkPositon;//检查位置，例如A栋2层，手动填写
     private String checkPerson;//检查人，例如张三，从账号中读取
+    private int personId;
     private String checkTime;//检查时间，自动获取系统时间
 //    private List<String> engineers;//工程名的集合，用于选择工程的spinner控件的资源
     private List<OptionBean> measureBeanList;//一个工程有多个要点
@@ -93,6 +94,14 @@ public class EngineerBean implements Serializable {
         this.measureBeanList = measureBeanList;
     }
 
+    public int getPersonId() {
+        return personId;
+    }
+
+    public void setPersonId(int personId) {
+        this.personId = personId;
+    }
+
     @Override
     public String toString() {
         return "EngineerBean{" +
@@ -101,6 +110,7 @@ public class EngineerBean implements Serializable {
                 ", projectEngineer='" + projectEngineer + '\'' +
                 ", checkPositon='" + checkPositon + '\'' +
                 ", checkPerson='" + checkPerson + '\'' +
+                ", personId=" + personId +
                 ", checkTime='" + checkTime + '\'' +
                 ", measureBeanList=" + measureBeanList +
                 '}';

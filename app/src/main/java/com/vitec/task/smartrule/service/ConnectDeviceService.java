@@ -187,7 +187,7 @@ public class ConnectDeviceService extends Service {
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STAAE_DISCONNECTED;
-                Log.e(TAG, "vitec 断开连接onConnectionStateChange: Disconnect from gatt server" );
+                Log.e(TAG, "vitec 蓝牙断开连接onConnectionStateChange: Disconnect from gatt server" );
                 broadcastUpdate(intentAction);
 //                EventBus.getDefault().post(false);
             }
@@ -202,7 +202,9 @@ public class ConnectDeviceService extends Service {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.e(TAG, "onServicesDiscovered: mBluetoothGatt=" + mBluetoothGatt);
+                Log.e(TAG, "onServicesDiscovered: 发现一个服务" );
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+                enableTXNotification();
             } else {
                 Log.e(TAG, "onServicesDiscovered: received:" + status);
             }
@@ -242,6 +244,7 @@ public class ConnectDeviceService extends Service {
 //        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            Log.e(TAG, "onCharacteristicChanged: 特征值改变了，特征值的UUID:"+characteristic.getUuid() );
             broadcastUpdate(ACTION_DATA_AVAILABLE,characteristic);
         }
     };
@@ -271,13 +274,13 @@ public class ConnectDeviceService extends Service {
 
     /**
      * Enable TXNotification
-     *
+     * 设置该特征为可以接收到蓝牙通知，不设置则无法接收到蓝牙数据
      * @return
      */
 //    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void enableTXNotification()
     {
-
+        Log.e(TAG, "enableTXNotification: 设置可以接收到通知" );
     	if (mBluetoothGatt == null) {
 
     		broadcastUpdate(DEVICE_DOES_NOT_SUPPORT_UART);
@@ -298,7 +301,7 @@ public class ConnectDeviceService extends Service {
         mBluetoothGatt.setCharacteristicNotification(TxChar,true);
 
 //            Log.e(TAG, "enableTXNotification: 查看TxChar值："+TxChar.getValue().length);
-
+        Log.e(TAG, "enableTXNotification: 通知" );
         BluetoothGattDescriptor descriptor = TxChar.getDescriptor(CCCD);
         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         mBluetoothGatt.writeDescriptor(descriptor);

@@ -13,11 +13,14 @@ import com.ashokvarma.bottomnavigation.BottomNavigationItem;
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.EngineerBean;
 import com.vitec.task.smartrule.bean.OptionBean;
+import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.interfaces.IFragmentController;
 import com.vitec.task.smartrule.interfaces.ISettable;
 import com.vitec.task.smartrule.utils.ParameterKey;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -79,6 +82,10 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
             bundle.putString(ParameterKey.projectTypeKey, engineers.getProjectEngineer());
             bundle.putString(ParameterKey.measureItemKey, options.get(i).getMeasureItemName());
             bundle.putString(ParameterKey.standardKey,options.get(i).getPassStandard());
+            bundle.putInt(DataBaseParams.options_data_check_options_id, options.get(i).getCheckOptionId());
+            String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
+            bundle.putString(DataBaseParams.options_data_create_time, currentDateTimeString);
+
             fragment.setArguments(bundle);
             fragments.add(fragment);
             tags.add(options.get(i).getMeasureItemName());

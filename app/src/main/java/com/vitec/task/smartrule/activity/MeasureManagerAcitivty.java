@@ -13,6 +13,7 @@ import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.EngineerBean;
 import com.vitec.task.smartrule.bean.OptionBean;
 import com.vitec.task.smartrule.fragment.MeasureFragmentControllerImpl;
+import com.vitec.task.smartrule.utils.OperateDbUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,19 +56,10 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
          */
 //        获取上一个类（ChooseMeasureProjectAdapter）传过来的数据
         engineerBean = (EngineerBean) getIntent().getSerializableExtra("projectMsg");
-//        OptionBean measureBean1 = (OptionBean) getIntent().getSerializableExtra("projectMsg");
-//        OptionBean measureBean = new OptionBean(1, "混凝土工程测量", "立面垂直度", "A栋2层",
-//                "张三", "2018-10-20", "垂直度");
-//        measureBean.setResourceID(R.mipmap.icon_intro_selected);
-//        measureBean.setMeasureItem("立面垂直度");
-//        OptionBean measureBean2 = new OptionBean(1, "混凝土工程测量", "平整度", "A栋2层",
-//                "张三", "2018-10-20", "平整度");
-//        measureBean2.setResourceID(R.mipmap.icon_intro_selected);
-//        measureBean2.setMeasureItem("表面平整度");
-//        measureBeanList.add(measureBean);
-//        measureBeanList.add(measureBean2);
+        List<OptionBean> optionBeans = OperateDbUtil.addMeasureOptionsDataToSqlite(getApplicationContext(), engineerBean);
         Log.e(TAG, "initData: 测量界面接受到的数据信息：" + engineerBean.toString());
-        measureBeanList = engineerBean.getMeasureBeanList();
+        engineerBean.setMeasureBeanList(optionBeans);
+        measureBeanList = optionBeans;
         controller = new MeasureFragmentControllerImpl(this,bottomNavigationBar,engineerBean);
         controller.initBottomNav();
         controller.addBottomNav();

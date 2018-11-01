@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.activity.ChooseMeasureMsgActivity;
 import com.vitec.task.smartrule.activity.MeasureManagerAcitivty;
 import com.vitec.task.smartrule.adapter.DisplayBleDeviceAdapter;
 import com.vitec.task.smartrule.bean.BleDevice;
@@ -232,9 +233,7 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
                     }
                 }
 
-
-
-//                Intent startIntent = new Intent(context, MeasureManagerAcitivty.class);
+//                Intent startIntent = new Intent(context, ChooseMeasureMsgActivity.class);
 //                startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //                context.startActivity(startIntent);
 //                更新一下列表
@@ -242,6 +241,8 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
                 ruleDevAdapter.setDevs(rules);
 //                rules.add(new BleDevice(beacon.getBluetoothName(),beacon.getBluetoothAddress()));
                 ruleDevAdapter.notifyDataSetChanged();
+                gvRule.setVisibility(View.VISIBLE);
+                tvNoRuleDev.setVisibility(View.GONE);
 
 
             }
@@ -255,6 +256,16 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
                 }
 
             }
+
+//            //*********************//
+//            /**
+//             * 发现服务
+//             */
+//            if (action.equals(BleParam.ACTION_GATT_SERVICES_DISCOVERED)) {
+////                发现一个服务
+//                Log.e(TAG, "测量页面中。onReceive: 发现一个服务" );
+//                mService.enableTXNotification();
+//            }
 
         }
     };

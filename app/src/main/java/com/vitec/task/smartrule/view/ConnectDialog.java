@@ -144,7 +144,7 @@ public class ConnectDialog extends Dialog {
         super.onStop();
         Log.e(TAG, "vitec onStop: 连接对话框断开");
 //        BleScanService.stopScanService(getContext());
-        getContext().unbindService(scanServiceConnection);
+//        getContext().unbindService(scanServiceConnection);
 //        serviceConnecteHelper.stopServiceConnection();
     }
 }

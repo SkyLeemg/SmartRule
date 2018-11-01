@@ -6,19 +6,17 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Toast;
 
-import com.google.gson.JsonObject;
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.adapter.ChooseMeasureProjectAdapter;
-import com.vitec.task.smartrule.bean.BleMessage;
 import com.vitec.task.smartrule.bean.EngineerBean;
 import com.vitec.task.smartrule.bean.NetCallBackMessage;
 import com.vitec.task.smartrule.bean.OptionBean;
+import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.net.NetParams;
 import com.vitec.task.smartrule.net.OkHttpHelper;
-import com.vitec.task.smartrule.utils.BleParam;
 import com.vitec.task.smartrule.utils.HeightUtils;
+import com.vitec.task.smartrule.utils.OperateDbUtil;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -48,8 +46,10 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
     private int projectCount = 1;
 
     private OkHttpHelper okHttpHelper;
-    private List<EngineerBean> enigneers;
+    private List<EngineerBean> engineers;
     private List<OptionBean> optionBeans;
+
+    private BleDataDbHelper dataDbHelper;
 
 
     @Override
@@ -67,20 +67,41 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
         projects = new ArrayList<>();
 
         okHttpHelper = new OkHttpHelper();
-        enigneers = new ArrayList<>();
+        engineers = new ArrayList<>();
         optionBeans = new ArrayList<>();
-        /**获取管控要点的Json字符串
-         */
-       okHttpHelper.getDataFromServer(NetParams.getOptionInfoUrl,2);
-
-
+//        初始化数据库helper
+        dataDbHelper = new BleDataDbHelper(getApplicationContext());
+//        获取本地数据库的工程表格的所有数据
+        optionBeans = dataDbHelper.queryOptionsAllDataFromSqlite();
+        engineers = dataDbHelper.queryEnginAllDataFromSqlite();
+//        如果engineers的个数为0，则说明数据库中没有数据，则向服务器发起请求
+        if (optionBeans.size() == 0 || engineers.size() == 0) {
+            /**获取管控要点的Json字符串
+             */
+            okHttpHelper.getDataFromServer(NetParams.getOptionInfoUrl, 2);
+        } else {
+            for (EngineerBean engineerBean : engineers) {
+                List<OptionBean> optionList = new ArrayList<>();
+                for (OptionBean optionBean : optionBeans) {
+                    if (engineerBean.getProjectID() == optionBean.getEnginId()) {
+                        optionList.add(optionBean);
+                    }
+                }
+                if (optionList.size() > 0) {
+                    engineerBean.setMeasureBeanList(optionList);
+                }
+            }
+        }
+        projectAdapter = new ChooseMeasureProjectAdapter(this, engineers);
+        lvChoose.setAdapter(projectAdapter);
+        if (engineers.size() > 0) {
+//            HeightUtils.setListViewHeighBaseOnChildren(lvChoose);
+        }
 
     }
 
     private void initView() {
         lvChoose = findViewById(R.id.lv_choose_msg);
-
-
         imgAddProject = findViewById(R.id.img_add_project);
         imgAddProject.setOnClickListener(this);
     }
@@ -106,23 +127,27 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
                         JSONObject object = jsonArray.getJSONObject(i);
                         EngineerBean engineerBean = new EngineerBean();
                         engineerBean.setCheckPerson("张三");
+                        engineerBean.setPersonId(2);
                         engineerBean.setProjectID(Integer.parseInt(object.optString("id")));
                         engineerBean.setProjectEngineer(object.optString("name"));
                         String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                        engineerBean.setCheckPositon(currentDateTimeString);
+                        engineerBean.setCheckTime(currentDateTimeString);
                         if (engineerBean.getProjectID() == 1) {
                             engineerBean.setMeasureBeanList(optionBeans);
                         }
-                        enigneers.add(engineerBean);
+                        engineers.add(engineerBean);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
             }
-            projectAdapter = new ChooseMeasureProjectAdapter(this, enigneers);
-            lvChoose.setAdapter(projectAdapter);
+//            将获取到的数据保存到本地数据库
+            OperateDbUtil.addEnginAndOptionsData(getApplicationContext(), engineers);
+            projectAdapter.setEngineerBeanList(engineers);
+            projectAdapter.notifyDataSetChanged();
             HeightUtils.setListViewHeighBaseOnChildren(lvChoose);
+
         }
         /**获取管控要点的Json字符串
          *

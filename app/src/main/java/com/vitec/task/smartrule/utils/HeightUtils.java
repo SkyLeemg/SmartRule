@@ -50,8 +50,11 @@ public class HeightUtils {
 
         for (int i = 0; i < listAdapter.getCount(); i++) {
             View listItem = listAdapter.getView(i, null, listView);
-            listItem.measure(0, 0);
-            totalHeight += listItem.getMeasuredHeight();
+            if (listItem != null) {
+                listItem.measure(0, 0);
+                totalHeight += listItem.getMeasuredHeight();
+            }
+
 
         }
         ViewGroup.LayoutParams params = listView.getLayoutParams();
