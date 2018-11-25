@@ -1,6 +1,8 @@
 package com.vitec.task.smartrule.wxapi.bean;
 
-public class ResultInfo {
+import java.io.Serializable;
+
+public class ResultInfo implements Serializable{
     /**
      成功返回：
      {

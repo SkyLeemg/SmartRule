@@ -20,12 +20,13 @@ import android.widget.TextView;
 import com.google.zxing.activity.CaptureActivity;
 import com.vitec.task.smartrule.R;
 
-public class BaseActivity extends Activity implements View.OnClickListener {
+public class BaseActivity extends Activity  {
 
     public ImageView imgMenu;
     public TextView tvTitle;
     public ImageView imgIcon;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
+    private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +55,28 @@ public class BaseActivity extends Activity implements View.OnClickListener {
                     @Override
                     public void onDismiss(DialogInterface dialog) {
                         requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+                    }
+                });
+
+                builder.show();
+
+            }
+
+            // Android M Permission check
+            if (this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                builder.setTitle("请求读写权限");
+                builder.setMessage("该读写文件");
+                builder.setPositiveButton(android.R.string.ok, null);
+
+                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+
+                    @TargetApi(Build.VERSION_CODES.M)
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
                     }
                 });
 
@@ -96,6 +119,9 @@ public class BaseActivity extends Activity implements View.OnClickListener {
                 }
                 return;
             }
+            case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE:
+
+                break;
         }
     }
     public void initWidget() {
@@ -116,12 +142,5 @@ public class BaseActivity extends Activity implements View.OnClickListener {
     }
 
 
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.img_icon_toolbar:
 
-                break;
-        }
-    }
 }

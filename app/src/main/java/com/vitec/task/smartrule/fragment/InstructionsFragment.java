@@ -17,15 +17,8 @@ public class InstructionsFragment extends Fragment{
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_instructions_page,null);
-//        initFragmentView();
-//        initViewData();
         return view;
 
-    }
-
-    private void initViewData() {
-//        tvToolBarTitle.setText("使用说明");
-//        imgOtherIcon.setVisibility(View.GONE);
     }
 
 }

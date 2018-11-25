@@ -46,7 +46,7 @@ public class ConnectDeviceService extends Service {
     private BluetoothManager mBluetoothManager;
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
-    private int mConnectionState = STAAE_DISCONNECTED;
+    public static int mConnectionState = STAAE_DISCONNECTED;
 
 
     public static final UUID TX_POWER_UUID = UUID.fromString("00001804-0000-1000-8000-00805f9b34fb");
@@ -58,6 +58,8 @@ public class ConnectDeviceService extends Service {
     public static final UUID RX_CHAR_UUID = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
     public static final UUID TX_CHAR_UUID = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
 
+    public static String current_connecting_mac_address = "";//连接成功后的地址
+    private String connectAdress = "";//用户请求连接时的mac地址，不一定请求成功
 
 
     private final IBinder mBinder = new LocalBinder();
@@ -65,8 +67,10 @@ public class ConnectDeviceService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+
         return mBinder;
     }
+
 
     public class LocalBinder extends Binder {
         public ConnectDeviceService getService() {
@@ -86,6 +90,7 @@ public class ConnectDeviceService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         Log.e(TAG, "onDestroy: 蓝牙服务类销毁了" );
         close();
     }
@@ -127,6 +132,7 @@ public class ConnectDeviceService extends Service {
             return false;
         }
         Log.e(TAG, "connect: 准备连接" );
+        connectAdress = address;
         if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress)
                 && mBluetoothGatt!=null) {
             if (mBluetoothGatt.connect()) {
@@ -158,6 +164,7 @@ public class ConnectDeviceService extends Service {
             Log.e(TAG, "disconnect: BluetoothAdapter not initialized" );
             return;
         }
+        current_connecting_mac_address = "";
         mBluetoothGatt.disconnect();
 
     }
@@ -175,6 +182,7 @@ public class ConnectDeviceService extends Service {
 //            super.onConnectionStateChange(gatt, status, newState);
             String intentAction;
             if (newState == BluetoothProfile.STATE_CONNECTED) {
+                current_connecting_mac_address = connectAdress;
                 intentAction = ACTION_GATT_CONNECTED;
                 mConnectionState = STATE_CONNECTED;
                 broadcastUpdate(intentAction);
@@ -185,6 +193,7 @@ public class ConnectDeviceService extends Service {
 //                EventBus.getDefault().post(message);
                 Log.e(TAG, "vitec 连接成功onConnectionStateChange: attempting to start service discovery:"+mBluetoothGatt.discoverServices() );
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                current_connecting_mac_address = "";
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STAAE_DISCONNECTED;
                 Log.e(TAG, "vitec 蓝牙断开连接onConnectionStateChange: Disconnect from gatt server" );
@@ -245,6 +254,12 @@ public class ConnectDeviceService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             Log.e(TAG, "onCharacteristicChanged: 特征值改变了，特征值的UUID:"+characteristic.getUuid() );
+            /**
+             * 需要在服务中将数据更新到数据库，
+             * 1.判断特征UUID是哪个，交给对应的方法处理
+             * 2.如果是测量数据，则收到数据就马上存储到数据库，并且upload_flag为0
+             * 3.上传到服务器的数据，则由
+             */
             broadcastUpdate(ACTION_DATA_AVAILABLE,characteristic);
         }
     };

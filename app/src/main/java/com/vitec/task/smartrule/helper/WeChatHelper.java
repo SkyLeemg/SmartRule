@@ -4,8 +4,12 @@ import android.content.Context;
 import android.widget.Toast;
 
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
+import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.opensdk.modelmsg.WXFileObject;
+import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
+import com.vitec.task.smartrule.wxapi.WeiXinUtil;
 
 public class WeChatHelper {
 //    App_id为应用官网申请到的合法appid
@@ -43,6 +47,26 @@ public class WeChatHelper {
             req.state = "wechat_sdk_demo_test_smart_rule";
             iwxapi.sendReq(req);
         }
+    }
+
+
+
+    public  void shareFileToWx(String filePath) {
+        WXFileObject fileObject = new WXFileObject();
+        fileObject.fileData = WeiXinUtil.inputStreamToByte(filePath);
+        fileObject.filePath = filePath;
+
+//        使用媒体消息分享
+        WXMediaMessage mediaMessage = new WXMediaMessage(fileObject);
+        mediaMessage.title = "测试一下文件分享功能.xls";
+//        发送请求
+        SendMessageToWX.Req req = new SendMessageToWX.Req();
+//        创建唯一标识
+        req.transaction = String.valueOf(System.currentTimeMillis());
+        req.message = mediaMessage;
+        req.scene = SendMessageToWX.Req.WXSceneSession;
+        iwxapi.sendReq(req);
+
     }
 }
 

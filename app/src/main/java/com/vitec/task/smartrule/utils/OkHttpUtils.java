@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.internal.$Gson$Types;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
@@ -46,6 +47,7 @@ public class OkHttpUtils {
 
     private void getRequest(String url, final ResultCallback callback) {
         final Request request = new Request.Builder().url(url).build();
+
         deliveryResult(callback, request);
     }
 
@@ -116,6 +118,7 @@ public class OkHttpUtils {
 
     private Request buildPostRequest(String url, List<Param> params) {
         FormBody.Builder builder= new FormBody.Builder();
+
         for (Param param : params) {
             builder.add(param.key, param.value);
         }
@@ -182,7 +185,7 @@ public class OkHttpUtils {
     /**
      * post请求参数类   这里可以根据项目抽取成泛型
      */
-    public static class Param {
+    public static class Param implements Serializable{
 
         String key;
         String value;
@@ -193,6 +196,14 @@ public class OkHttpUtils {
         public Param(String key, String value) {
             this.key = key;
             this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return "Param{" +
+                    "key='" + key + '\'' +
+                    ", value='" + value + '\'' +
+                    '}';
         }
     }
 

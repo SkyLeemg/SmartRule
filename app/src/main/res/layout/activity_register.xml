@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="22dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+        <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="您的微信尚未绑定，请填写注册信息"-->
+            <!--style="@style/Text"-->
+            <!--/>-->
+
+        <scut.carson_ho.diy_view.SuperEditText
+            android:id="@+id/et_rsg_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入登录名"
+            android:layout_marginTop="10dp"
+            app:ic_left_unclick="@mipmap/account_unclick"
+            app:ic_left_click="@mipmap/account_unclick"
+            app:left_x="-10"
+            app:lineColor_unclick="@color/pblue_bar_color"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="登录名只能是字母开头 + 字母/数字/下划线"/>
+
+        <scut.carson_ho.diy_view.SuperEditText
+            android:id="@+id/et_rsg_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入您的姓名"
+            android:layout_marginTop="10dp"
+            app:left_x="-10"
+            app:ic_left_click="@mipmap/register_user_name"
+            app:ic_left_unclick="@mipmap/register_user_name"
+            app:lineColor_unclick="@color/pblue_bar_color"
+            />
+        <scut.carson_ho.diy_view.SuperEditText
+            android:id="@+id/et_rsg_phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="phone"
+            android:layout_marginTop="10dp"
+            android:hint="请输入手机号码"
+            app:left_x="-10"
+            app:ic_left_unclick="@mipmap/login_mobile"
+            app:ic_left_click="@mipmap/login_mobile"
+            app:lineColor_unclick="@color/pblue_bar_color"
+            />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:orientation="horizontal"
+            >
+
+            <scut.carson_ho.diy_view.SuperEditText
+                android:id="@+id/et_rsg_mibile_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="number"
+                android:hint="请输入手机验证码"
+                android:layout_marginTop="15dp"
+                android:layout_weight="5"
+                app:ic_left_unclick="@mipmap/login_ecurity_code"
+                app:ic_left_click="@mipmap/login_ecurity_code"
+                app:left_x="-10"
+                app:lineColor_unclick="@color/pblue_bar_color"
+                />
+
+
+            <Button
+                android:id="@+id/btn_rsg_get_mibile_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="获取验证码"
+                android:layout_weight="5"
+                android:background="@drawable/btn_nomal"
+                android:textColor="@color/white_bar_word_color"
+                android:textSize="14sp"
+
+                />
+        </LinearLayout>
+
+
+        <scut.carson_ho.diy_view.SuperEditText
+            android:id="@+id/et_rsg_pwd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPassword"
+            android:layout_marginTop="15dp"
+            android:hint="请输入密码"
+            app:left_x="-10"
+            app:ic_left_unclick="@mipmap/password_unclick"
+            app:ic_left_click="@mipmap/password_unclick"
+            app:lineColor_unclick="@color/pblue_bar_color"
+            />
+
+        <scut.carson_ho.diy_view.SuperEditText
+            android:id="@+id/et_rsg_repeat_pwd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPassword"
+            android:layout_marginTop="15dp"
+            android:hint="请重复输入密码"
+            app:left_x="-10"
+            app:ic_left_unclick="@mipmap/password_unclick"
+            app:ic_left_click="@mipmap/password_unclick"
+            app:lineColor_unclick="@color/pblue_bar_color"
+            />
+
+        <Button
+            android:id="@+id/btn_register"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:background="@drawable/btn_nomal"
+            android:text="注  册"
+            android:textColor="@color/white_bar_word_color"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            />
+    </LinearLayout>
+
+    <com.tuyenmonkey.mkloader.MKLoader
+        android:id="@+id/mkloader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/tv_loading_tip"
+        android:layout_centerInParent="true"
+        app:mk_type="ClassicSpinner"
+        app:mk_color="#aaa"
+        android:visibility="gone"
+        />
+
+</RelativeLayout>

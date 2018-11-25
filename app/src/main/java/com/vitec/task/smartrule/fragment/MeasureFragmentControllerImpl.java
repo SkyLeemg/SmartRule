@@ -1,6 +1,5 @@
 package com.vitec.task.smartrule.fragment;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -11,16 +10,11 @@ import android.util.Log;
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
 import com.vitec.task.smartrule.R;
-import com.vitec.task.smartrule.bean.EngineerBean;
-import com.vitec.task.smartrule.bean.OptionBean;
+import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.interfaces.IFragmentController;
-import com.vitec.task.smartrule.interfaces.ISettable;
-import com.vitec.task.smartrule.utils.ParameterKey;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,31 +25,19 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
     private static final String TAG = "MeasureFragmentControllerImpl";
     private BottomNavigationBar bottomNavigationBar;
     private int lastSelectedPosition = 0;
-    private Context context;
     private FragmentActivity activity;
     private FragmentManager fragmentManager;
     private FragmentTransaction transaction;
     private List<Fragment> fragments;
     private List<String> tags;
-    private ISettable settable;
-    private List<OptionBean> options;
-    private EngineerBean engineers;
 
-    public MeasureFragmentControllerImpl(FragmentActivity activity, BottomNavigationBar bottomNavigationBar, ISettable settable) {
+    private List<RulerCheckOptions> checkOptionsList;
+
+    public MeasureFragmentControllerImpl(FragmentActivity activity, BottomNavigationBar bottomNavigationBar, List<RulerCheckOptions> checkOptionsList) {
+
         this.activity = activity;
         this.bottomNavigationBar = bottomNavigationBar;
-        this.settable = settable;
-    }
-
-//    public MeasureFragmentControllerImpl(FragmentActivity activity, BottomNavigationBar bottomNavigationBar, List<OptionBean> measureBeanList) {
-//        this.activity = activity;
-//        this.bottomNavigationBar = bottomNavigationBar;
-//        this.options = measureBeanList;
-//    }
-    public MeasureFragmentControllerImpl(FragmentActivity activity, BottomNavigationBar bottomNavigationBar, EngineerBean engineers) {
-        this.activity = activity;
-        this.bottomNavigationBar = bottomNavigationBar;
-        this.engineers = engineers;
+        this.checkOptionsList = checkOptionsList;
     }
 
 
@@ -72,32 +54,40 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
     private void initFragmentData() {
         fragments = new ArrayList<>();
         tags = new ArrayList<>();
-        options = engineers.getMeasureBeanList();
-        for (int i = 0; i< options.size(); i++) {
+        Log.e("sssd", "initFragmentData: 查看checkoptionsList:"+checkOptionsList.size()+",内容："+checkOptionsList.toString() );
+        for (int i = 0; i< checkOptionsList.size(); i++) {
             MeasureFragment fragment = new MeasureFragment();
+            RulerCheckOptions checkOptions = checkOptionsList.get(i);
             Bundle bundle = new Bundle();
-            bundle.putString(ParameterKey.projectNameKey,engineers.getProjectName());
-            bundle.putString(ParameterKey.checkPersonKey, engineers.getCheckPerson());
-            bundle.putString(ParameterKey.checkPositonKey, engineers.getCheckPositon());
-            bundle.putString(ParameterKey.projectTypeKey, engineers.getProjectEngineer());
-            bundle.putString(ParameterKey.measureItemKey, options.get(i).getMeasureItemName());
-            bundle.putString(ParameterKey.standardKey,options.get(i).getPassStandard());
-            bundle.putInt(DataBaseParams.options_data_check_options_id, options.get(i).getCheckOptionId());
-            String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-            bundle.putString(DataBaseParams.options_data_create_time, currentDateTimeString);
-
+//            bundle.putString(ParameterKey.projectNameKey,checkOptions.getRulerCheck().getProjectName());
+//            bundle.putString(ParameterKey.checkPersonKey, checkOptions.getRulerCheck().getUser().getUserName());
+//            bundle.putString(ParameterKey.checkPositonKey, checkOptions.getRulerCheck().getCheckFloor());
+//            bundle.putString(ParameterKey.projectTypeKey, checkOptions.getRulerCheck().getEngineer().getEngineerName());
+//            bundle.putString(ParameterKey.measureItemKey, checkOptions.getRulerOptions().getOptionsName());
+//            bundle.putString(ParameterKey.standardKey,checkOptions.getRulerOptions().getStandard());
+//            此id对应iot_ruler_check_options表的id
+            bundle.putInt(DataBaseParams.options_data_check_options_id, checkOptions.getId());
+//            String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
+//            bundle.putString(DataBaseParams.options_data_create_time, currentDateTimeString);
+//            bundle.putInt(ParameterKey.resourceIDKey,R.mipmap.icon_data_selected);
+            bundle.putSerializable("checkoptions",checkOptions);
             fragment.setArguments(bundle);
             fragments.add(fragment);
-            tags.add(options.get(i).getMeasureItemName());
+            if (checkOptions.getRulerOptions()!=null)
+            tags.add(checkOptions.getRulerOptions().getOptionsName());
         }
-
+        if (checkOptionsList.size() == 0) {
+            MeasureFragment fragment = new MeasureFragment();
+            fragments.add(fragment);
+        }
+        addBottomNav();
     }
 
     @Override
     public void addBottomNav() {
 
-        for (int i = 0; i< options.size(); i++) {
-            bottomNavigationBar.addItem(new BottomNavigationItem(options.get(i).getResourceID(), options.get(i).getMeasureItemName()));
+        for (int i = 0; i < checkOptionsList.size(); i++) {
+            bottomNavigationBar.addItem(new BottomNavigationItem(R.mipmap.icon_data_unselected, checkOptionsList.get(i).getRulerOptions().getOptionsName()));
         }
         bottomNavigationBar.setFirstSelectedPosition(lastSelectedPosition)
                 .initialise();//定要放在 所有设置的最后一项
@@ -111,11 +101,21 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
         transaction = fragmentManager.beginTransaction();
 //        myTasksFragment = new MyTasksFragment();
         fragmentManager.executePendingTransactions();
-        transaction.add(R.id.rl_content, fragments.get(lastSelectedPosition),tags.get(lastSelectedPosition));
+        for (int i=0;i<fragments.size();i++) {
+            transaction.add(R.id.rl_content, fragments.get(i),tags.get(i));
+        }
+        for (int i=0;i<fragments.size();i++) {
+            transaction.hide(fragments.get(i));
+        }
+        transaction.show(fragments.get(lastSelectedPosition));
         transaction.commit();
         Log.e("", "setDefaultFragment: 设置默认的faragment，"+lastSelectedPosition );
     }
 
+    /**
+     * //未选中->选中
+     * @param position
+     */
     @Override
     public void onTabSelected(int position) {
           /*
@@ -125,51 +125,48 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
         这个在读本地数据库的时候，可能不算什么，可是在读网络数据的时候，这就浪费了流量，所以我们不能使用这个方法，
         我们这里使用hide,show,方法，用隐藏和显示的方法来进行切换。下面是一个通用的方法，代码如下：
          */
+        Log.e("TAG", "onTabSelected: 未选中->选中" );
         if (fragments != null && position < fragments.size()) {
             FragmentManager fm = activity.getSupportFragmentManager();
             FragmentTransaction ft = fm.beginTransaction();
             fm.executePendingTransactions();
             Fragment fragment = fragments.get(position);
             Log.e("", "onTabSelected: 查看isAdded："+fragment.isAdded() +"，查看是否被隐藏："+fragment.isHidden());
-            /**
-             * TODO 有一个问题isAdded()一直返回false
-             */
-            if (fragment.isAdded() || fm.findFragmentByTag(tags.get(position))!=null) {
-//                ft.replace(R.id.ll_content, fragment);
-//                如果fragment已经被添加过了，则隐藏上一次fragment 显示现在这个fragment
-                ft.hide(fragments.get(lastSelectedPosition));
-                ft.show(fragment);
-                Log.e("", "onTabSelected: 是已经添加过的" );
-            } else {
-//                ft.add(R.id.ll_content, fragment);
-//                如果fragment还未被添加，则隐藏上一个fragment，添加现在的fragment
-
-                Log.e("", "onTabSelected: 没有添加过的" );
-                ft.hide(fragments.get(lastSelectedPosition)).add(R.id.rl_content, fragment,tags.get(position));
-            }
-//            ft.commitAllowingStateLoss();
+//            ft.hide(fragments.get(lastSelectedPosition));
+            ft.show(fragment);
+            Log.e("aaa", "onTabSelected: 修改后。是已经添加过的" );
             ft.commit();
-//            Log.e(TAG, "onTabSelected: 查看当前的位置："+ position+",Name:");
 
         }
         lastSelectedPosition = position;
 
     }
 
+    /**
+     *   //选中->未选中
+     * @param position
+     */
     @Override
     public void onTabUnselected(int position) {
+        Log.e("onTabUnselected", "onTabUnselected:选中->未选中 ");
         if (fragments != null) {
             if (position < fragments.size()) {
                 FragmentManager manager = activity.getSupportFragmentManager();
                 FragmentTransaction ft = manager.beginTransaction();
                 Fragment fragment = fragments.get(position);
-                ft.remove(fragment);
+                ft.hide(fragment);
                 ft.commitAllowingStateLoss();
+                Log.e("aaa", "onTabUnselected:隐藏了一个fragment:"+fragment );
 
             }
         }
+
     }
 
+    /**
+     * //选中->选中
+     * @param position
+     */
     @Override
     public void onTabReselected(int position) {
 

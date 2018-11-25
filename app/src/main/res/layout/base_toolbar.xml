@@ -15,10 +15,10 @@
 
         <ImageView
             android:id="@+id/img_menu_toolbar"
-            android:layout_width="50dp"
+            android:layout_width="60dp"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="12dp"
             android:visibility="gone"
             android:src="@mipmap/icon_memu_in"/>
 

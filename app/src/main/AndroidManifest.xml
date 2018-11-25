@@ -37,6 +37,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
         <activity android:name=".activity.DeviceActivity">
 
@@ -50,6 +51,10 @@
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"/>
         <activity android:name=".activity.MeasureManagerAcitivty"/>
 
+        <activity android:name=".activity.RegisterActivity"/>
+        <activity android:name=".activity.SearchMeasureDataActivity"/>
+        <activity android:name=".activity.DeviceManagerActivity">
+        </activity>
 
         <!--注册微信回调 WXEntryActivity -->
         <activity
@@ -58,8 +63,31 @@
             android:launchMode="singleTop"
             android:theme="@android:style/Theme.Translucent" />
 
+
+        <!--QQ-->
+        <activity
+            android:name="com.tencent.connect.common.AssistActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"></activity>
+
+
+        <activity android:name=".activity.TestActivity">
+
+            <!--<intent-filter>-->
+                <!--<category android:name="android.intent.category.DEFAULT" />-->
+                <!--<category android:name="android.intent.category.BROWSABLE" />-->
+                <!--<data android:scheme="adkd" />-->
+            <!--</intent-filter>-->
+        </activity>
+        <activity android:name=".activity.SmsLoginActivity"/>
+        <activity android:name=".activity.MainHomeActivity"
+            android:launchMode="singleTask"
+            />
+
         <service android:name=".service.BleScanService"/>
         <service android:name=".service.ConnectDeviceService"/>
+        <service android:name=".service.GetMudelIntentService"/>
+        <service android:name=".service.PerformMeasureNetIntentService"/>
     </application>
 
 </manifest>

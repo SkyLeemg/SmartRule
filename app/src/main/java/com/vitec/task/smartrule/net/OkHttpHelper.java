@@ -2,14 +2,11 @@ package com.vitec.task.smartrule.net;
 
 import android.util.Log;
 
-import com.vitec.task.smartrule.bean.EngineerBean;
 import com.vitec.task.smartrule.bean.NetCallBackMessage;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;

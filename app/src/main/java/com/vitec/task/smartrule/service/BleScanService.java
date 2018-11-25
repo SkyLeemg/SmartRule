@@ -35,6 +35,7 @@ public class BleScanService extends Service implements BeaconConsumer {
     /** 重新调整格式*/
     public static final String IBEACON_FORMAT = "m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24";
     /** 设置兴趣UUID*/
+//    public static final String FILTER_UUID = "FDA50693-A4E2-4FB1-AFCF-C6EB07647836";
     public static final String FILTER_UUID = "FDA50693-A4E2-4FB1-AFCF-C6EB07647825";
 //    public BeaconLocationData beaconLocationData;
     private boolean inBeaconRange = false;//判断是在beacon区域还是不在beacon区域

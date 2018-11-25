@@ -29,13 +29,25 @@
                 android:text="管控要点：立面垂直度"
                 />
 
-            <TextView
-                android:id="@+id/tv_qualified_flag"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/Text"
-                android:text="合格标准：≤8mm/≤10mm(≤6m取8mm)"
-                />
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Text"
+                    android:text="合格标准："
+                    />
+                <TextView
+                    android:id="@+id/tv_qualified_flag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Text"
+                    android:text="≤8mm/≤10mm(≤6m取8mm)"
+                    />
+            </LinearLayout>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -57,6 +69,7 @@
                 android:numColumns="6"
                 ></GridView>
             <LinearLayout
+                android:id="@+id/ll_floor_height"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
@@ -68,7 +81,8 @@
                     android:text="层高："
                     />
                 <Spinner
-                    android:layout_width="100dp"
+                    android:id="@+id/spinner_floor_height"
+                    android:layout_width="150dp"
                     android:layout_height="wrap_content"></Spinner>
 
             </LinearLayout>
@@ -85,10 +99,13 @@
                     android:text="实测点数："
                     />
                 <EditText
+                    android:id="@+id/et_real_measure_num"
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:text="30"
-                    android:clickable="false"
+                    android:gravity="center"
+                    android:enabled="false"
+                    android:textColor="@color/pblue_bar_color"
                     />
 
                 <TextView
@@ -99,10 +116,14 @@
                     android:layout_marginLeft="30dp"
                     />
                 <EditText
+                    android:id="@+id/et_standard_num"
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:text="30"
                     android:clickable="false"
+                    android:gravity="center"
+                    android:enabled="false"
+                    android:textColor="@color/pblue_bar_color"
                     />
 
             </LinearLayout>
@@ -113,19 +134,28 @@
                 android:layout_marginTop="5dp"
                 android:orientation="horizontal">
                 <TextView
+
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="@style/Text"
                     android:text="合格率："
                     />
                 <EditText
-                    android:layout_width="80dp"
+                    android:id="@+id/et_standard_rate"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="30"
                     android:clickable="false"
+                    android:gravity="center"
+                    android:enabled="false"
+                    android:textColor="@color/pblue_bar_color"
                     />
-
-
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Text"
+                    android:textColor="@color/pblue_bar_color"
+                    android:text="%"/>
             </LinearLayout>
 
 
@@ -133,7 +163,6 @@
 
         </LinearLayout>
     </ScrollView>
-
 
 
 </RelativeLayout>

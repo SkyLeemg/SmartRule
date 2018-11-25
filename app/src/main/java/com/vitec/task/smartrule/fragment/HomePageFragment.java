@@ -19,6 +19,12 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     private View view;
     private android.widget.Button btnEnterMeasure;
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.e(TAG, "onCreate: 首页的onCreate" );
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

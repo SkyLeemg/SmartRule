@@ -20,7 +20,8 @@
     <color name="gray_bottom_nav_bg_color">#f0efef</color>
 
     <color name="pink_btn_color">#F76968</color>
-    
+    <color name="blue_tv_color">#596b93</color>
     <color name="transparent_color">#00FFFFFF</color>
+    <color name="dialog_bg_color">#dd111111</color>
 
 </resources>

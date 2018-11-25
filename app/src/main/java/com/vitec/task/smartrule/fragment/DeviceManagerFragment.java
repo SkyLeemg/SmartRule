@@ -1,8 +1,11 @@
 package com.vitec.task.smartrule.fragment;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -10,11 +13,13 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.telecom.ConnectionService;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
@@ -29,7 +34,9 @@ import com.vitec.task.smartrule.bean.BleDevice;
 import com.vitec.task.smartrule.db.BleDeviceDbHelper;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.helper.ServiceConnecteHelper;
+import com.vitec.task.smartrule.helper.TextToSpeechHelper;
 import com.vitec.task.smartrule.interfaces.IDialogCommunicableWithDevice;
+import com.vitec.task.smartrule.service.ConnectDeviceService;
 import com.vitec.task.smartrule.utils.BleParam;
 import com.vitec.task.smartrule.view.ConnectDialog;
 import com.vitec.task.smartrule.view.LoadingDialog;
@@ -63,6 +70,9 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
     private Beacon beacon;//点击添加设备时，用户点击的那个蓝牙设备
     private BleDeviceDbHelper deviceDbHelper;
     private ServiceConnecteHelper serviceConnecteHelper;
+    private TextToSpeechHelper mTextToSpeechHelper;
+    private int current_connected_device_id;
+
 
     @Nullable
     @Override
@@ -84,6 +94,7 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
         gvLaser = view.findViewById(R.id.gv_laser);
 
         llAddDev.setOnClickListener(this);
+        mTextToSpeechHelper = new TextToSpeechHelper(getActivity(),"");
     }
 
 
@@ -108,14 +119,51 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
         gvRule.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                serviceConnecteHelper = new ServiceConnecteHelper(getActivity(),rules.get(i).getBleMac());
+                current_connected_device_id = i;
+                if (ConnectDeviceService.current_connecting_mac_address.equals(rules.get(i).getBleMac())) {
+                    Toast.makeText(getActivity(), "蓝牙已连接", Toast.LENGTH_SHORT).show();
+                } else {
+                    mLoadingDialog = new LoadingDialog(getActivity(), "正在连接");
+                    mLoadingDialog.show();
+                    serviceConnecteHelper = new ServiceConnecteHelper(getActivity(),rules.get(i).getBleMac());
+                }
+
             }
         });
 
     }
 
+    /**
+     * 从sqlite中获取所有的设备
+     */
     private void getRuleDevicefromDB() {
         rules = deviceDbHelper.queryAllDevice();
+        updateDateState();
+    }
+
+    private void updateDateState() {
+        int currentnum = -1;
+        for (int i=0;i<rules.size();i++) {
+            if (ConnectDeviceService.current_connecting_mac_address.equals(rules.get(i).getBleMac())) {
+                currentnum = i;
+            }
+        }
+        setDeviceImg(currentnum);
+    }
+
+
+    /**
+     * 设置显示的设备的图片的颜色，未连接的为灰白，连接成功的为彩色
+     * @param flag 为连接成功的设备序号，序号为list集合的序号
+     */
+    private void setDeviceImg(int flag) {
+        Log.e(TAG, "setDeviceImg: 修改图片的标志："+flag +",rulers内容："+rules.toString());
+        for (int i=0;i<rules.size();i++) {
+            rules.get(i).setImgResouce(R.mipmap.rule_unconnected);
+        }
+        if (flag >= 0 && rules.size() > 0) {
+            rules.get(flag).setImgResouce(R.mipmap.rule);
+        }
     }
 
     private void setListViewHeighBaseOnChildren(GridView gridView) {
@@ -154,6 +202,11 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
     }
 
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateDateState();
+    }
 
     private void showlog(String msg) {
         Log.e(TAG, "showlog: 查看eventbus里面的log："+msg );
@@ -164,6 +217,19 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
         super.onDestroy();
 //        EventBus.getDefault().unregister(getActivity());
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(UARTStatusChangeReceiver);
+        mTextToSpeechHelper.stopSpeech();
+        if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
+            mLoadingDialog.dismiss();
+
+        }
+        if (!hasUnbind) {
+            hasUnbind = true;
+//            ConnectDialog.serviceConnecteHelper.stopServiceConnection();
+            if (mDialog != null) {
+                mDialog.unBindConnectService();
+            }
+            Log.e(TAG, "onDestroy: 连接解绑了" );
+        }
     }
 
     @Override
@@ -198,61 +264,101 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
     public final BroadcastReceiver UARTStatusChangeReceiver=new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
+            final String action = intent.getAction();
             if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
                 mLoadingDialog.dismiss();
             }
+            if (mDialog != null) {
+                if (!hasUnbind) { //判断对话框的连接断开了没有
+                    hasUnbind = true;
+//                    ConnectDialog.serviceConnecteHelper.stopServiceConnection();
 
-            final Intent mIntent = intent;
+                    mDialog.unBindConnectService();
+                    Log.e(TAG, "onReceive: 服务解绑了" );
+                }
+                if (mDialog.isShowing()) {
+                    mDialog.dismiss();
+                }
+
+            }
+
             //*********************//
             if (action.equals(BleParam.ACTION_GATT_CONNECTED)) {
                 Toast.makeText(context,"连接成功", Toast.LENGTH_SHORT).show();
+                mTextToSpeechHelper.speakChinese("蓝牙连接成功");
                 /**
                  * 连接成功后，判断该设备是否已经保存过数据库，如果没有则将该设备保存到数据库
                  */
-                boolean isExist = false;
-                if (beacon != null) {
-                    for(int i=0;i<rules.size();i++) {
+
+                boolean isExist = false;//判断当前数据是否已经保存到数据库
+                if (beacon != null) {//beacon不为空，说明是搜索设备进行连接的
+                    Log.e(TAG, "onReceive: 蓝牙连接成功后，beacon不为null" );
+//                    有时候搜索连接的设备是以前连接过的
+                    for (int i = 0; i < rules.size(); i++) {
                         if (rules.get(i).getBleMac().equals(beacon.getBluetoothAddress())) {
                             isExist = true;
+                            setDeviceImg(i);
                         }
                     }
-                    if (!isExist) {
-                        ContentValues values = new ContentValues();
-                        values.put(DataBaseParams.ble_device_name,beacon.getBluetoothName());
-                        values.put(DataBaseParams.ble_device_mac, beacon.getBluetoothAddress());
-                        values.put(DataBaseParams.ble_device_last_connect_time,System.currentTimeMillis());
-                        deviceDbHelper.insertDevToSqlite(values);
+                    if (!isExist) {//如果没有保存，则保存一份
+                        final ContentValues values = new ContentValues();
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        final EditText bleAlias = new EditText(getActivity());
+                        builder.setView(bleAlias);
+                        builder.setTitle("请输入设备名称：");
+                        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                String alias = bleAlias.getText().toString().trim();
+                                values.put(DataBaseParams.ble_alias, alias);
+                                values.put(DataBaseParams.ble_device_name, beacon.getBluetoothName());
+                                values.put(DataBaseParams.ble_device_mac, beacon.getBluetoothAddress());
+                                values.put(DataBaseParams.ble_device_last_connect_time, System.currentTimeMillis());
+                                deviceDbHelper.insertDevToSqlite(values);
+                                BleDevice bleDevice = new BleDevice();
+                                bleDevice.setBleName(beacon.getBluetoothName());
+                                bleDevice.setLastConnectTime((int) System.currentTimeMillis());
+                                bleDevice.setBleMac(beacon.getBluetoothAddress());
+                                bleDevice.setBleAlias(alias);
+
+                                rules.add(bleDevice);
+                                setDeviceImg(rules.size() - 1);
+                                ruleDevAdapter.setDevs(rules);
+                                ruleDevAdapter.notifyDataSetChanged();
+                                setListViewHeighBaseOnChildren(gvRule);
+
+                            }
+                        });
+                        builder.show();
+
+
                     }
-                    if (!hasUnbind) {
-                        hasUnbind = true;
-//                    ServiceConnecteHelper serviceConnecteHelper = new ServiceConnecteHelper(getActivity());
-//                    serviceConnecteHelper.stopServiceConnection();
-                        ConnectDialog.serviceConnecteHelper.stopServiceConnection();
-//                    getActivity().unbindService(mServiceConnection);
-                    }
+
+                } else {
+                    Log.e(TAG, "onReceive: 蓝牙连接成功后，beacon为null" );
+                    setDeviceImg(current_connected_device_id);
                 }
 
-//                Intent startIntent = new Intent(context, ChooseMeasureMsgActivity.class);
-//                startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                context.startActivity(startIntent);
 //                更新一下列表
-                getRuleDevicefromDB();
-                ruleDevAdapter.setDevs(rules);
-//                rules.add(new BleDevice(beacon.getBluetoothName(),beacon.getBluetoothAddress()));
-                ruleDevAdapter.notifyDataSetChanged();
+//                getRuleDevicefromDB();
+                Log.e(TAG, "onReceive: 查看Rulers集合："+rules.size()+",内容："+rules.toString() );
                 gvRule.setVisibility(View.VISIBLE);
                 tvNoRuleDev.setVisibility(View.GONE);
-
+                ruleDevAdapter.setDevs(rules);
+                ruleDevAdapter.notifyDataSetChanged();
+                setListViewHeighBaseOnChildren(gvRule);
 
             }
 
             //*********************//
             if (action.equals(BleParam.ACTION_GATT_DISCONNECTED)) {
+                mTextToSpeechHelper.speakChinese("蓝牙连接失败");
                 Toast.makeText(context,"连接失败", Toast.LENGTH_SHORT).show();
+                setDeviceImg(current_connected_device_id);
+                ruleDevAdapter.setDevs(rules);
+                ruleDevAdapter.notifyDataSetChanged();
                 if (!hasUnbind) {
                     hasUnbind = true;
-//                    getActivity().unbindService(mServiceConnection);
                 }
 
             }

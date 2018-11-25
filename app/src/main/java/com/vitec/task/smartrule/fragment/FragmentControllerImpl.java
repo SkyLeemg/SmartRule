@@ -22,7 +22,7 @@ public class FragmentControllerImpl implements IFragmentController, BottomNaviga
 
     private static final String TAG = "FragmentControllerImpl";
     private BottomNavigationBar bottomNavigationBar;
-    private int lastSelectedPosition = 0;
+    private int lastSelectedPosition = 1;
     private Context context;
     private FragmentActivity activity;
     private FragmentManager fragmentManager;
@@ -83,7 +83,13 @@ public class FragmentControllerImpl implements IFragmentController, BottomNaviga
         transaction = fragmentManager.beginTransaction();
 //        myTasksFragment = new MyTasksFragment();
         fragmentManager.executePendingTransactions();
-        transaction.add(R.id.rl_content, fragments.get(lastSelectedPosition),tags.get(lastSelectedPosition));
+        for (int i=0;i<fragments.size();i++) {
+            transaction.add(R.id.rl_content, fragments.get(i),tags.get(i));
+        }
+        for (int i=0;i<fragments.size();i++) {
+            transaction.hide(fragments.get(i));
+        }
+        transaction.show(fragments.get(lastSelectedPosition));
         transaction.commit();
         Log.e(TAG, "setDefaultFragment: 设置默认的faragment，"+lastSelectedPosition );
         setCurrentTitle();
@@ -121,6 +127,7 @@ public class FragmentControllerImpl implements IFragmentController, BottomNaviga
 
     @Override
     public void onTabSelected(int position) {
+        Log.e("TAG", "onTabSelected: 未选中->选中" );
          /*
         一般我们来进行fragment页面切换的时候，都是采用replace方法，进行切换，其实replace方就是remove方法和add方法的一个合体，
         使我们的代码变得简单了。可是这里就出现一个问题，这个方法，是移除与添加，也就是说，
@@ -134,25 +141,19 @@ public class FragmentControllerImpl implements IFragmentController, BottomNaviga
             fm.executePendingTransactions();
             Fragment fragment = fragments.get(position);
             Log.e(TAG, "onTabSelected: 查看isAdded："+fragment.isAdded() +"，查看是否被隐藏："+fragment.isHidden());
-            /**
-             * TODO 有一个问题isAdded()一直返回false
-             */
-            if (fragment.isAdded() || fm.findFragmentByTag(tags.get(position))!=null) {
-//                ft.replace(R.id.ll_content, fragment);
-//                如果fragment已经被添加过了，则隐藏上一次fragment 显示现在这个fragment
-                ft.hide(fragments.get(lastSelectedPosition));
+//            if (fragment.isAdded() || fm.findFragmentByTag(tags.get(position))!=null) {
+////                ft.replace(R.id.ll_content, fragment);
+////                如果fragment已经被添加过了，则隐藏上一次fragment 显示现在这个fragment
+//                ft.hide(fragments.get(lastSelectedPosition));
                 ft.show(fragment);
-                Log.e(TAG, "onTabSelected: 是已经添加过的" );
-            } else {
-//                ft.add(R.id.ll_content, fragment);
-//                如果fragment还未被添加，则隐藏上一个fragment，添加现在的fragment
-
-                Log.e(TAG, "onTabSelected: 没有添加过的" );
-                ft.hide(fragments.get(lastSelectedPosition)).add(R.id.rl_content, fragment,tags.get(position));
-            }
-//            ft.commitAllowingStateLoss();
+//                Log.e(TAG, "onTabSelected: 是已经添加过的" );
+//            } else {
+////                ft.add(R.id.ll_content, fragment);
+////                如果fragment还未被添加，则隐藏上一个fragment，添加现在的fragment
+//
+//                ft.hide(fragments.get(lastSelectedPosition)).add(R.id.rl_content, fragment,tags.get(position));
+//            }
             ft.commit();
-//            Log.e(TAG, "onTabSelected: 查看当前的位置："+ position+",Name:");
 
         }
         lastSelectedPosition = position;
@@ -160,16 +161,21 @@ public class FragmentControllerImpl implements IFragmentController, BottomNaviga
 
     }
 
+    /**
+     * //选中->未选中
+     * @param position
+     */
     @Override
     public void onTabUnselected(int position) {
+        Log.e(TAG, "onTabUnselected: //选中->未选中");
         if (fragments != null) {
             if (position < fragments.size()) {
                 FragmentManager manager = activity.getSupportFragmentManager();
                 FragmentTransaction ft = manager.beginTransaction();
                 Fragment fragment = fragments.get(position);
-                ft.remove(fragment);
+                ft.hide(fragment);
                 ft.commitAllowingStateLoss();
-
+                Log.e(TAG, "onTabUnselected: 隐藏成功："+fragments.size()+",当前fragment:"+fragment );
             }
         }
     }

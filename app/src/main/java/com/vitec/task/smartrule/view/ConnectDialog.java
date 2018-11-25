@@ -57,7 +57,6 @@ public class ConnectDialog extends Dialog {
         initView();
         EventBus.getDefault().register(this);
 //        BleScanService.startScanService(getContext());
-
         initData();
     }
 
@@ -147,4 +146,11 @@ public class ConnectDialog extends Dialog {
 //        getContext().unbindService(scanServiceConnection);
 //        serviceConnecteHelper.stopServiceConnection();
     }
+
+    public void unBindConnectService() {
+        getContext().unbindService(scanServiceConnection);
+        serviceConnecteHelper.stopServiceConnection();
+    }
+
+
 }

@@ -1,9 +1,11 @@
 package com.vitec.task.smartrule.wxapi;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
@@ -13,14 +15,24 @@ import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
+import com.vitec.task.smartrule.activity.LoginActivity;
 import com.vitec.task.smartrule.activity.MainActivity;
+import com.vitec.task.smartrule.activity.RegisterActivity;
+import com.vitec.task.smartrule.bean.User;
+import com.vitec.task.smartrule.db.DataBaseParams;
+import com.vitec.task.smartrule.db.UserDbHelper;
+import com.vitec.task.smartrule.net.NetConstant;
 import com.vitec.task.smartrule.utils.JsonUtils;
+import com.vitec.task.smartrule.utils.LoginSuccess;
 import com.vitec.task.smartrule.utils.OkHttpUtils;
 import com.vitec.task.smartrule.wxapi.bean.ResultInfo;
 import com.vitec.task.smartrule.wxapi.bean.UserInfo;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -46,6 +58,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
 
     private ResultInfo resultInfo;
     private UserInfo userInfo;
+    private UserDbHelper userDbHelper;
 
 
     @Override
@@ -54,6 +67,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
         super.onCreate(savedInstanceState);
         mApi = WXAPIFactory.createWXAPI(this, APP_ID, false);
         mApi.handleIntent(this.getIntent(), this);
+        userDbHelper = new UserDbHelper(getApplicationContext());
     }
 
     //微信发送的请求将回调到onReq方法
@@ -74,7 +88,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
                     String code = sendResp.code;
                     getAccess_token(code);
                     showLog("正在获取用户信息");
-                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+//                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 }
                 break;
             case BaseResp.ErrCode.ERR_USER_CANCEL:
@@ -117,7 +131,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
                         + "&grant_type=authorization_code";
                 try {
                     /**
-                     成功返回：
+
                      {
                      "access_token":"ACCESS_TOKEN",  //access_token接口调用凭证
                      "expires_in":7200,expires_in access_token接口调用凭证超时时间，单位（秒）
@@ -135,12 +149,24 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
                             String access = null;
                             String openId = null;
                             try {
+                                /**
+                                 * 1.获取微信返回的数据信息
+                                 * 2.根据unionid查找数据库有没有相同的
+                                 *      有则自动跳转 登陆成功
+                                 *      无则跳转到注册页面 让用户填写注册信息
+                                 */
+                                Log.e(TAG, "onSuccess: 查看收到的返回信息："+response );
                                 JSONObject jsonObject = new JSONObject(response);
                                 access = jsonObject.getString("access_token");
                                 openId = jsonObject.getString("openid");
+                                String unionId = jsonObject.optString("unionid");
                                 resultInfo = new ResultInfo(access, openId);
+                                resultInfo.setUnionId(unionId);
+                                resultInfo.setRefreshToken(jsonObject.optString("refresh_token"));
+
+                                getUserMesg(access,openId);
+
                                 Log.e(TAG, "onSuccess: 查看收到的token:" +resultInfo.toString());
-                                getUserMesg(access, openId);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -149,6 +175,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
                         @Override
                         public void onFailure(Exception e) {
                             Toast.makeText(getApplicationContext(), "获取token失败", Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "onFailure: 获取Token失败" );
                             finish();
                         }
                     };
@@ -169,6 +196,51 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
 
     }
 
+    private void requestLoginFromServer(final String unionId, final String data) {
+        OkHttpUtils.Param param = new OkHttpUtils.Param(NetConstant.login_data, data);
+        List<OkHttpUtils.Param> paramList = new ArrayList<>();
+        paramList.add(param);
+        StringBuffer url = new StringBuffer();
+        url.append(NetConstant.baseUrl);
+        url.append(NetConstant.loginUrl);
+        OkHttpUtils.post(url.toString(), new OkHttpUtils.ResultCallback<String>() {
+            @Override
+            public void onSuccess(String response) {
+                /**
+                 * {"status":"success",
+                 * "code":200,
+                 * "data":
+                 *    {"token":"768d33bae04333cb842088405839c6cc",
+                 *    "user_info":
+                 *       {"status":200,
+                 *        "statusInfo":"ok",
+                 *        "data":
+                 *          {"userid":"452",
+                 *          "username":"xjbank",
+                 *          "language":"",
+                 *          "name":"xjbank",
+                 *          "file":"http:\/\/vitec.oss-cn-shenzhen.aliyuncs.com\/vitec\/locales\/20180830\/用户.png",
+                 *          "mobile":"15107620711",
+                 *          "projectName":"xj_bank",
+                 *          "classification":1,
+                 *          "projectImg":"http:\/\/vitec.oss-cn-shenzhen.aliyuncs.com\/vitec\/locales\/20180907logo.png","belong":"506","admin":"0","role":["管理员"],"department":[],"authObj":[{"id":177,"name":"人员定位"},{"id":178,"name":"管理员"},{"id":179,"name":"技术员"}],"auth":[177,178,179],"authName":["人员定位","管理员","技术员"],"project":[{"id":506,"name":"xj_bank"}]}}},
+                 *          "msg":"登录成功"}
+                 */
+                Log.e(TAG, "onSuccess: 查看返回的微信登录信息："+response );
+                LoginSuccess loginSuccess = new LoginSuccess(WXEntryActivity.this);
+                List<OkHttpUtils.Param> paramList = new ArrayList<>();
+                OkHttpUtils.Param param1 = new OkHttpUtils.Param(DataBaseParams.user_data, data);
+                paramList.add(param1);
+                loginSuccess.doSuccess(response,paramList,null);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e(TAG, "onFailure: 网络请求失败："+e.getMessage() );
+            }
+        },paramList);
+    }
+
 
     /**
      * 获取微信的个人信息
@@ -185,6 +257,8 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
         OkHttpUtils.ResultCallback<String> resultCallback = new OkHttpUtils.ResultCallback<String>() {
             @Override
             public void onSuccess(String response) {
+                Log.e(TAG, "onSuccess: 收到的微信的个人信息长度："+response.length()+",内容："+response );
+
                 String nickName = null;
                 String sex;
                 String city;
@@ -193,6 +267,9 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
                 String headImgUrl;
                 String openid;
                 String unionid;
+                /**
+                 * 将所有数据转发给服务器，写到data里面
+                 */
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     openid = jsonObject.getString("openid");
@@ -202,8 +279,12 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
                     province = jsonObject.getString("province");
                     country = jsonObject.getString("country");
                     headImgUrl = jsonObject.getString("headimgurl");
+//                    oKP_j1Dj8KQQRNVCsEJykp4P8Eog
                     unionid = jsonObject.getString("unionid");
                     userInfo = new UserInfo(nickName, sex, city, province, country, headImgUrl, openid, unionid);
+
+                    requestLoginFromServer(unionid,response);
+
                     Log.e(TAG, "onSuccess: 查看收到的个人信息，openid:" + userInfo.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
