@@ -31,6 +31,18 @@
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup,android:label"
         >
+
+        <!--其他的配置项-->
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.vitec.task.smartrule.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <activity android:name=".activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -55,6 +67,9 @@
         <activity android:name=".activity.SearchMeasureDataActivity"/>
         <activity android:name=".activity.DeviceManagerActivity">
         </activity>
+        <activity android:name=".activity.UserCenterActivity"/>
+        <activity android:name=".activity.ChangePasswordActivity"/>
+        <activity android:name=".activity.CheckUpdateActivity"/>
 
         <!--注册微信回调 WXEntryActivity -->
         <activity
@@ -83,11 +98,15 @@
         <activity android:name=".activity.MainHomeActivity"
             android:launchMode="singleTask"
             />
+        <!--<activity android:name=".dfu.DfuDialog"/>-->
 
         <service android:name=".service.BleScanService"/>
         <service android:name=".service.ConnectDeviceService"/>
         <service android:name=".service.GetMudelIntentService"/>
         <service android:name=".service.PerformMeasureNetIntentService"/>
+        <service android:name=".dfu.service.DfuService"/>
+        <service android:name=".dfu.service.UpdateFirmIntentService" />
+
     </application>
 
 </manifest>
