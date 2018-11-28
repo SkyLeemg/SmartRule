@@ -2,14 +2,19 @@ package com.vitec.task.smartrule.activity;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.telecom.ConnectionService;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +38,7 @@ import com.vitec.task.smartrule.interfaces.IDialogCommunicableWithDevice;
 import com.vitec.task.smartrule.service.ConnectDeviceService;
 import com.vitec.task.smartrule.service.GetMudelIntentService;
 import com.vitec.task.smartrule.utils.BleParam;
+import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.view.ConnectDialog;
 import com.vitec.task.smartrule.view.LoadingDialog;
 
@@ -59,6 +65,9 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
     private ServiceConnecteHelper serviceConnecteHelper;
     private TextToSpeechHelper mTextToSpeechHelper;
     private int current_connected_device_id;
+
+    private ConnectDeviceService mService;
+    private ConnectionService connectionService;
 
 
     @Override
@@ -128,10 +137,28 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
 
     }
 
+
+    private ServiceConnection mServiceConnection=new ServiceConnection() {
+        //        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            LogUtils.show("service连接开始。。。。。。");
+            mService = ((ConnectDeviceService.LocalBinder) iBinder).getService();
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            Log.e(TAG, "onServiceDisconnected: 连接断开了" );
+            mService = null;
+        }
+    };
+
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BleParam.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BleParam.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BleParam.ACTION_GATT_SERVICES_DISCOVERED);
         return intentFilter;
     }
 
@@ -180,6 +207,10 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
                 mDialog.unBindConnectService();
             }
             Log.e(TAG, "onDestroy: 连接解绑了" );
+        }
+
+        if (mService != null) {
+            unbindService(mServiceConnection);
         }
     }
 
@@ -239,7 +270,7 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
                 break;
         }
     }
-
+    boolean flag = true;
     /**
      * 接受蓝牙服务返回的连接
      */
@@ -267,6 +298,8 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
             //*********************//
             if (action.equals(BleParam.ACTION_GATT_CONNECTED)) {
                 Toast.makeText(context,"连接成功", Toast.LENGTH_SHORT).show();
+                Intent bindIntent = new Intent(getApplicationContext(), ConnectDeviceService.class);
+                bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
                 mTextToSpeechHelper.speakChinese("蓝牙连接成功");
                 /**
                  * 连接成功后，判断该设备是否已经保存过数据库，如果没有则将该设备保存到数据库
@@ -349,11 +382,47 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
 //            /**
 //             * 发现服务
 //             */
-//            if (action.equals(BleParam.ACTION_GATT_SERVICES_DISCOVERED)) {
-////                发现一个服务
-//                Log.e(TAG, "测量页面中。onReceive: 发现一个服务" );
-//                mService.enableTXNotification();
-//            }
+
+            if (action.equals(BleParam.ACTION_GATT_SERVICES_DISCOVERED)) {
+                if (mService != null) {
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (flag) {
+                                mService.enableTXNotification(ConnectDeviceService.LEVELNESS_SERVICE_UUID, ConnectDeviceService.LEVELNESS_TX_CHAR_UUID);
+                                LogUtils.show("在Actvity中收到一个发现水平服务的广播");
+                            }
+
+                        }
+                    }, 2000);
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (flag) {
+                                mService.enableTXNotification(ConnectDeviceService.VERTICALITY_SERVICE_UUID, ConnectDeviceService.VERTICALITY_TX_CHAR_UUID);
+
+                                LogUtils.show("在Actvity中收到一个发现垂直服务的广播");
+                            }
+
+
+                        }
+                    }, 4000);
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (flag) {
+                                mService.writeRxCharacteristic(ConnectDeviceService.SYSTEM_RX_SERVICE_UUID, ConnectDeviceService.SYSTEM_RX_CHAR_UUID, "CD01".getBytes());
+                                flag = false;
+                            }
+
+                        }
+                    }, 5000);
+
+                }
+//                发现一个服务
+                Log.e(TAG, "测量页面中。onReceive: 发现一个服务" );
+            }
 
         }
     };

@@ -35,7 +35,7 @@ public class BleScanService extends Service implements BeaconConsumer {
     /** 重新调整格式*/
     public static final String IBEACON_FORMAT = "m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24";
     /** 设置兴趣UUID*/
-//    public static final String FILTER_UUID = "FDA50693-A4E2-4FB1-AFCF-C6EB07647836";
+    public static final String FILTER_UUID2 = "FDA50693-A4E2-4FB1-AFCF-C6EB07647836";
     public static final String FILTER_UUID = "FDA50693-A4E2-4FB1-AFCF-C6EB07647825";
 //    public BeaconLocationData beaconLocationData;
     private boolean inBeaconRange = false;//判断是在beacon区域还是不在beacon区域
@@ -88,7 +88,7 @@ public class BleScanService extends Service implements BeaconConsumer {
                     //符合要求的beacon集合
                     for (Beacon beacon : collection) {
 //                        判断该beacon的UUID是否为我们感兴趣的
-                        if (beacon.getId1().toString().equalsIgnoreCase(FILTER_UUID)){
+                        if (beacon.getId1().toString().equalsIgnoreCase(FILTER_UUID) ||beacon.getId1().toString().equalsIgnoreCase(FILTER_UUID2) ){
 //                            是则添加到集合
                             beacons.add(beacon);
                         }
@@ -112,7 +112,7 @@ public class BleScanService extends Service implements BeaconConsumer {
         });
         try {
 //            别忘了启动搜索,不然不会调用didRangeBeaconsInRegion方法
-            region = new Region(FILTER_UUID, null, null, null);
+            region = new Region(FILTER_UUID2, null, null, null);
             beaconManager.startRangingBeaconsInRegion(region);
         } catch (RemoteException e) {
             e.printStackTrace();

@@ -10,6 +10,9 @@ public class BleDevice {
     private int lastConnectTime;
     private int imgResouce;
     private String bleAlias;//蓝牙别名，用户输入的
+    private int bleVerCode;
+    private String bleVerName;
+
 
     public BleDevice(String bleName, String bleMac) {
         this.bleName = bleName;
@@ -68,6 +71,22 @@ public class BleDevice {
         this.id = id;
     }
 
+    public int getBleVerCode() {
+        return bleVerCode;
+    }
+
+    public void setBleVerCode(int bleVerCode) {
+        this.bleVerCode = bleVerCode;
+    }
+
+    public String getBleVerName() {
+        return bleVerName;
+    }
+
+    public void setBleVerName(String bleVerName) {
+        this.bleVerName = bleVerName;
+    }
+
     @Override
     public String toString() {
         return "BleDevice{" +
@@ -77,6 +96,8 @@ public class BleDevice {
                 ", lastConnectTime=" + lastConnectTime +
                 ", imgResouce=" + imgResouce +
                 ", bleAlias='" + bleAlias + '\'' +
+                ", bleVerCode=" + bleVerCode +
+                ", bleVerName='" + bleVerName + '\'' +
                 '}';
     }
 }

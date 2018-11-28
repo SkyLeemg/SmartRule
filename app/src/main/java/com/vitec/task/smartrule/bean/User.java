@@ -15,7 +15,18 @@ public class User implements Serializable{
     private String repeatPassword;//注册用到的重复密码
     private String mobile;//手机号码
     private String mobileCode;//手机验证码
+    private String wxData;//微信登录的请求数据
+    private String userJob;
+    private String token;
 
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public int getUserID() {
         return userID;
@@ -105,6 +116,23 @@ public class User implements Serializable{
         this.id = id;
     }
 
+    public String getWxData() {
+        return wxData;
+    }
+
+    public void setWxData(String wxData) {
+
+        this.wxData = wxData;
+    }
+
+    public String getUserJob() {
+        return userJob;
+    }
+
+    public void setUserJob(String userJob) {
+        this.userJob = userJob;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -119,6 +147,9 @@ public class User implements Serializable{
                 ", repeatPassword='" + repeatPassword + '\'' +
                 ", mobile='" + mobile + '\'' +
                 ", mobileCode='" + mobileCode + '\'' +
+                ", wxData='" + wxData + '\'' +
+                ", userJob='" + userJob + '\'' +
+                ", token='" + token + '\'' +
                 '}';
     }
 }

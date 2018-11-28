@@ -62,7 +62,8 @@ public class ExportMeaureData {
     private WritableCellFormat tableTitleFormat;
     private WritableFont contentFont;
     private WritableCellFormat contentFormat;
-    public static final String path = Environment.getExternalStorageDirectory() + "/excel";
+    public static final String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
+//    public static final String path = Environment.getExternalStorageDirectory() + "/excel";
 
     public ExportMeaureData(Context context,String fileName) {
         createExcelFile(context,fileName);

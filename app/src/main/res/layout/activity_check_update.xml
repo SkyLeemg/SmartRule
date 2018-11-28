@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <include
+        android:id="@+id/include"
+        layout="@layout/base_toolbar"/>
+
+    <ImageView
+        android:id="@+id/img_logo"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="38dp"
+        android:scaleType="centerCrop"
+        android:src="@mipmap/vlogo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/include" />
+
+    <LinearLayout
+        android:id="@+id/ll_app"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/img_logo"
+        android:orientation="horizontal"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginTop="15dp"
+        >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="APP版本："
+            />
+        <TextView
+            android:id="@+id/tv_app_ver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1.0.1"
+            />
+
+        <TextView
+            android:id="@+id/tv_app_check_update"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/blue_tv_color"
+            android:text="检查更新"
+            android:layout_marginLeft="10dp"
+            />
+
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/ll_dev"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/ll_app"
+        android:orientation="horizontal"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginTop="5dp"
+        >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="靠尺版本："
+            />
+        <TextView
+            android:id="@+id/tv_dev_ver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1.0.1"
+            />
+
+        <TextView
+            android:id="@+id/tv_dev_check_update"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/blue_tv_color"
+            android:text="检查更新"
+            android:layout_marginLeft="10dp"
+            />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginBottom="14dp"
+        android:text="网址：http://iotapp.vkforest.com"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/tv_address"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginBottom="5dp"
+        android:text="墨点狗智能科技有限公司"/>
+
+</android.support.constraint.ConstraintLayout>

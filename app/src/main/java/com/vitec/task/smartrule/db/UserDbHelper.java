@@ -23,6 +23,11 @@ public class UserDbHelper {
                 "/databases/"+DataBaseParams.databaseName, null, SQLiteDatabase.OPEN_READWRITE);
     }
 
+    public void close() {
+        sqLiteDatabase.close();
+
+    }
+
 
     public List<User> queryUserDataFromSqlite(String where) {
         User user = null;
@@ -40,6 +45,8 @@ public class UserDbHelper {
                 user.setUserID(cursor.getInt(cursor.getColumnIndex(DataBaseParams.user_user_id)));
                 user.setWxUnionId(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_wx_unionid)));
                 user.setWid(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_wid)));
+                user.setWxData(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_data)));
+                user.setUserJob(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_job)));
                 Log.e(TAG, "queryUserDataFromSqlite: 搜索到的用户:"+user );
                 userList.add(user);
             } while (cursor.moveToNext());

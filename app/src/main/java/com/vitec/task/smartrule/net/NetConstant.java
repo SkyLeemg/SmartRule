@@ -33,6 +33,21 @@ public class NetConstant {
     public static final String login_code = "code";
     public static final String login_data = "data";//微信登录返回的所有资料
 
+    /**
+     * 修改密码接口
+     */
+    public static final String change_pwd_url = "/api/user/changePasswordByOldPassword";
+    public static final String change_pwd_new_password = "new_password";//新密码
+    public static final String change_pwd_token = "token";//登录返回的token
+    public static final String change_pwd_password = "password";//旧密码
+
+
+    /**
+     * 绑定账号的接口，绑定手机号码请求字段为：mobile和code，绑定微信请求字段为：data
+     */
+    public static final String bind_account_url = "/api/user/bindAccount";
+
+
     //获取所有工程信息的get请求地址
     public static final String getEngineerInfoUrl = "http://iot.vkforest.com/api/ruler/showEngineerInfo";
 
@@ -73,6 +88,13 @@ public class NetConstant {
     public static final String get_measure_data_url = "/api/ruler/getMeasureRecordData";
     public static final String get_measure_data_check_id = "check_id";
 
+
+    /**
+     * 检查更新
+     */
+    public static final String check_update_url = "/api/user/checkUpdate";
+    public static final String check_update_type = "type";
+    public static final String check_update_app_name = "app_name";
 
 
 

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/include"
+        layout="@layout/base_toolbar"/>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/include"
+        android:layout_margin="15dp"
+        >
+        <!--***********************姓名*******************************-->
+        <TextView
+            android:id="@+id/tv_user_name_tip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="姓名："
+            style="@style/Text"
+
+            />
+
+        <TextView
+            android:id="@+id/tv_user_name"
+            style="@style/Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="张三"
+            app:layout_constraintLeft_toRightOf="@+id/tv_user_name_tip"
+            />
+
+        <TextView
+            android:id="@+id/tv_user_name_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="12dp"
+            android:text="编辑"
+            android:textColor="@color/blue_tv_color"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_user_name"
+            app:layout_constraintLeft_toRightOf="@+id/tv_user_name"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textSize="16sp"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <!--************************岗位*****************************-->
+        <TextView
+            android:id="@+id/tv_user_job_tip"
+            style="@style/Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="岗位："
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="5dp"
+            app:layout_constraintTop_toBottomOf="@+id/tv_user_name_tip" />
+
+        <TextView
+            android:id="@+id/tv_user_job"
+            style="@style/Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="测量员"
+            android:layout_marginTop="5dp"
+            app:layout_constraintLeft_toRightOf="@+id/tv_user_job_tip"
+            app:layout_constraintTop_toBottomOf="@+id/tv_user_name"
+            tools:layout_editor_absoluteY="27dp" />
+
+        <TextView
+            android:id="@+id/tv_user_job_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="12dp"
+            android:text="编辑"
+            android:textColor="@color/blue_tv_color"
+            app:layout_constraintLeft_toRightOf="@+id/tv_user_job"
+            app:layout_constraintTop_toBottomOf="@+id/tv_user_name_edit"
+            android:layout_marginTop="5dp"
+            android:textSize="16sp"
+            app:layout_constraintVertical_bias="0.0" />
+
+
+        <!--******************************手机号码**********************************-->
+        <TextView
+            android:id="@+id/tv_user_mobile_tip"
+            style="@style/Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="手机号码："
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="5dp"
+            app:layout_constraintTop_toBottomOf="@+id/tv_user_job_tip" />
+
+        <TextView
+            android:id="@+id/tv_user_mobile"
+            style="@style/Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="152125555555"
+            android:layout_marginTop="5dp"
+            app:layout_constraintLeft_toRightOf="@+id/tv_user_mobile_tip"
+            app:layout_constraintTop_toBottomOf="@+id/tv_user_job"
+            tools:layout_editor_absoluteY="27dp" />
+
+        <TextView
+            android:id="@+id/tv_user_mobile_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="12dp"
+            android:text="绑定"
+            android:textColor="@color/blue_tv_color"
+            app:layout_constraintLeft_toRightOf="@+id/tv_user_mobile"
+            app:layout_constraintTop_toBottomOf="@+id/tv_user_job_edit"
+            android:layout_marginTop="5dp"
+            android:textSize="16sp"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <!--*********************************微信号***********************************-->
+        <TextView
+            android:id="@+id/tv_user_wx_tip"
+            style="@style/Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="微信号："
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="5dp"
+            app:layout_constraintTop_toBottomOf="@+id/tv_user_mobile_tip" />
+
+        <TextView
+            android:id="@+id/tv_user_wx"
+            style="@style/Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="Lisls"
+            android:layout_marginTop="5dp"
+            app:layout_constraintLeft_toRightOf="@+id/tv_user_wx_tip"
+            app:layout_constraintTop_toBottomOf="@+id/tv_user_mobile"
+            tools:layout_editor_absoluteY="27dp" />
+
+        <TextView
+            android:id="@+id/tv_user_wx_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="12dp"
+            android:text="绑定"
+            android:textColor="@color/blue_tv_color"
+            app:layout_constraintLeft_toRightOf="@+id/tv_user_wx"
+            app:layout_constraintTop_toBottomOf="@+id/tv_user_mobile_edit"
+            android:layout_marginTop="5dp"
+            android:textSize="16sp"
+            app:layout_constraintVertical_bias="0.0" />
+
+
+        <ListView
+            android:id="@+id/lv_user_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/tv_user_wx_tip"
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp"
+            android:divider="#00000000"
+            android:dividerHeight="15dp"
+            ></ListView>
+    </android.support.constraint.ConstraintLayout>
+
+
+
+</android.support.constraint.ConstraintLayout>

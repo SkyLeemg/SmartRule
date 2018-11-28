@@ -179,7 +179,6 @@ public class MeasureFragment extends Fragment{
                 Toast.makeText(getActivity(), "蓝牙未连接", Toast.LENGTH_SHORT).show();
             } else {
                 byte[] bytes = "abcd".getBytes();
-                mService.writeRxCharacteristic(bytes);
             }
 
             Log.e(TAG, "onServiceConnected: 服务绑定完成");
@@ -480,7 +479,7 @@ public class MeasureFragment extends Fragment{
             if (action.equals(BleParam.ACTION_GATT_SERVICES_DISCOVERED)) {
 //                发现一个服务
                 Log.e(TAG, "测量页面中。onReceive: 发现一个服务" );
-                mService.enableTXNotification();
+//                mService.enableTXNotification();
             }
             //*********************//
             /**

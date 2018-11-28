@@ -149,7 +149,10 @@ public class ConnectDialog extends Dialog {
 
     public void unBindConnectService() {
         getContext().unbindService(scanServiceConnection);
-        serviceConnecteHelper.stopServiceConnection();
+        if (serviceConnecteHelper != null) {
+            serviceConnecteHelper.stopServiceConnection();
+        }
+
     }
 
 

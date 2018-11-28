@@ -143,7 +143,7 @@ public class DealDeviceDataActivity extends BaseActivity {
                 finish();
             }
             byte[] bytes = "abcd".getBytes();
-            mService.writeRxCharacteristic(bytes);
+//            mService.writeRxCharacteristic(bytes);
             Log.e(TAG, "onServiceConnected: 服务绑定完成");
         }
 
@@ -203,7 +203,7 @@ public class DealDeviceDataActivity extends BaseActivity {
 
             //*********************//
             if (action.equals(BleParam.ACTION_GATT_SERVICES_DISCOVERED)) {
-                mService.enableTXNotification();
+//                mService.enableTXNotification();
             }
             //*********************//
             if (action.equals(BleParam.ACTION_DATA_AVAILABLE)) {

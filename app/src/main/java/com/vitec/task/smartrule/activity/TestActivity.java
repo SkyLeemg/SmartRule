@@ -3,7 +3,9 @@ package com.vitec.task.smartrule.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
@@ -30,6 +32,8 @@ public class TestActivity extends BaseActivity implements View.OnClickListener{
     private Button btnOpenDir;
     private Button btnSendFileToWxF;
     private Button btnSendFiletoQQ;
+    private Button btnUpdateFirm;
+    private String path;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,11 +51,13 @@ public class TestActivity extends BaseActivity implements View.OnClickListener{
         btnOpenDir = findViewById(R.id.btn_open_dir);
         btnSendFileToWxF = findViewById(R.id.btn_send_file);
         btnSendFiletoQQ = findViewById(R.id.btn_send_file_to_qq);
+        btnUpdateFirm = findViewById(R.id.btn_update_firm);
 
         btnOpenDir.setOnClickListener(this);
         btnTestExport.setOnClickListener(this);
         btnSendFileToWxF.setOnClickListener(this);
         btnSendFiletoQQ.setOnClickListener(this);
+        btnUpdateFirm.setOnClickListener(this);
     }
 
     @Override
@@ -199,8 +205,33 @@ public class TestActivity extends BaseActivity implements View.OnClickListener{
                 break;
 
             case R.id.btn_send_file_to_qq:
-                ShareFileToQQ.sendToQQ(this,ExportMeaureData.path+"/测试表格12.xls");
+                File apkFile= new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"/测试表格12.xls");
+                ShareFileToQQ.sendToQQ(this,apkFile.getPath());
+                break;
+
+            case R.id.btn_update_firm:
+                Intent openIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                openIntent.setType("*/*");
+                openIntent.addCategory(Intent.CATEGORY_OPENABLE);
+                startActivityForResult(openIntent,1);
                 break;
         }
     }
+
+
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        if (resultCode == 1) {
+//            Uri uri = data.getData();
+//            if (uri == null) {
+//                return;
+//            }
+//            if ("file".equalsIgnoreCase(uri.getScheme())) {
+//                path = uri.getPath();
+//            } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+//                path=getPath
+//            }
+//        }
+//
+//    }
 }

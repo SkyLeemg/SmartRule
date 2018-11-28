@@ -1,5 +1,7 @@
 package com.vitec.task.smartrule.activity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -13,8 +15,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.vitec.task.smartrule.R;
-import com.vitec.task.smartrule.fragment.CheckDataFragment;
+import com.vitec.task.smartrule.bean.CheckUpdataMsg;
+import com.vitec.task.smartrule.helper.UpdateHelper;
+import com.vitec.task.smartrule.dfu.service.UpdateFirmIntentService;
 import com.vitec.task.smartrule.service.GetMudelIntentService;
+import com.vitec.task.smartrule.utils.LogUtils;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +40,7 @@ public class MainHomeActivity extends BaseActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_home);
         requestLocationPermissions();
+        EventBus.getDefault().register(this);
         initView();
         initData();
     }
@@ -40,6 +50,10 @@ public class MainHomeActivity extends BaseActivity implements View.OnClickListen
         itemList.add(new GvItem(R.mipmap.icon_main_add, "新建测量"));
         itemList.add(new GvItem(R.mipmap.icon_main_record, "测量记录"));
         itemList.add(new GvItem(R.mipmap.icon_main_dev, "设备管理"));
+
+        Intent updateIntent = new Intent(this, UpdateFirmIntentService.class);
+        updateIntent.putExtra(UpdateFirmIntentService.DEAL_FLAG_KEY, UpdateFirmIntentService.DEAL_FLAG_CHECK_UPDATE);
+        startService(updateIntent);
 
         Intent intent = new Intent(this, GetMudelIntentService.class);
         startService(intent);
@@ -73,7 +87,7 @@ public class MainHomeActivity extends BaseActivity implements View.OnClickListen
         setImgSource(R.mipmap.icon_user_unselect, R.mipmap.icon_user_unselect);
         imgIcon.setVisibility(View.VISIBLE);
         setTvTitle("自动测量靠尺");
-
+        imgIcon.setOnClickListener(this);
         gvManager = findViewById(R.id.gv_mng_list);
 
     }
@@ -83,11 +97,42 @@ public class MainHomeActivity extends BaseActivity implements View.OnClickListen
         switch (view.getId()) {
 
             case R.id.img_icon_toolbar:
-
+                Intent intent = new Intent(this, UserCenterActivity.class);
+                startActivity(intent);
                 break;
         }
     }
 
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void netBussCallBack(final CheckUpdataMsg checkUpdataMsg) {
+        LogUtils.show("查看收到的更新对象："+checkUpdataMsg.toString());
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setTitle("检测到靠尺固件升级");
+//        StringBuffer stringBuffer = new StringBuffer();
+//        stringBuffer.append("检测到靠尺固件新版本：");
+//        stringBuffer.append("\n");
+//        stringBuffer.append(checkUpdataMsg.getUpdateLog());
+//        stringBuffer.append("\n");
+//        stringBuffer.append("固件大小：" + checkUpdataMsg.getFileSize());
+//        stringBuffer.append("是否立即下载更新？");
+//        builder.setMessage(stringBuffer.toString());
+//        builder.setNegativeButton("否", null);
+//        builder.setPositiveButton("立即更新", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialogInterface, int i) {
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        UpdateHelper updateHelper = new UpdateHelper(MainHomeActivity.this);
+//                        updateHelper.readyDownload(checkUpdataMsg);
+//                    }
+//                }).start();
+//
+//            }
+//        });
+//        builder.show();
+    }
 
     class GvManagerAdapter extends BaseAdapter {
         @Override

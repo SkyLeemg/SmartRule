@@ -12,19 +12,19 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
+import android.media.audiofx.AudioEffect;
 import android.os.Binder;
-import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.vitec.task.smartrule.bean.BleMessage;
-
-import org.greenrobot.eventbus.EventBus;
+import com.vitec.task.smartrule.utils.LogUtils;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.UUID;
 
 import static com.vitec.task.smartrule.utils.BleParam.ACTION_DATA_AVAILABLE;
@@ -54,9 +54,19 @@ public class ConnectDeviceService extends Service {
     public static final UUID CCCD = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     public static final UUID FIRMWARE_REVISON_UUID = UUID.fromString("00002a26-0000-1000-8000-00805f9b34fb");
     public static final UUID DIS_UUID = UUID.fromString("0000180a-0000-1000-8000-00805f9b34fb");
-    public static final UUID RX_SERVICE_UUID = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
-    public static final UUID RX_CHAR_UUID = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
-    public static final UUID TX_CHAR_UUID = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
+    /***系统的蓝牙数据的服务、读取特征值和写入特征值****/
+    public static final UUID SYSTEM_RX_SERVICE_UUID = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+    public static final UUID SYSTEM_RX_CHAR_UUID = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+    public static final UUID SYSTEM_TX_CHAR_UUID = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
+    /***靠尺数据--水平度的服务、读取特征值和写入特征值****/
+    public static final UUID LEVELNESS_SERVICE_UUID = UUID.fromString("6e400011-b5a3-f393-e0a9-e50e24dcca9e");
+    public static final UUID LEVELNESS_RX_CHAR_UUID = UUID.fromString("6e400012-b5a3-f393-e0a9-e50e24dcca9e");
+    public static final UUID LEVELNESS_TX_CHAR_UUID = UUID.fromString("6e400013-b5a3-f393-e0a9-e50e24dcca9e");
+    /***靠尺数据--垂直度服务、读取特征值和写入特征值****/
+    public static final UUID VERTICALITY_SERVICE_UUID = UUID.fromString("6e400021-b5a3-f393-e0a9-e50e24dcca9e");
+    public static final UUID VERTICALITY_RX_CHAR_UUID = UUID.fromString("6e400022-b5a3-f393-e0a9-e50e24dcca9e");
+    public static final UUID VERTICALITY_TX_CHAR_UUID = UUID.fromString("6e400023-b5a3-f393-e0a9-e50e24dcca9e");
+
 
     public static String current_connecting_mac_address = "";//连接成功后的地址
     private String connectAdress = "";//用户请求连接时的mac地址，不一定请求成功
@@ -190,6 +200,9 @@ public class ConnectDeviceService extends Service {
                 message.setAction(ACTION_GATT_CONNECTED);
                 message.setConnectState(STATE_CONNECTED);
                 Log.e(TAG, "vitec 连接成功onConnectionStateChange: Connected to gatt server" );
+//                连接成功
+
+
 //                EventBus.getDefault().post(message);
                 Log.e(TAG, "vitec 连接成功onConnectionStateChange: attempting to start service discovery:"+mBluetoothGatt.discoverServices() );
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -211,9 +224,33 @@ public class ConnectDeviceService extends Service {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.e(TAG, "onServicesDiscovered: mBluetoothGatt=" + mBluetoothGatt);
+                List<BluetoothGattService> services = mBluetoothGatt.getServices();
+                for (BluetoothGattService service : services) {
+                    if (service.getUuid().equals(SYSTEM_RX_SERVICE_UUID)) {
+                        LogUtils.show("onServicesDiscovered----发现一个x系统服务："+mBluetoothGatt.getService(SYSTEM_RX_SERVICE_UUID).getUuid().toString());
+                        for (BluetoothGattDescriptor descriptor : mBluetoothGatt.getService(SYSTEM_RX_SERVICE_UUID).getCharacteristic(SYSTEM_TX_CHAR_UUID).getDescriptors()) {
+                            LogUtils.show("onServicesDiscovered----发现系统服务的描述值："+descriptor.getUuid().toString());
+                        }
+
+
+                    } else if (service.getUuid().equals(VERTICALITY_SERVICE_UUID)) {
+                        LogUtils.show("onServicesDiscovered----发现一个垂直度服务："+mBluetoothGatt.getService(VERTICALITY_SERVICE_UUID));
+                        for (BluetoothGattDescriptor descriptor : mBluetoothGatt.getService(VERTICALITY_SERVICE_UUID).getCharacteristic(VERTICALITY_TX_CHAR_UUID).getDescriptors()) {
+                            LogUtils.show("onServicesDiscovered----发现垂直度服务的描述值："+descriptor.getUuid().toString());
+                        }
+                    } else if (service.getUuid().equals(LEVELNESS_SERVICE_UUID)) {
+                        LogUtils.show("onServicesDiscovered----发现一个水平度服务："+mBluetoothGatt.getService(LEVELNESS_SERVICE_UUID));
+                    }
+                }
+
                 Log.e(TAG, "onServicesDiscovered: 发现一个服务" );
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
-                enableTXNotification();
+                enableTXNotification(SYSTEM_RX_SERVICE_UUID, SYSTEM_TX_CHAR_UUID);
+//                enableTXNotification(VERTICALITY_SERVICE_UUID,VERTICALITY_TX_CHAR_UUID);
+//                enableTXNotification(LEVELNESS_SERVICE_UUID,LEVELNESS_TX_CHAR_UUID);
+
+
+
             } else {
                 Log.e(TAG, "onServicesDiscovered: received:" + status);
             }
@@ -253,7 +290,7 @@ public class ConnectDeviceService extends Service {
 //        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            Log.e(TAG, "onCharacteristicChanged: 特征值改变了，特征值的UUID:"+characteristic.getUuid() );
+            LogUtils.show("onCharacteristicChanged: 特征值改变了，特征值的UUID:"+characteristic.getUuid().toString());
             /**
              * 需要在服务中将数据更新到数据库，
              * 1.判断特征UUID是哪个，交给对应的方法处理
@@ -272,47 +309,73 @@ public class ConnectDeviceService extends Service {
 //    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void broadcastUpdate(final String action, final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
-        if (TX_CHAR_UUID.equals(characteristic.getUuid())) {
+        if (SYSTEM_TX_CHAR_UUID.equals(characteristic.getUuid())) {
             final byte[] txValue = characteristic.getValue();
             intent.putExtra(EXTRA_DATA,txValue );
             String text = null;
             try {
                 text = new String(txValue, "UTF-8");
-                Log.e(TAG, "broadcastUpdate: 服务端收到一个数据："+text);
+                LogUtils.show("broadcastUpdate: 收到一个系统UUID的数据："+text);
+//                writeRxCharacteristic(SYSTEM_RX_SERVICE_UUID,SYSTEM_RX_CHAR_UUID,"CD01".getBytes());
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
 
+        } else if (LEVELNESS_TX_CHAR_UUID.equals(characteristic.getUuid())) {
+            final byte[] txValue = characteristic.getValue();
+            intent.putExtra(EXTRA_DATA,txValue );
+            String text = null;
+            try {
+                text = new String(txValue, "UTF-8");
+                LogUtils.show( "broadcastUpdate: 收到一个水平度UUID的数据："+text);
+
+                writeRxCharacteristic(LEVELNESS_SERVICE_UUID,LEVELNESS_RX_CHAR_UUID,"level".getBytes());
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        } else if (VERTICALITY_TX_CHAR_UUID.equals(characteristic.getUuid())) {
+            final byte[] txValue = characteristic.getValue();
+            intent.putExtra(EXTRA_DATA,txValue );
+            String text = null;
+            try {
+                text = new String(txValue, "UTF-8");
+                LogUtils.show( "broadcastUpdate: 收到一个垂直度UUID的数据："+text);
+                writeRxCharacteristic(VERTICALITY_SERVICE_UUID,VERTICALITY_RX_CHAR_UUID,"vertical".getBytes());
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+
+
     /**
-     * Enable TXNotification
      * 设置该特征为可以接收到蓝牙通知，不设置则无法接收到蓝牙数据
      * @return
      */
 //    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public void enableTXNotification()
+    public void enableTXNotification(UUID serverUUID,UUID txUUid)
     {
-        Log.e(TAG, "enableTXNotification: 设置可以接收到通知" );
-    	if (mBluetoothGatt == null) {
+        LogUtils.show("enableTXNotification: 设置可以接收到通知："+serverUUID);
+        if (mBluetoothGatt == null) {
 
-    		broadcastUpdate(DEVICE_DOES_NOT_SUPPORT_UART);
-    		return;
-    	}
-        BluetoothGattService RxService = mBluetoothGatt.getService(RX_SERVICE_UUID);
-        if (RxService == null) {
+            broadcastUpdate(DEVICE_DOES_NOT_SUPPORT_UART);
+            return;
+        }
+        BluetoothGattService rxService = mBluetoothGatt.getService(serverUUID);
+        if (rxService == null) {
 //            showMessage("Rx service not found!");
             broadcastUpdate(DEVICE_DOES_NOT_SUPPORT_UART);
             return;
         }
-        BluetoothGattCharacteristic TxChar = RxService.getCharacteristic(TX_CHAR_UUID);
+        BluetoothGattCharacteristic TxChar = rxService.getCharacteristic(txUUid);
         if (TxChar == null) {
 //            showMessage("Tx charateristic not found!");
             broadcastUpdate(DEVICE_DOES_NOT_SUPPORT_UART);
             return;
         }
+//        开启监听
         mBluetoothGatt.setCharacteristicNotification(TxChar,true);
 
 //            Log.e(TAG, "enableTXNotification: 查看TxChar值："+TxChar.getValue().length);
@@ -324,16 +387,18 @@ public class ConnectDeviceService extends Service {
     }
 
 
+
+
 //    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public void writeRxCharacteristic(byte[] value) {
-        BluetoothGattService RxService = mBluetoothGatt.getService(RX_SERVICE_UUID);
+    public void writeRxCharacteristic(UUID serviceUUID,UUID rxUUID,byte[] value) {
+        BluetoothGattService RxService = mBluetoothGatt.getService(serviceUUID);
         Log.e(TAG, "writeRxCharacteristic: m"+"mBluetoothGatt null"+ mBluetoothGatt);
         if (RxService == null) {
             Log.e(TAG, "writeRxCharacteristic: Rx Service 没有找到" );
             broadcastUpdate(DEVICE_DOES_NOT_SUPPORT_UART);
             return;
         }
-        BluetoothGattCharacteristic RxChar = RxService.getCharacteristic(RX_CHAR_UUID);
+        BluetoothGattCharacteristic RxChar = RxService.getCharacteristic(rxUUID);
         if (RxChar == null) {
             Log.e(TAG, "writeRxCharacteristic: Rx没有找到" );
             return;
@@ -341,7 +406,7 @@ public class ConnectDeviceService extends Service {
 
         RxChar.setValue(value);
         boolean status = mBluetoothGatt.writeCharacteristic(RxChar);
-        Log.e(TAG, "writeRxCharacteristic: 写入TXchar-status="+status );
+        LogUtils.show("writeRxCharacteristic: 写入值："+String.valueOf(value)+",写入状态="+status );
     }
 
 //    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)

@@ -54,6 +54,8 @@ public class BleDeviceDbHelper {
                 device.setBleName(cursor.getString(cursor.getColumnIndex("ble_name")));
                 device.setLastConnectTime(cursor.getInt(cursor.getColumnIndex("last_connect_time")));
                 device.setBleAlias(cursor.getString(cursor.getColumnIndex(DataBaseParams.ble_alias)));
+                device.setBleVerCode(cursor.getInt(cursor.getColumnIndex(DataBaseParams.ble_ver_code)));
+                device.setBleVerName(cursor.getString(cursor.getColumnIndex(DataBaseParams.ble_ver_name)));
                 devices.add(device);
                 Log.e(TAG, "queryAllDevice: 查看查询出来的设备："+device );
             } while (cursor.moveToNext());

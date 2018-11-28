@@ -11,6 +11,7 @@ import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.bean.RulerEngineer;
 import com.vitec.task.smartrule.bean.RulerOptions;
 import com.vitec.task.smartrule.bean.User;
+import com.vitec.task.smartrule.utils.LogUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -187,6 +188,7 @@ public class BleDataDbHelper {
 
     public int updateDataToSqlite(String table, ContentValues values, String where, String[] whereValues) {
         int result = sqLiteDatabase.update(table, values, where, whereValues);
+        LogUtils.show("查看"+table+",表格的"+values+",值，更新是否成功："+result);
         return result;
     }
 

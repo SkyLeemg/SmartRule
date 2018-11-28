@@ -19,6 +19,7 @@ import com.vitec.task.smartrule.activity.LoginActivity;
 import com.vitec.task.smartrule.activity.MainActivity;
 import com.vitec.task.smartrule.activity.RegisterActivity;
 import com.vitec.task.smartrule.bean.User;
+import com.vitec.task.smartrule.bean.WxResultMessage;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.UserDbHelper;
 import com.vitec.task.smartrule.net.NetConstant;
@@ -28,6 +29,7 @@ import com.vitec.task.smartrule.utils.OkHttpUtils;
 import com.vitec.task.smartrule.wxapi.bean.ResultInfo;
 import com.vitec.task.smartrule.wxapi.bean.UserInfo;
 
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -59,6 +61,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
     private ResultInfo resultInfo;
     private UserInfo userInfo;
     private UserDbHelper userDbHelper;
+
 
 
     @Override
@@ -196,50 +199,6 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
 
     }
 
-    private void requestLoginFromServer(final String unionId, final String data) {
-        OkHttpUtils.Param param = new OkHttpUtils.Param(NetConstant.login_data, data);
-        List<OkHttpUtils.Param> paramList = new ArrayList<>();
-        paramList.add(param);
-        StringBuffer url = new StringBuffer();
-        url.append(NetConstant.baseUrl);
-        url.append(NetConstant.loginUrl);
-        OkHttpUtils.post(url.toString(), new OkHttpUtils.ResultCallback<String>() {
-            @Override
-            public void onSuccess(String response) {
-                /**
-                 * {"status":"success",
-                 * "code":200,
-                 * "data":
-                 *    {"token":"768d33bae04333cb842088405839c6cc",
-                 *    "user_info":
-                 *       {"status":200,
-                 *        "statusInfo":"ok",
-                 *        "data":
-                 *          {"userid":"452",
-                 *          "username":"xjbank",
-                 *          "language":"",
-                 *          "name":"xjbank",
-                 *          "file":"http:\/\/vitec.oss-cn-shenzhen.aliyuncs.com\/vitec\/locales\/20180830\/用户.png",
-                 *          "mobile":"15107620711",
-                 *          "projectName":"xj_bank",
-                 *          "classification":1,
-                 *          "projectImg":"http:\/\/vitec.oss-cn-shenzhen.aliyuncs.com\/vitec\/locales\/20180907logo.png","belong":"506","admin":"0","role":["管理员"],"department":[],"authObj":[{"id":177,"name":"人员定位"},{"id":178,"name":"管理员"},{"id":179,"name":"技术员"}],"auth":[177,178,179],"authName":["人员定位","管理员","技术员"],"project":[{"id":506,"name":"xj_bank"}]}}},
-                 *          "msg":"登录成功"}
-                 */
-                Log.e(TAG, "onSuccess: 查看返回的微信登录信息："+response );
-                LoginSuccess loginSuccess = new LoginSuccess(WXEntryActivity.this);
-                List<OkHttpUtils.Param> paramList = new ArrayList<>();
-                OkHttpUtils.Param param1 = new OkHttpUtils.Param(DataBaseParams.user_data, data);
-                paramList.add(param1);
-                loginSuccess.doSuccess(response,paramList,null);
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Log.e(TAG, "onFailure: 网络请求失败："+e.getMessage() );
-            }
-        },paramList);
-    }
 
 
     /**
@@ -282,8 +241,12 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
 //                    oKP_j1Dj8KQQRNVCsEJykp4P8Eog
                     unionid = jsonObject.getString("unionid");
                     userInfo = new UserInfo(nickName, sex, city, province, country, headImgUrl, openid, unionid);
-
-                    requestLoginFromServer(unionid,response);
+                    WxResultMessage message = new WxResultMessage();
+//                    message.setFlag(1);
+                    message.setUionId(unionid);
+                    message.setData(response);
+                    EventBus.getDefault().post(message);
+//                    requestLoginFromServer(unionid,response);
 
                     Log.e(TAG, "onSuccess: 查看收到的个人信息，openid:" + userInfo.toString());
                 } catch (JSONException e) {

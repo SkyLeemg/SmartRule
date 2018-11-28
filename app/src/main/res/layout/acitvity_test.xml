@@ -32,4 +32,12 @@
         android:text="发送文件给QQ好友"
         />
 
+
+    <Button
+        android:id="@+id/btn_update_firm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="升级固件"
+        />
+
 </LinearLayout>

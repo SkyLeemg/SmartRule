@@ -125,7 +125,7 @@ public class BaseActivity extends Activity  {
         }
     }
     public void initWidget() {
-        imgIcon = (ImageView) findViewById(R.id.img_icon_toolbar);
+        imgIcon = findViewById(R.id.img_icon_toolbar);
         imgMenu = findViewById(R.id.img_menu_toolbar);
         tvTitle = findViewById(R.id.tv_toolbar_title);
 

@@ -23,6 +23,8 @@ public class DataBaseParams {
     public static final String ble_device_mac = "ble_mac";
     public static final String ble_device_last_connect_time = "last_connect_time";
     public static final String ble_alias = "ble_alias";
+    public static final String ble_ver_code = "ble_ver_code";
+    public static final String ble_ver_name = "ble_ver_name";
 
 
     /**
@@ -103,6 +105,7 @@ public class DataBaseParams {
     public static final String user_mobile = "mobile";
     public static final String user_token = "token";
     public static final String user_status = "status";//状态，1-正在登录使用，0-未登录
+    public static final String user_job = "job";
 
 
     /**

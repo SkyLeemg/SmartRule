@@ -39,7 +39,7 @@ public class MainActivity extends BaseFragmentActivity implements ISettable,View
     public ImageView imgMenu;
     public ImageView imgOtherIcon;
     private MKLoader mkLoader;
-    private LinearLayout llToolBar;
+    private RelativeLayout llToolBar;
 
     private static final int REQUEST_CODE = 0x01;
     //打开扫描界面请求码

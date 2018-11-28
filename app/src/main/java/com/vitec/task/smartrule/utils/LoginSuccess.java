@@ -97,6 +97,10 @@ public class LoginSuccess {
                 String wid = userJson.optString("wid");
 //                如果微信和用户名绑定之后，UnionID就不为空
                 String unionID = userJson.optString("UnionID");
+                if (wid.equalsIgnoreCase("null") || wid.equalsIgnoreCase("")) {
+                    wid = "0";
+                }
+                String job = userJson.optString("role");
 
                 /**
                  * 将刚登录成功的用户数据保存到sharePreference中
@@ -129,6 +133,7 @@ public class LoginSuccess {
                  *      如果没有保存，则插入到数据库中
                  */
                 UserDbHelper userDbHelper = new UserDbHelper(context);
+
                 String where = " where " + DataBaseParams.user_user_id + " = \"" + userId + "\"  OR "+DataBaseParams.user_wid +" = \"" +wid+"\" ;";
                 Log.e(TAG, "onSuccess: 查看where语句："+where );
                 List<User> userList = userDbHelper.queryUserDataFromSqlite(where);
@@ -140,6 +145,7 @@ public class LoginSuccess {
                 values.put(DataBaseParams.user_wx_unionid,unionID);
                 values.put(DataBaseParams.user_mobile,mobile);
                 values.put(DataBaseParams.user_wid,wid);
+                values.put(DataBaseParams.user_job,job);
                 for (OkHttpUtils.Param param:params) {
                     if (param.key.equals(SharePreferenceUtils.user_pwd)) {
                         // 给密码加密
@@ -164,7 +170,10 @@ public class LoginSuccess {
                         }
 
                         Intent intent = new Intent(context, DeviceManagerActivity.class);
-                        context.startActivity(intent); }});
+                        context.startActivity(intent);
+
+                    }});
+
             } else {
                 runOnUiThread(new Runnable() {
                     @Override
