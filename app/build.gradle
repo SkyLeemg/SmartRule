@@ -54,4 +54,5 @@ dependencies {
     //      compile 'net.sourceforge.jexcelapi:jxl:2.6.12'
     implementation 'jexcelapi:jxl:2.6'
     implementation files('libs/open_sdk_r6019_lite.jar')
+    implementation 'no.nordicsemi.android:dfu:1.6.1'
 }
