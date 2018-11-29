@@ -18,7 +18,7 @@ import com.vitec.task.smartrule.bean.RulerOptions;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.fragment.MeasureFragmentControllerImpl;
-import com.vitec.task.smartrule.service.PerformMeasureNetIntentService;
+import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 
 import java.io.Serializable;

@@ -37,6 +37,7 @@ import com.vitec.task.smartrule.utils.LoginSuccess;
 import com.vitec.task.smartrule.utils.OkHttpUtils;
 import com.vitec.task.smartrule.utils.ScreenSizeUtil;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
@@ -73,6 +74,7 @@ public class UserCenterActivity extends BaseActivity implements View.OnClickList
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_center);
+        EventBus.getDefault().register(this);
         initView();
         initData();
     }
@@ -155,6 +157,7 @@ public class UserCenterActivity extends BaseActivity implements View.OnClickList
         itemList = new ArrayList<>();
         itemList.add(new ItemBean(R.mipmap.icon_user_edit,"编辑用户信息"));
         itemList.add(new ItemBean(R.mipmap.icon_user_change_pwd,"更改密码"));
+        itemList.add(new ItemBean(R.mipmap.icon_user_unselect, "退出当前账号"));
         itemList.add(new ItemBean(R.mipmap.icon_user_update,"检查更新"));
         itemList.add(new ItemBean(R.mipmap.icon_intro_unselected,"使用说明"));
         itemList.add(new ItemBean(R.mipmap.icon_intro_unselected,"联系我们"));
@@ -172,9 +175,24 @@ public class UserCenterActivity extends BaseActivity implements View.OnClickList
                         startActivity(cbIntent);
                         break;
 
-                    case 2://检查更新
+                    case 2://切换账号
+                        Intent cgIntent = new Intent(getApplicationContext(), LoginActivity.class);
+                        startActivity(cgIntent);
+                        UserCenterActivity.this.finish();
+                        break;
+
+                    case 3://检查更新
                         Intent updateIntent = new Intent(getApplicationContext(), CheckUpdateActivity.class);
                         startActivity(updateIntent);
+                        break;
+
+                    case 4://使用说明
+
+                        break;
+
+                    case 5:
+                        Intent contactIntent = new Intent(getApplicationContext(), ContactOurActivity.class);
+                        startActivity(contactIntent);
                         break;
                 }
             }
@@ -209,6 +227,7 @@ public class UserCenterActivity extends BaseActivity implements View.OnClickList
     protected void onDestroy() {
         super.onDestroy();
         userDbHelper.close();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -278,7 +297,7 @@ public class UserCenterActivity extends BaseActivity implements View.OnClickList
                 //                初始化一个加载对话框
                 final MKLoader mkLoader = new MKLoader(this);
 //                mkLoader.setVisibility(View.INVISIBLE);
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
                 params.alignWithParent = true;
                 params.addRule(RelativeLayout.CENTER_IN_PARENT);
                 mkLoader.setLayoutParams(params);
@@ -408,10 +427,13 @@ public class UserCenterActivity extends BaseActivity implements View.OnClickList
                             public void run() {
                                 OkHttpUtils.Param mobileParam = new OkHttpUtils.Param(NetConstant.mobile_param, mobile);
                                 OkHttpUtils.Param codeParam = new OkHttpUtils.Param(NetConstant.register_code, code);
+                                OkHttpUtils.Param tokeParam = new OkHttpUtils.Param(NetConstant.change_pwd_token, user.getToken());
                                 List<OkHttpUtils.Param> paramList = new ArrayList<>();
                                 paramList.add(mobileParam);
                                 paramList.add(codeParam);
+                                paramList.add(tokeParam);
                                 String url = NetConstant.baseUrl + NetConstant.bind_account_url;
+                                LogUtils.show("查看绑定账号前返回的信息："+paramList);
                                 OkHttpUtils.post(url,new OkHttpUtils.ResultCallback<String>() {
                                     @Override
                                     public void onSuccess(String response) {
@@ -419,11 +441,19 @@ public class UserCenterActivity extends BaseActivity implements View.OnClickList
                                         try {
                                             JSONObject object = new JSONObject(response);
                                             int code = object.optInt("code");
+                                            final String msg = object.optString("msg");
                                             if (code == 200) {
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                        Toast.makeText(getApplicationContext(),"账号绑定成功",Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(getApplicationContext(), "账号绑定成功", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                            } else {
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        Toast.makeText(getApplicationContext(),msg,Toast.LENGTH_SHORT).show();
                                                     }
                                                 });
                                             }
@@ -464,15 +494,36 @@ public class UserCenterActivity extends BaseActivity implements View.OnClickList
         String unionId = message.getUionId();
         final String data = message.getData();
         OkHttpUtils.Param param = new OkHttpUtils.Param(NetConstant.login_data, data);
+        OkHttpUtils.Param tokenParam = new OkHttpUtils.Param(NetConstant.change_pwd_token, user.getToken());
         List<OkHttpUtils.Param> paramList = new ArrayList<>();
         paramList.add(param);
+        paramList.add(tokenParam);
         StringBuffer url = new StringBuffer();
         url.append(NetConstant.baseUrl);
         url.append(NetConstant.bind_account_url);
+        LogUtils.show("查看请求绑定微信的信息："+paramList.toString());
         OkHttpUtils.post(url.toString(), new OkHttpUtils.ResultCallback<String>() {
             @Override
             public void onSuccess(String response) {
+                try {
+                    /**{"status":"success","code":200,"msg":"绑定账号成功"}*/
+                    JSONObject object = new JSONObject(response);
+                    final int code = object.optInt("code");
+                    final String msg = object.optString("msg");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (code == 200) {
+                                Toast.makeText(getApplicationContext(), "绑定成功", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(),"绑定失败："+msg,Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
 
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 LogUtils.show("查看绑定微信返回的信息："+response);
             }
 

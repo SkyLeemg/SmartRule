@@ -13,6 +13,7 @@
     <color name="toolbar_bg_color">#3c3f41</color>
     <color name="content_bg_color">#2b2b2b</color>
     <color name="word_color">#c9c9c9</color>
+    <color name="item_line">#aaa</color>
 
     <color name="blue_btn_color">#3581fb</color>
     <color name="pblue_bar_color">#343d50</color>

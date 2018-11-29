@@ -193,6 +193,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
             StringBuffer url = new StringBuffer();
             url.append(NetConstant.baseUrl);
             url.append(NetConstant.loginUrl);
+            LogUtils.show("查看微信登录请求参数："+paramList.toString()+",链接："+url.toString());
             OkHttpUtils.post(url.toString(), new OkHttpUtils.ResultCallback<String>() {
                 @Override
                 public void onSuccess(String response) {
@@ -216,7 +217,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                      *          "projectImg":"http:\/\/vitec.oss-cn-shenzhen.aliyuncs.com\/vitec\/locales\/20180907logo.png","belong":"506","admin":"0","role":["管理员"],"department":[],"authObj":[{"id":177,"name":"人员定位"},{"id":178,"name":"管理员"},{"id":179,"name":"技术员"}],"auth":[177,178,179],"authName":["人员定位","管理员","技术员"],"project":[{"id":506,"name":"xj_bank"}]}}},
                      *          "msg":"登录成功"}
                      */
-                    Log.e(TAG, "onSuccess: 查看返回的微信登录信息："+response );
+                    LogUtils.show( "onSuccess: 查看返回的微信登录信息："+response );
                     LoginSuccess loginSuccess = new LoginSuccess(LoginActivity.this);
                     List<OkHttpUtils.Param> paramList = new ArrayList<>();
                     OkHttpUtils.Param param1 = new OkHttpUtils.Param(DataBaseParams.user_data, data);

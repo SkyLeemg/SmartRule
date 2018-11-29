@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.vitec.task.smartrule.bean.BleDevice;
+import com.vitec.task.smartrule.service.ConnectDeviceService;
+import com.vitec.task.smartrule.utils.BleParam;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,10 @@ public class BleDeviceDbHelper {
 
     }
 
+    public void close() {
+        sqLiteDatabase.close();
+    }
+
     public List<BleDevice> queryAllDevice() {
         Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM iot_ruler_ble_device", null);
         List<BleDevice> devices = new ArrayList<>();
@@ -62,6 +68,21 @@ public class BleDeviceDbHelper {
         }
         return devices;
 
+    }
+
+    /**
+     * 获取当前服务连接的靠尺蓝牙信息
+     * @return
+     */
+    public BleDevice getCurrentConnectDevice() {
+        BleDevice cDevice = null;
+        List<BleDevice> bleDevices = queryAllDevice();
+        for (int i=0;i<bleDevices.size();i++) {
+            if (ConnectDeviceService.mConnectionState == BleParam.STATE_CONNECTED && ConnectDeviceService.current_connecting_mac_address.equals(bleDevices.get(i).getBleMac())) {
+                cDevice = bleDevices.get(i);
+            }
+        }
+        return cDevice;
     }
 
     public boolean updateDevice(ContentValues values,String[] id) {

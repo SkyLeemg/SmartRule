@@ -11,6 +11,7 @@ public class BleParam {
     public final static String ACTION_GATT_SERVICES_DISCOVERED = "com.vitec.smart.rule.ACTION_GATT_SERVICES_DISCOVERED";
     public final static String ACTION_DATA_AVAILABLE = "com.vitec.smart.rule.ACTION_DATA_AVAILABLE";
     public final static String EXTRA_DATA = "com.vitec.smart.rule.EXTRA_DATA";
+    public final static String EXTRA_UUID = "com.vitec.smart.rule.EXTRA_UUID";
     public final static String DEVICE_DOES_NOT_SUPPORT_UART = "com.vitec.smart.rule.DEVICE_DOES_NOT_SUPPORT_UART";
 
 

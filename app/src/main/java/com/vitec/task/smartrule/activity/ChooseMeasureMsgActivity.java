@@ -1,5 +1,6 @@
 package com.vitec.task.smartrule.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -18,6 +19,7 @@ import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.interfaces.IChooseGetter;
 import com.vitec.task.smartrule.net.NetParams;
 import com.vitec.task.smartrule.net.OkHttpHelper;
+import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
 import com.vitec.task.smartrule.utils.HeightUtils;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.utils.SharePreferenceUtils;
@@ -74,6 +76,10 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
     }
 
     private void initData() {
+        /**
+         * 测试区域
+         */
+        HandleBleMeasureDataReceiverService.startHandleService(getApplicationContext());
 
 //        新数据对象初始化
         optionsList = new ArrayList<>();
@@ -289,6 +295,7 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
     protected void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
+
     }
 
     @Override

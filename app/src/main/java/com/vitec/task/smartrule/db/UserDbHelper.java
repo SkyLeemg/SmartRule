@@ -47,6 +47,7 @@ public class UserDbHelper {
                 user.setWid(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_wid)));
                 user.setWxData(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_data)));
                 user.setUserJob(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_job)));
+                user.setToken(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_token)));
                 Log.e(TAG, "queryUserDataFromSqlite: 搜索到的用户:"+user );
                 userList.add(user);
             } while (cursor.moveToNext());

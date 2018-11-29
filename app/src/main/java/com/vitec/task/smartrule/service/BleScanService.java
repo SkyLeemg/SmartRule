@@ -88,7 +88,7 @@ public class BleScanService extends Service implements BeaconConsumer {
                     //符合要求的beacon集合
                     for (Beacon beacon : collection) {
 //                        判断该beacon的UUID是否为我们感兴趣的
-                        if (beacon.getId1().toString().equalsIgnoreCase(FILTER_UUID) ||beacon.getId1().toString().equalsIgnoreCase(FILTER_UUID2) ){
+                        if (beacon.getId1().toString().equalsIgnoreCase(FILTER_UUID2) ){
 //                            是则添加到集合
                             beacons.add(beacon);
                         }

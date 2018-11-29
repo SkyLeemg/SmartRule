@@ -70,6 +70,7 @@
         <activity android:name=".activity.UserCenterActivity"/>
         <activity android:name=".activity.ChangePasswordActivity"/>
         <activity android:name=".activity.CheckUpdateActivity"/>
+        <activity android:name=".activity.ContactOurActivity"/>
 
         <!--注册微信回调 WXEntryActivity -->
         <activity
@@ -102,10 +103,11 @@
 
         <service android:name=".service.BleScanService"/>
         <service android:name=".service.ConnectDeviceService"/>
-        <service android:name=".service.GetMudelIntentService"/>
-        <service android:name=".service.PerformMeasureNetIntentService"/>
+        <service android:name=".service.intentservice.GetMudelIntentService"/>
+        <service android:name=".service.intentservice.PerformMeasureNetIntentService"/>
         <service android:name=".dfu.service.DfuService"/>
         <service android:name=".dfu.service.UpdateFirmIntentService" />
+        <service android:name=".service.HandleBleMeasureDataReceiverService"/>
 
     </application>
 

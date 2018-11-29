@@ -21,6 +21,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.vitec.task.smartrule.bean.BleMessage;
+import com.vitec.task.smartrule.utils.BleParam;
 import com.vitec.task.smartrule.utils.LogUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -54,6 +55,11 @@ public class ConnectDeviceService extends Service {
     public static final UUID CCCD = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     public static final UUID FIRMWARE_REVISON_UUID = UUID.fromString("00002a26-0000-1000-8000-00805f9b34fb");
     public static final UUID DIS_UUID = UUID.fromString("0000180a-0000-1000-8000-00805f9b34fb");
+    /**
+     * Service uuid 是蓝牙服务的UUID
+     * RX_CHAR_UUID 是蓝牙服务里发送数据用的特征值UUID
+     * TX_CHAR_UUID 是蓝牙服务里接收蓝牙数据用的特征值UUID
+     */
     /***系统的蓝牙数据的服务、读取特征值和写入特征值****/
     public static final UUID SYSTEM_RX_SERVICE_UUID = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
     public static final UUID SYSTEM_RX_CHAR_UUID = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
@@ -246,11 +252,6 @@ public class ConnectDeviceService extends Service {
                 Log.e(TAG, "onServicesDiscovered: 发现一个服务" );
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
                 enableTXNotification(SYSTEM_RX_SERVICE_UUID, SYSTEM_TX_CHAR_UUID);
-//                enableTXNotification(VERTICALITY_SERVICE_UUID,VERTICALITY_TX_CHAR_UUID);
-//                enableTXNotification(LEVELNESS_SERVICE_UUID,LEVELNESS_TX_CHAR_UUID);
-
-
-
             } else {
                 Log.e(TAG, "onServicesDiscovered: received:" + status);
             }
@@ -309,10 +310,12 @@ public class ConnectDeviceService extends Service {
 //    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void broadcastUpdate(final String action, final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
+        final byte[] txValue = characteristic.getValue();
+        intent.putExtra(EXTRA_DATA,txValue );
+        intent.putExtra(BleParam.EXTRA_UUID, characteristic.getUuid().toString());
+        String text = null;
         if (SYSTEM_TX_CHAR_UUID.equals(characteristic.getUuid())) {
-            final byte[] txValue = characteristic.getValue();
-            intent.putExtra(EXTRA_DATA,txValue );
-            String text = null;
+
             try {
                 text = new String(txValue, "UTF-8");
                 LogUtils.show("broadcastUpdate: 收到一个系统UUID的数据："+text);
@@ -322,9 +325,6 @@ public class ConnectDeviceService extends Service {
             }
 
         } else if (LEVELNESS_TX_CHAR_UUID.equals(characteristic.getUuid())) {
-            final byte[] txValue = characteristic.getValue();
-            intent.putExtra(EXTRA_DATA,txValue );
-            String text = null;
             try {
                 text = new String(txValue, "UTF-8");
                 LogUtils.show( "broadcastUpdate: 收到一个水平度UUID的数据："+text);
@@ -334,9 +334,6 @@ public class ConnectDeviceService extends Service {
                 e.printStackTrace();
             }
         } else if (VERTICALITY_TX_CHAR_UUID.equals(characteristic.getUuid())) {
-            final byte[] txValue = characteristic.getValue();
-            intent.putExtra(EXTRA_DATA,txValue );
-            String text = null;
             try {
                 text = new String(txValue, "UTF-8");
                 LogUtils.show( "broadcastUpdate: 收到一个垂直度UUID的数据："+text);
@@ -406,7 +403,11 @@ public class ConnectDeviceService extends Service {
 
         RxChar.setValue(value);
         boolean status = mBluetoothGatt.writeCharacteristic(RxChar);
-        LogUtils.show("writeRxCharacteristic: 写入值："+String.valueOf(value)+",写入状态="+status );
+        try {
+            LogUtils.show("writeRxCharacteristic: 写入值："+new String(value,"UTF-8")+",写入状态="+status );
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
 //    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -415,6 +416,7 @@ public class ConnectDeviceService extends Service {
             Log.e(TAG, "readCharacteristic: BluetoothAdapter 没有初始化" );
             return;
         }
+        LogUtils.show("蓝牙服务里---readCharacteristic---读取特征值");
         mBluetoothGatt.readCharacteristic(characteristic);
 
     }

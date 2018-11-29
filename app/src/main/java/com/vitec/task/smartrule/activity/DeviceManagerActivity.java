@@ -36,7 +36,7 @@ import com.vitec.task.smartrule.helper.TextToSpeechHelper;
 import com.vitec.task.smartrule.interfaces.IDevManager;
 import com.vitec.task.smartrule.interfaces.IDialogCommunicableWithDevice;
 import com.vitec.task.smartrule.service.ConnectDeviceService;
-import com.vitec.task.smartrule.service.GetMudelIntentService;
+import com.vitec.task.smartrule.service.intentservice.GetMudelIntentService;
 import com.vitec.task.smartrule.utils.BleParam;
 import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.view.ConnectDialog;

@@ -1,4 +1,4 @@
-package com.vitec.task.smartrule.service;
+package com.vitec.task.smartrule.service.intentservice;
 
 import android.app.IntentService;
 import android.content.Intent;

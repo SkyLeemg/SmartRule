@@ -4,13 +4,19 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -19,6 +25,22 @@ import android.widget.TextView;
 
 import com.google.zxing.activity.CaptureActivity;
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.bean.RulerCheckOptionsData;
+import com.vitec.task.smartrule.db.OperateDbUtil;
+import com.vitec.task.smartrule.interfaces.IBleCallBackResult;
+import com.vitec.task.smartrule.service.ConnectDeviceService;
+import com.vitec.task.smartrule.utils.BleParam;
+import com.vitec.task.smartrule.utils.DateFormatUtil;
+import com.vitec.task.smartrule.utils.HeightUtils;
+import com.vitec.task.smartrule.utils.LogUtils;
+
+import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.util.Date;
+
+import static com.aliyun.alink.linksdk.tools.ThreadTools.runOnUiThread;
+import static com.vitec.task.smartrule.utils.BleParam.UART_PROFILE_CONNECTED;
+import static com.vitec.task.smartrule.utils.BleParam.UART_PROFILE_DISCONNECTED;
 
 public class BaseActivity extends Activity  {
 
@@ -27,13 +49,51 @@ public class BaseActivity extends Activity  {
     public ImageView imgIcon;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2;
+    public ConnectDeviceService bleService = null;
+    public IBleCallBackResult bleCallBackResult = null;
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-//        initWidget();
     }
+
+    /**
+     * 由于很多activity都会用到绑定服务，所以做在BaseActivity,需要用到的类直接调用此方法进行绑定
+     */
+    public void bindBleService() {
+        Intent bindIntent = new Intent(this, ConnectDeviceService.class);
+        boolean isSuccess = bindService(bindIntent, mBleServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    /**
+     * 绑定了服务的类，在销毁之前要解绑
+     */
+    public void unbindBleService() {
+        unbindService(mBleServiceConnection);
+    }
+
+
+    private ServiceConnection mBleServiceConnection=new ServiceConnection() {
+        //        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            bleService = ((ConnectDeviceService.LocalBinder) iBinder).getService();
+            if (bleCallBackResult != null) {
+                bleCallBackResult.bleBindSuccess();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            bleService = null;
+        }
+    };
+
+
+
     /**
      * 动态申请蓝牙定位权限
      */
@@ -141,6 +201,90 @@ public class BaseActivity extends Activity  {
         imgIcon.setImageResource(iconSource);
     }
 
+
+    /**
+     * 注册接收蓝牙状态的广播接收器
+     * @param iBleCallBackResult
+     */
+    public void registerBleRecevier(IBleCallBackResult iBleCallBackResult) {
+        this.bleCallBackResult = iBleCallBackResult;
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(BleDeviceReceiver,makeGattUpdateIntentFilter());
+    }
+
+
+    /**
+     * 注销广播接受者
+     */
+    public void unregisterBleRecevier() {
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(BleDeviceReceiver);
+    }
+
+    private   IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BleParam.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BleParam.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BleParam.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BleParam.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BleParam.DEVICE_DOES_NOT_SUPPORT_UART);
+        return intentFilter;
+    }
+
+
+
+    private final BroadcastReceiver BleDeviceReceiver =new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            final Intent mIntent = intent;
+            //*********************//
+            /**
+             * 蓝牙连接成功
+             */
+            if (action.equals(BleParam.ACTION_GATT_CONNECTED)) {
+               bleCallBackResult.bleConnectSuccess();
+            }
+
+            //*********************//
+            /**
+             * 蓝牙连接断开
+             */
+            if (action.equals(BleParam.ACTION_GATT_DISCONNECTED)) {
+                bleCallBackResult.bleDisconnected();
+            }
+
+
+            //*********************//
+            /**
+             * 发现服务
+             */
+            if (action.equals(BleParam.ACTION_GATT_SERVICES_DISCOVERED)) {
+//                发现一个服务
+                bleCallBackResult.bleDiscoveredService();
+            }
+            //*********************//
+            /**
+             * 收到蓝牙数据
+             */
+            if (action.equals(BleParam.ACTION_DATA_AVAILABLE)) {
+
+                final byte[] txValue = intent.getByteArrayExtra(BleParam.EXTRA_DATA);
+                final String uuid = intent.getStringExtra(BleParam.EXTRA_UUID);
+
+                try {
+                    String text = new String(txValue, "UTF-8");
+                    bleCallBackResult.bleReceviceData(text, uuid);
+                    LogUtils.show("在base界面中收到蓝牙数据：" + text);
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+            //*********************//
+            if (action.equals(BleParam.DEVICE_DOES_NOT_SUPPORT_UART)){
+//
+//                mService.disconnect();
+            }
+        }
+    };
 
 
 }
