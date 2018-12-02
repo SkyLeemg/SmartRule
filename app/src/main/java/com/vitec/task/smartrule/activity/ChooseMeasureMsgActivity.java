@@ -20,8 +20,10 @@ import com.vitec.task.smartrule.interfaces.IChooseGetter;
 import com.vitec.task.smartrule.net.NetParams;
 import com.vitec.task.smartrule.net.OkHttpHelper;
 import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
+import com.vitec.task.smartrule.service.intentservice.GetMudelIntentService;
 import com.vitec.task.smartrule.utils.HeightUtils;
 import com.vitec.task.smartrule.db.OperateDbUtil;
+import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.utils.SharePreferenceUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -79,7 +81,7 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
         /**
          * 测试区域
          */
-        HandleBleMeasureDataReceiverService.startHandleService(getApplicationContext());
+//        HandleBleMeasureDataReceiverService.startHandleService(getApplicationContext());
 
 //        新数据对象初始化
         optionsList = new ArrayList<>();
@@ -93,26 +95,19 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
         dataDbHelper = new BleDataDbHelper(getApplicationContext());
 //        获取本地数据库的工程表格的所有数据
         optionsList = dataDbHelper.queryOptionsAllDataFromSqlite("");
-        engineerList = dataDbHelper.queryEnginAllDataFromSqlite();
+        engineerList = dataDbHelper.queryEnginDataFromSqlite("");
 //        如果engineers的个数为0，则说明数据库中没有数据，则向服务器发起请求
         if (optionsList.size() == 0 || engineerList.size() == 0) {
             /**获取工程的Json字符串
              */
-            okHttpHelper.getDataFromServer(NetParams.getEngineerInfoUrl,1);
+            Intent intent = new Intent(this, GetMudelIntentService.class);
+            startService(intent);
 
-        } else {
-
-            for (int i=0;i<optionsList.size();i++) {
-                for (RulerEngineer engineer : engineerList) {
-                    if (optionsList.get(i).getEngineer().getServerID() == engineer.getServerID()) {
-                        optionsList.get(i).setEngineer(engineer);
-                    }
-                }
-            }
-            initItemModel();
-            projectAdapter = new ChooseMeasureProjectAdapter(this, this);
-            lvChoose.setAdapter(projectAdapter);
         }
+        initItemModel();
+        projectAdapter = new ChooseMeasureProjectAdapter(this, this);
+        lvChoose.setAdapter(projectAdapter);
+        HeightUtils.setListViewHeighBaseOnChildren(lvChoose);
 
 
     }
@@ -124,16 +119,18 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
 
         ChooseMeasureMsg measureMsg = new ChooseMeasureMsg();
 //        从sharePrefrence中获取用户数据
-        Set<String> keySet = new HashSet<>();
-        keySet.add(SharePreferenceUtils.user_id);
-        keySet.add(SharePreferenceUtils.user_login_name);
-        keySet.add(SharePreferenceUtils.user_pwd);
-        keySet.add(SharePreferenceUtils.user_real_name);
-        Map<String, String> map = SharePreferenceUtils.getData(getApplicationContext(), keySet, SharePreferenceUtils.user_table);
-        User user = new User();
-        user.setUserName(map.get(SharePreferenceUtils.user_real_name));
-        user.setUserID(Integer.parseInt(map.get(SharePreferenceUtils.user_id)));
-        user.setLoginName(map.get(SharePreferenceUtils.user_login_name));
+//        Set<String> keySet = new HashSet<>();
+//        keySet.add(SharePreferenceUtils.user_id);
+//        keySet.add(SharePreferenceUtils.user_login_name);
+//        keySet.add(SharePreferenceUtils.user_pwd);
+//        keySet.add(SharePreferenceUtils.user_real_name);
+//        Map<String, String> map = SharePreferenceUtils.getData(getApplicationContext(), keySet, SharePreferenceUtils.user_table);
+//        User user = new User();
+//        user.setUserName(map.get(SharePreferenceUtils.user_real_name));
+//        user.setUserID(Integer.parseInt(map.get(SharePreferenceUtils.user_id)));
+//        user.setLoginName(map.get(SharePreferenceUtils.user_login_name));
+        User user = OperateDbUtil.getUser(getApplicationContext());
+        LogUtils.show("获取到的用户信息:"+user);
         measureMsg.setUser(user);
         String date = DateFormat.getDateInstance().format(new Date());
         measureMsg.setCreateDate(date);
@@ -158,50 +155,41 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
          *  "data":[{"id":1,"name":"混凝土工程"}],"msg":"查询成功"}
          */
         if (message.getUrlFlag() == 1) {
-            String engineerJson = message.getResultJson();
-            Log.e("aaa", "netBussCallBack: 查看返回的工程："+engineerJson );
-            if (!engineerJson.equals("")) {
-                JSONObject optionJsons = null;
-                try {
-                    optionJsons = new JSONObject(engineerJson);
-                    String dataJson = optionJsons.optString("data");
-                    JSONArray jsonArray = new JSONArray(dataJson);
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject object = jsonArray.getJSONObject(i);
-//                        EngineerBean engineerBean = new EngineerBean();
-//                        engineerBean.setCheckPerson("张三");
-//                        engineerBean.setPersonId(2);
-//                        engineerBean.setProjectID(Integer.parseInt(object.optString("id")));
-//                        engineerBean.setProjectEngineer(object.optString("name"));
-//                        String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-//                        engineerBean.setCheckTime(currentDateTimeString);
-//                        if (engineerBean.getProjectID() == 1) {
-//                            engineerBean.setMeasureBeanList(optionBeans);
-//                        }
-//                        engineers.add(engineerBean);
-//                        engineerTemplet = engineerBean;
-//                        将服务器中engineers表里面的数据存到rulerEngineer对象
-                        RulerEngineer engineer = new RulerEngineer();
-                        engineer.setCreateTime((int) System.currentTimeMillis());
-//                        rulerEngineer.setEngineerDescription(object.optString(""));
-                        engineer.setEngineerName(object.optString("name"));
-                        engineer.setServerID(Integer.parseInt(object.optString("id")));
-                        engineerList.add(engineer);
-                        Log.e("aaa", "netBussCallBack: 从服务器下载下来保存成为对象后的数据："+engineer.toString() );
-//                        initItemModel();
-                    }
-//                    将数据保存到数据库
-                    OperateDbUtil.addEngineerMudelData(getApplicationContext(),engineerList);
-                    /**获取管控要点的Json字符串
-                     */
-                    okHttpHelper.getDataFromServer(NetParams.getOptionInfoUrl, 2);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+//            String engineerJson = message.getResultJson();
+//            Log.e("aaa", "netBussCallBack: 查看返回的工程："+engineerJson );
+//            if (!engineerJson.equals("")) {
+//                JSONObject optionJsons = null;
+//                try {
+//                    optionJsons = new JSONObject(engineerJson);
+//                    String dataJson = optionJsons.optString("data");
+//                    JSONArray jsonArray = new JSONArray(dataJson);
+//                    for (int i = 0; i < jsonArray.length(); i++) {
+//                        JSONObject object = jsonArray.getJSONObject(i);
+////                        将服务器中engineers表里面的数据存到rulerEngineer对象
+//                        RulerEngineer engineer = new RulerEngineer();
+//                        engineer.setCreateTime((int) System.currentTimeMillis());
+////                        rulerEngineer.setEngineerDescription(object.optString(""));
+//                        engineer.setEngineerName(object.optString("name"));
+//                        engineer.setServerID(Integer.parseInt(object.optString("id")));
+//                        engineerList.add(engineer);
+//                        Log.e("aaa", "netBussCallBack: 从服务器下载下来保存成为对象后的数据："+engineer.toString() );
+////                        initItemModel();
+//                    }
+////                    将数据保存到数据库
+//                    OperateDbUtil.addEngineerMudelData(getApplicationContext(),engineerList);
+//                    /**获取管控要点的Json字符串
+//                     */
+//                    okHttpHelper.getDataFromServer(NetParams.getOptionInfoUrl, 2);
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//
+//            }
 
-            }
-
-
+            engineerList = dataDbHelper.queryEnginDataFromSqlite("");
+            projectAdapter.initData();
+            projectAdapter.notifyDataSetChanged();
+            HeightUtils.setListViewHeighBaseOnChildren(lvChoose);
         }
         /**获取管控要点的Json字符串
          *
@@ -220,51 +208,44 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
             /**
              * 先处理OptionJson的数据，转为optionBean对象
              */
-            String optionJson = message.getResultJson();
-            Log.e("aaa", "netBussCallBack: 查看返回的管控要点："+optionJson );
-            if (!optionJson.equals("")) {
-                try {
-                    JSONObject optionJsons = new JSONObject(optionJson);
-                    String dataJson = optionJsons.optString("data");
-                    JSONArray jsonArray = new JSONArray(dataJson);
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject object = jsonArray.getJSONObject(i);
-//                        OptionBean bean = new OptionBean();
-//                        bean.setMeasureItemName(object.optString("name"));
-//                        bean.setPassStandard(object.optString("standard"));
-//                        StringBuffer stringBuffer = new StringBuffer();
-//                        stringBuffer.append(object.optString("methods"));
-//                        bean.setCheckWay(stringBuffer);
-//                        bean.setResourceID(R.mipmap.icon_data_selected);
-//                        bean.setEnginId(Integer.parseInt(object.optString("engin_id")));
-//                        if (bean.getEnginId() == 1) {
-//                            optionBeans.add(bean);
-//                        }
-                        RulerOptions option = new RulerOptions();
-                        option.setCreateTime((int) System.currentTimeMillis());
-                        option.setServerID(Integer.parseInt(object.optString("id")));
-                        option.setMethods(object.optString("methods"));
-                        option.setStandard(object.optString("standard"));
-                        option.setOptionsName(object.optString("name"));
-                        for (int j=0;j<engineerList.size();j++) {
-                            if (engineerList.get(j).getServerID() == Integer.parseInt(object.optString("engin_id"))) {
-                                option.setEngineer(engineerList.get(j));
-                            }
-                        }
-                        Log.e("aaa", "netBussCallBack: 服务器下载下来的管控要点："+option);
-                        optionsList.add(option);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            initItemModel();
-            //            将获取到的数据保存到本地数据库
-            OperateDbUtil.addOptionsMudelData(getApplicationContext(), optionsList);
-            projectAdapter = new ChooseMeasureProjectAdapter(this, this);
-            lvChoose.setAdapter(projectAdapter);
-//            projectAdapter.setEngineerBeanList(engineers);
-//            projectAdapter.notifyDataSetChanged();
+//            String optionJson = message.getResultJson();
+//            Log.e("aaa", "netBussCallBack: 查看返回的管控要点："+optionJson );
+//            if (!optionJson.equals("")) {
+//                try {
+//                    JSONObject optionJsons = new JSONObject(optionJson);
+//                    String dataJson = optionJsons.optString("data");
+//                    JSONArray jsonArray = new JSONArray(dataJson);
+//                    for (int i = 0; i < jsonArray.length(); i++) {
+//                        JSONObject object = jsonArray.getJSONObject(i);
+//                        RulerOptions option = new RulerOptions();
+//                        option.setCreateTime((int) System.currentTimeMillis());
+//                        option.setServerID(Integer.parseInt(object.optString("id")));
+//                        option.setMethods(object.optString("methods"));
+//                        option.setStandard(object.optString("standard"));
+//                        option.setOptionsName(object.optString("name"));
+////                        for (int j=0;j<engineerList.size();j++) {
+////                            if (engineerList.get(j).getServerID() == Integer.parseInt(object.optString("engin_id"))) {
+////                                option.setEngineer(engineerList.get(j));
+////                            }
+////                        }
+//                        Log.e("aaa", "netBussCallBack: 服务器下载下来的管控要点："+option);
+//                        optionsList.add(option);
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            initItemModel();
+//            //            将获取到的数据保存到本地数据库
+//            OperateDbUtil.addOptionsMudelData(getApplicationContext(), optionsList);
+//            projectAdapter = new ChooseMeasureProjectAdapter(this, this);
+//            lvChoose.setAdapter(projectAdapter);
+////            projectAdapter.setEngineerBeanList(engineers);
+////            projectAdapter.notifyDataSetChanged();
+//            HeightUtils.setListViewHeighBaseOnChildren(lvChoose);
+            optionsList = dataDbHelper.queryOptionsAllDataFromSqlite("");
+            projectAdapter.initData();
+            projectAdapter.notifyDataSetChanged();
             HeightUtils.setListViewHeighBaseOnChildren(lvChoose);
         }
     }

@@ -85,7 +85,7 @@ public class SearchMeasureDataActivity extends BaseActivity implements View.OnCl
         dataDbHelper = new BleDataDbHelper(getApplicationContext());
         engineerList = new ArrayList<>();
         engineerNameList = new ArrayList<>();
-        engineerList = dataDbHelper.queryEnginAllDataFromSqlite();
+        engineerList = dataDbHelper.queryEnginDataFromSqlite("");
         for (RulerEngineer engineer:engineerList) {
             engineerNameList.add(engineer.getEngineerName());
         }

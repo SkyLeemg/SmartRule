@@ -13,6 +13,7 @@ import com.vitec.task.smartrule.bean.RulerOptions;
 import com.vitec.task.smartrule.bean.User;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.db.DataBaseParams;
+import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.utils.SharePreferenceUtils;
 
@@ -43,6 +44,7 @@ public class OperateDbUtil {
             values.put(DataBaseParams.enginer_name, rulerEngineer.getEngineerName());
             values.put(DataBaseParams.enginer_create_name, rulerEngineer.getCreateTime());
             values.put(DataBaseParams.enginer_description, rulerEngineer.getEngineerDescription());
+            values.put(DataBaseParams.enineer_options_choose,rulerEngineer.getChooseOptions());
             boolean isSuccess = bleDataDbHelper.insertDevToSqlite(DataBaseParams.engineer_table_name, values);
             Log.e(TAG, "addEngineerMudelData: 查看工程模板是否保存成功：" + isSuccess+",数据内容："+values.toString());
         }
@@ -60,7 +62,7 @@ public class OperateDbUtil {
         Log.e(TAG, "addOptionsMudelData: 保存模板数据到数据库："+rulerOptions.toString() );
         for (int i = 0; i < rulerOptions.size(); i++) {
 //            先存储工程（iot_ruler_engineer）表格的数据
-            RulerEngineer rulerEngineer = rulerOptions.get(i).getEngineer();
+//            RulerEngineer rulerEngineer = rulerOptions.get(i).getEngineer();
             RulerOptions option = rulerOptions.get(i);
 //                List<OptionBean> optionBeans = bean.getMeasureBeanList();
 //                for (OptionBean optionBean : optionBeans) {
@@ -69,7 +71,8 @@ public class OperateDbUtil {
             optionsValues.put(DataBaseParams.options_name, option.getOptionsName());
             optionsValues.put(DataBaseParams.options_standard, option.getStandard());
             optionsValues.put(DataBaseParams.options_methods, option.getMethods());
-            optionsValues.put(DataBaseParams.options_engin_id, rulerEngineer.getServerID());
+            optionsValues.put(DataBaseParams.options_type,option.getType());
+//            optionsValues.put(DataBaseParams.options_engin_id, rulerEngineer.getServerID());
             optionsValues.put(DataBaseParams.options_create_time,option.getCreateTime());
             optionsValues.put(DataBaseParams.options_measure, option.getMeasure());
             boolean flag = bleDataDbHelper.insertDevToSqlite(DataBaseParams.options_table_name, optionsValues);
@@ -97,6 +100,7 @@ public class OperateDbUtil {
         values.put(DataBaseParams.measure_user_id,rulerCheck.getUser().getUserID());
         values.put(DataBaseParams.measure_project_name,rulerCheck.getProjectName());
         values.put(DataBaseParams.upload_flag,rulerCheck.getUpload_flag());
+        values.put(DataBaseParams.measure_is_finish,0);
         boolean flag = bleDataDbHelper.insertDevToSqlite(DataBaseParams.measure_table_name, values);
 
         Log.e(TAG, "addMeasureDataToSqlite: 查看测量表头是否添加成功："+flag+",查看内容：" +values);

@@ -134,6 +134,8 @@
         android:textColor="@color/white_bar_word_color"
         android:textStyle="bold"
         android:textSize="18sp"
+        android:paddingRight="25dp"
+        android:paddingLeft="25dp"
         android:layout_marginBottom="20dp"
         />
 

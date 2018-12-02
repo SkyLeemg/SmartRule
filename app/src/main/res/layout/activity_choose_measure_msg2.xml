@@ -78,18 +78,20 @@
             android:background="@drawable/btn_nomal"
             android:text="结束测量"
             android:textColor="@color/white_bar_word_color"
+            android:paddingLeft="25dp"
+            android:paddingRight="25dp"
             android:textSize="18sp"
             />
-        <Button
+        <!--<Button-->
 
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/btn_nomal"
-            android:text="导出"
-            android:textColor="@color/white_bar_word_color"
-            android:textSize="18sp"
-            android:layout_marginLeft="20dp"
-            />
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:background="@drawable/btn_nomal"-->
+            <!--android:text="导出"-->
+            <!--android:textColor="@color/white_bar_word_color"-->
+            <!--android:textSize="18sp"-->
+            <!--android:layout_marginLeft="20dp"-->
+            <!--/>-->
 
     </LinearLayout>
 

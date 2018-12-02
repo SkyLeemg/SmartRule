@@ -77,11 +77,11 @@ public class RulerCheckOptionsData implements Serializable{
         return "RulerCheckOptionsData{" +
                 "id=" + id +
                 ", serverId=" + serverId +
-                ", rulerCheckOptions=" + rulerCheckOptions +
                 ", data='" + data + '\'' +
                 ", createTime=" + createTime +
                 ", updateFlag=" + updateFlag +
                 ", upload_flag=" + upload_flag +
+                ", rulerCheckOptions=" + rulerCheckOptions +
                 '}';
     }
 }

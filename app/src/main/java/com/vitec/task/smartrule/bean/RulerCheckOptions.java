@@ -111,8 +111,6 @@ public class RulerCheckOptions implements Serializable{
         return "RulerCheckOptions{" +
                 "id=" + id +
                 ", serverId=" + serverId +
-                ", rulerCheck=" + rulerCheck +
-                ", rulerOptions=" + rulerOptions +
                 ", floorHeight='" + floorHeight + '\'' +
                 ", measuredNum=" + measuredNum +
                 ", qualifiedNum=" + qualifiedNum +
@@ -120,6 +118,8 @@ public class RulerCheckOptions implements Serializable{
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 ", upload_flag=" + upload_flag +
+                ", rulerCheck=" + rulerCheck +
+                ", rulerOptions=" + rulerOptions +
                 '}';
     }
 }

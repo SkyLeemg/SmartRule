@@ -33,6 +33,7 @@ public class DataBaseParams {
     public static final String engineer_table_name = "iot_ruler_engineer";
     public static final String enginer_id_key = "id";
     public static final String enginer_name = "name";
+    public static final String enineer_options_choose = "options_choose";//该工程包含的管控要点
     public static final String enginer_description = "description";
     public static final String enginer_create_name = "create_time";
     public static final String enginer_update_time = "update_time";
@@ -47,6 +48,7 @@ public class DataBaseParams {
     public static final String options_standard = "standard";
     public static final String options_methods = "methods";
     public static final String options_engin_id = "engin_id";
+    public static final String options_type = "type";
     public static final String options_create_time = "create_time";
     public static final String options_update_time = "update_time";
     public static final String options_measure = "measure";
@@ -63,6 +65,7 @@ public class DataBaseParams {
     public static final String measure_create_time = "create_time";
     public static final String measure_update_time = "update_time";
     public static final String measure_create_date = "create_date";
+    public static final String measure_is_finish = "is_finish";//是否结束测量，0-未结束，1-测量结束
 
     /**
      * Iot_ruler_check_options: 测量的时候填写的管控要点信息，
@@ -104,6 +107,7 @@ public class DataBaseParams {
     public static final String user_password = "password";
     public static final String user_mobile = "mobile";
     public static final String user_token = "token";
+    public static final String user_img_url = "img_url";
     public static final String user_status = "status";//状态，1-正在登录使用，0-未登录
     public static final String user_job = "job";
 
@@ -117,6 +121,8 @@ public class DataBaseParams {
     public static final String user_wx_expires_in = "wx_expires_in";
     public static final String user_wx_refresh_token = "wx_refresh_token";
     public static final String user_wx_openid = "wx_openid";
+    public static final String user_wx_headImgUrl = "headImgUrl";
+
 
 
 }

@@ -49,20 +49,36 @@ public class BleDataDbHelper {
     /**
      * 查询工程表格中所有的数据
      */
-    public List<RulerEngineer> queryEnginAllDataFromSqlite() {
-        List<RulerEngineer> engineerList = new ArrayList<>();
-        Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM iot_ruler_engineer", null);
-        if (cursor.moveToFirst()) {
-            do {
-                RulerEngineer engineer = new RulerEngineer();
-                engineer.setServerID(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
-                engineer.setEngineerName(cursor.getString(cursor.getColumnIndex(DataBaseParams.enginer_name)));
-                engineerList.add(engineer);
-            } while (cursor.moveToNext());
-        }
-        Log.e(TAG, "queryEnginAllDataFromSqlite: 查看搜索到的所有数据："+engineerList.toString() );
-        return engineerList;
-    }
+//    public List<RulerEngineer> queryEnginAllDataFromSqlite() {
+//        List<RulerEngineer> engineerList = new ArrayList<>();
+//        Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM iot_ruler_engineer", null);
+//        if (cursor.moveToFirst()) {
+//            do {
+//                RulerEngineer engineer = new RulerEngineer();
+//                engineer.setServerID(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
+//                engineer.setEngineerName(cursor.getString(cursor.getColumnIndex(DataBaseParams.enginer_name)));
+//                engineer.setChooseOptions(cursor.getString(cursor.getColumnIndex(DataBaseParams.enineer_options_choose)));
+//                String[] options_id = engineer.getChooseOptions().split(",");
+//                LogUtils.show("查看区分开来的几个Options："+options_id);
+//                StringBuffer whereSb = new StringBuffer();
+//                whereSb.append(" where ");
+//                for (int i = 0; i < options_id.length; i++) {
+//                    whereSb.append(DataBaseParams.server_id);
+//                    whereSb.append(" = ");
+//                    if (i < (options_id.length - 1)) {
+//                        whereSb.append(" or ");
+//                    }
+//
+//                }
+//                LogUtils.show("在查询所有的工程模板中查看查询管控要点模板的where语句：" + whereSb.toString());
+//
+//
+//                engineerList.add(engineer);
+//            } while (cursor.moveToNext());
+//        }
+//        Log.e(TAG, "queryEnginAllDataFromSqlite: 查看搜索到的所有数据："+engineerList.toString() );
+//        return engineerList;
+//    }
 
     /**
      * 查询工程表格中所有的数据
@@ -75,6 +91,22 @@ public class BleDataDbHelper {
                 RulerEngineer engineer = new RulerEngineer();
                 engineer.setServerID(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
                 engineer.setEngineerName(cursor.getString(cursor.getColumnIndex(DataBaseParams.enginer_name)));
+                engineer.setChooseOptions(cursor.getString(cursor.getColumnIndex(DataBaseParams.enineer_options_choose)));
+                String[] options_id = engineer.getChooseOptions().split(",");
+                LogUtils.show("查看区分开来的几个Options："+options_id);
+                StringBuffer whereSb = new StringBuffer();
+                whereSb.append(" where ");
+                for (int i = 0; i < options_id.length; i++) {
+                    whereSb.append(DataBaseParams.server_id);
+                    whereSb.append(" = ");
+                    if (i < (options_id.length - 1)) {
+                        whereSb.append(" or ");
+                    }
+
+                }
+                LogUtils.show("在查询所有的工程模板中查看查询管控要点模板的where语句：" + whereSb.toString());
+                List<RulerOptions> optionsList = queryOptionsAllDataFromSqlite(where);
+                engineer.setOptionsList(optionsList);
                 engineerList.add(engineer);
             } while (cursor.moveToNext());
         }
@@ -95,13 +127,14 @@ public class BleDataDbHelper {
                 RulerOptions option = new RulerOptions();
                 option.setId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id)));
                 option.setServerID(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
-                RulerEngineer engineer = new RulerEngineer();
-                engineer.setServerID(cursor.getInt(cursor.getColumnIndex(DataBaseParams.options_engin_id)));
-                option.setEngineer(engineer);
+//                RulerEngineer engineer = new RulerEngineer();
+//                engineer.setServerID(cursor.getInt(cursor.getColumnIndex(DataBaseParams.options_engin_id)));
+//                option.setEngineer(engineer);
                 option.setOptionsName(cursor.getString(cursor.getColumnIndex(DataBaseParams.options_name)));
                 option.setMethods(cursor.getString(cursor.getColumnIndex(DataBaseParams.options_methods)));
                 option.setStandard(cursor.getString(cursor.getColumnIndex(DataBaseParams.options_standard)));
                 option.setMeasure(cursor.getString(cursor.getColumnIndex(DataBaseParams.options_measure)));
+                option.setType(cursor.getInt(cursor.getColumnIndex(DataBaseParams.options_type)));
                 optionsList.add(option);
             } while (cursor.moveToNext());
         }

@@ -52,7 +52,7 @@ public class NetConstant {
     public static final String getEngineerInfoUrl = "http://iot.vkforest.com/api/ruler/showEngineerInfo";
 
     //    获取 工程id为1的所有管控要点
-    public static final String getOptionInfoUrl = "http://iot.vkforest.com/api/ruler/showOptionsInfo?engin_id=";
+    public static final String getOptionInfoUrl = "http://iot.vkforest.com/api/ruler/showOptionsInfo";
 
     /**
      * 很多网络请求都需要用到userid和wid

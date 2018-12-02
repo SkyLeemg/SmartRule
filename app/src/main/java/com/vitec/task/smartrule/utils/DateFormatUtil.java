@@ -19,6 +19,12 @@ public class DateFormatUtil {
         return str;
     }
 
+    public static int getDate() {
+        String date = getDate("yyyy-MM-dd");
+        int create_date = transForMilliSecondByTim(date, "yyyy-MM-dd");
+        return create_date;
+    }
+
 
     /**
      * 获取晚上9点半的时间戳

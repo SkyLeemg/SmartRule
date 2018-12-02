@@ -2,6 +2,7 @@ package com.vitec.task.smartrule.bean;
 
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 对应iot_ruler_engineer表中的内容项
@@ -13,6 +14,8 @@ public class RulerEngineer implements Serializable{
     private String engineerDescription;
     private int createTime;
     private int updateTime;
+    private String chooseOptions;
+    private List<RulerOptions> optionsList;
 
     public RulerEngineer() {
 
@@ -70,6 +73,23 @@ public class RulerEngineer implements Serializable{
         this.updateTime = updateTime;
     }
 
+    public String getChooseOptions() {
+        return chooseOptions;
+    }
+
+    public void setChooseOptions(String chooseOptions) {
+        this.chooseOptions = chooseOptions;
+    }
+
+
+    public List<RulerOptions> getOptionsList() {
+        return optionsList;
+    }
+
+    public void setOptionsList(List<RulerOptions> optionsList) {
+        this.optionsList = optionsList;
+    }
+
     @Override
     public String toString() {
         return "RulerEngineer{" +
@@ -79,6 +99,8 @@ public class RulerEngineer implements Serializable{
                 ", engineerDescription='" + engineerDescription + '\'' +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
+                ", chooseOptions='" + chooseOptions + '\'' +
+                ", optionsList=" + optionsList +
                 '}';
     }
 }

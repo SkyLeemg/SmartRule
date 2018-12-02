@@ -23,6 +23,7 @@ import com.vitec.task.smartrule.bean.RulerOptions;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.interfaces.IChooseGetter;
 import com.vitec.task.smartrule.db.OperateDbUtil;
+import com.vitec.task.smartrule.utils.DateFormatUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,11 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
     public ChooseMeasureProjectAdapter(Context context,IChooseGetter getter) {
         this.context = context;
         this.getter = getter;
+        initData();
+
+    }
+
+    public void initData() {
         chooseMeasureMsgList = getter.getChooseMeasureMsgList();
         engineerList = getter.getEngineerList();
         optionsList = getter.getOptionsList();
@@ -197,7 +203,7 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                     rulerCheck.setProjectName(holder.autoTvProjectName.getText().toString().trim());
                     rulerCheck.setCheckFloor(holder.autoTvCheckPosition.getText().toString().trim());
                     rulerCheck.setUser(chooseMeasureMsgList.get(i).getUser());
-                    rulerCheck.setCreateDate(chooseMeasureMsgList.get(i).getCreateDate());
+                    rulerCheck.setCreateDate(String.valueOf(DateFormatUtil.getDate()));
                     rulerCheck.setCreateTime((int) System.currentTimeMillis());
                     rulerCheck.setUpload_flag(0);
                     if (chooseEngineerIndex < engineerList.size()) {

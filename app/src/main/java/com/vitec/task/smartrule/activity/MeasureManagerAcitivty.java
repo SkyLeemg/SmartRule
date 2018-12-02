@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
@@ -18,6 +19,7 @@ import com.vitec.task.smartrule.bean.RulerOptions;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.fragment.MeasureFragmentControllerImpl;
+import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
 import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 
@@ -34,7 +36,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
     public ImageView imgMenu;
     public ImageView imgOtherIcon;
     private MKLoader mkLoader;
-    private LinearLayout llToolBar;
+    private RelativeLayout llToolBar;
 
     private RulerCheck rulerCheck;//接收上个页面传来的rulercheck对象
     private List<RulerCheckOptions> checkOptionsList;//rulerCheckOptions集合，一个rulerCheckOption对象对应接下来的一个fragment页面
@@ -80,9 +82,9 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
              * 3.将集合中的每个rulerCheckOptions对象添加到数据库，返回id更新到对应的对象中
              */
             Log.e(TAG, "initData: 查找之前查看rulerCheck对象：" + rulerCheck.toString());
-            String where = " where " + DataBaseParams.options_engin_id + " = " + rulerCheck.getEngineer().getServerID();
-            Log.e(TAG, "initData: 查看where语句：" + where);
-            List<RulerOptions> optionsList = bleDataDbHelper.queryOptionsAllDataFromSqlite(where);
+//            String where = " where " + DataBaseParams.options_engin_id + " = " + rulerCheck.getEngineer().getServerID();
+//            Log.e(TAG, "initData: 查看where语句：" + where);
+            List<RulerOptions> optionsList = rulerCheck.getEngineer().getOptionsList();
             Log.e(TAG, "initData: 打印根据ID搜出来RulerOptions模板:" + optionsList.size() + ",内容：" + optionsList.toString());
             for (RulerOptions rulerOption : optionsList) {
                 RulerCheckOptions rulerCheckOption = new RulerCheckOptions();
@@ -109,9 +111,9 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
              * 还有一种情况之前创建过，但是没有网络，所以未请求服务器，现在就要补交
              *  根据其upload_flag来进行判断，1-代表已经请求过，0-代表未请求过
              */
-            for (int i=0;i<checkOptionsList.size();i++) {
-
-            }
+//            for (int i=0;i<checkOptionsList.size();i++) {
+//
+//            }
         }
         controller = new MeasureFragmentControllerImpl(this,bottomNavigationBar,checkOptionsList);
         controller.initBottomNav();
@@ -128,6 +130,8 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
         intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_OPTIONS_DATA_KEY, (Serializable) checkOptionsList);
         intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_RULER_DATA_KEY, rulerCheck);
         startService(intent);
+
+        HandleBleMeasureDataReceiverService.startHandleService(getApplicationContext(),checkOptionsList);
     }
 
 

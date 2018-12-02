@@ -12,7 +12,8 @@ public class RulerOptions implements Serializable{
     private String optionsName;
     private String Standard;
     private String methods;
-    private RulerEngineer engineer;
+    //    private RulerEngineer engineer;
+    private int type;
     private int createTime;
     private int updateTime;
     private String measure;
@@ -57,13 +58,6 @@ public class RulerOptions implements Serializable{
         this.methods = methods;
     }
 
-    public RulerEngineer getEngineer() {
-        return engineer;
-    }
-
-    public void setEngineer(RulerEngineer engineer) {
-        this.engineer = engineer;
-    }
 
     public int getCreateTime() {
         return createTime;
@@ -89,6 +83,15 @@ public class RulerOptions implements Serializable{
         this.measure = measure;
     }
 
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
     @Override
     public String toString() {
         return "RulerOptions{" +
@@ -97,7 +100,7 @@ public class RulerOptions implements Serializable{
                 ", optionsName='" + optionsName + '\'' +
                 ", Standard='" + Standard + '\'' +
                 ", methods='" + methods + '\'' +
-                ", engineer=" + engineer +
+                ", type=" + type +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 ", measure='" + measure + '\'' +

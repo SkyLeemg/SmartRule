@@ -43,32 +43,6 @@ public class LoginSuccess {
     public void doSuccess(String response, List<OkHttpUtils.Param> params,final MKLoader mkLoader) {
         try {
             /**
-             * {"status":"success",
-             * "code":200,
-             * "data":
-             *   {
-             *   "token":"27eea8aee816e66a2823a3912418c0fb",
-             *   "user_info":{
-             *      "status":200,
-             *      "statusInfo":"ok",
-             *      "data":{
-//             *      用户名密码登录
-             *        "wid":null,"userid":"471","UnionID":"oKP_j1Dj8KQQRNVCsEJykp4P8Eog","username":"oppo","language":"","name":null,"file":"","mobile":"13377758605",
-             *
-             *         微信登录：
-             *         "wid":"4","userid":"0","UnionID":null,"username":null,"language":null,"name":null,"mobile":null,
-             *
-             *         手机验证码登录：
-             *         {"wid":null,"userid":"452","UnionID":"oKP_j1Bc43OJwmsw5oYZNcZEPZwA","username":"xjbank","language":"","name":null,"file":"","mobile":"15107620711",
-             *
-             *         "projectName":"测试",
-             *         "classification":2,
-             *         "projectImg":"http:\/\/vitec.oss-cn-shenzhen.aliyuncs.com\/vitec\/locales\/20180907logo.png",
-             *         "belong":"553",
-             *         "admin":"0",
-             *         "role":["测试1"],
-             *         ]}}},
-             *  "msg":"登录成功"}
              */
             Log.e(TAG, "onSuccess: 查看返回的登录信息："+response );
             final JSONObject jsonObject = new JSONObject(response);
@@ -87,20 +61,58 @@ public class LoginSuccess {
                 String token = dataJson.optString("token");
 //                获取user_info的json
                 String user_info = dataJson.optString("user_info");
-                JSONObject userJson = new JSONObject(new JSONObject(user_info).optString("data"));
-//                接下来就可以从userJson中获取对应的用户数据了
-                String loginName = userJson.optString("username");
-                String mobile = userJson.optString("mobile");
-                String realName = userJson.optString("name");
-//                因为有时候userID和wid服务器会返回“null”字符串，所以就将ID改成String字符串不定义为int
-                String userId = userJson.optString("userid");
-                String wid = userJson.optString("wid");
-//                如果微信和用户名绑定之后，UnionID就不为空
-                String unionID = userJson.optString("UnionID");
-                if (wid.equalsIgnoreCase("null") || wid.equalsIgnoreCase("")) {
-                    wid = "0";
+                JSONObject userInfoJson = new JSONObject(user_info);
+//                获取user_info中的wUser和userBaseInfo字段
+                String wUser = userInfoJson.optString("wUser");
+                String userBaseInfo = userInfoJson.optString("userBaseInfo");
+                //初始化需要用到的字段
+                String loginName = "";
+                String mobile = "";
+                String realName = "";
+                String userId = "0";
+                String wid = "0";
+                String unionID = "0";
+                String job = "测量员";
+                String wNickName = "";
+                String headImgUrl = "";//微信头像
+                String openid = "";
+                String imgUrl = "";//用户头像
+                /**
+                 * 如果该账号没绑定微信，则wUser字段就不是一个json字符串，而是null，或者是空的等
+                 *  为了保险起见，还加了一个长度限制的判断
+                 *  下面的用户名密码之类的同理
+                 */
+                UserDbHelper userDbHelper = new UserDbHelper(context);
+                if (wUser != null && !wUser.equalsIgnoreCase("null") && wUser.length() > 10) {
+
+                    JSONObject wUserJson = new JSONObject(wUser);
+                    wid = wUserJson.optString("id");
+                    unionID = wUserJson.optString("UnionID");
+                    wNickName = wUserJson.optString("nickName");
+                    headImgUrl = wUserJson.optString("headImgUrl");
+                    openid = wUserJson.optString("openid");
+                    userId = wUserJson.optString("userid");
+                    ContentValues values = new ContentValues();
+                    values.put(DataBaseParams.user_wid, wid);
+                    values.put(DataBaseParams.user_wx_unionid, unionID);
+                    values.put(DataBaseParams.user_wx_headImgUrl, headImgUrl);
+                    values.put(DataBaseParams.user_wx_nick_name, wNickName);
+                    values.put(DataBaseParams.user_wx_openid, openid);
+                    values.put(DataBaseParams.user_user_id,userId);
+                    userDbHelper.insertUserToSqlite(DataBaseParams.user_wx_table_name, values);
+                    LogUtils.show("该账号有绑定微信---添加到数据库的数据内容："+values.toString());
                 }
-                String job = userJson.optString("role");
+
+                if (userBaseInfo != null && !userBaseInfo.equalsIgnoreCase("null") && userBaseInfo.length() > 10) {
+                    JSONObject userBaseInfoJson = new JSONObject(userBaseInfo);
+                    userId = userBaseInfoJson.optString("id");
+                    loginName = userBaseInfoJson.optString("userName");
+                    realName = userBaseInfoJson.optString("name");
+                    mobile = userBaseInfoJson.optString("mobile");
+                    openid = userBaseInfoJson.optString("openid");
+                    unionID = userBaseInfoJson.optString("UnionID");
+                    imgUrl = userBaseInfoJson.optString("file");
+                }
 
                 /**
                  * 将刚登录成功的用户数据保存到sharePreference中
@@ -112,7 +124,7 @@ public class LoginSuccess {
                 map.put(SharePreferenceUtils.user_id, userId);
                 map.put(SharePreferenceUtils.user_login_name, loginName);
                 map.put(SharePreferenceUtils.user_mobile, mobile);
-                map.put(SharePreferenceUtils.user_real_name, userJson.optString("name"));
+                map.put(SharePreferenceUtils.user_real_name, realName);
                 map.put(SharePreferenceUtils.user_token, token);
 
                 for (OkHttpUtils.Param param:params) {
@@ -123,7 +135,6 @@ public class LoginSuccess {
                         map.put(param.key, param.value);
                     }
                 }
-
                 SharePreferenceUtils.savaData(context,map,SharePreferenceUtils.user_table);
 
 
@@ -132,7 +143,6 @@ public class LoginSuccess {
                  *      如果已经保存则直接跳转，
                  *      如果没有保存，则插入到数据库中
                  */
-                UserDbHelper userDbHelper = new UserDbHelper(context);
 
                 String where = " where " + DataBaseParams.user_user_id + " = \"" + userId + "\"  OR "+DataBaseParams.user_wid +" = \"" +wid+"\" ;";
                 Log.e(TAG, "onSuccess: 查看where语句："+where );
@@ -146,6 +156,7 @@ public class LoginSuccess {
                 values.put(DataBaseParams.user_mobile,mobile);
                 values.put(DataBaseParams.user_wid,wid);
                 values.put(DataBaseParams.user_job,job);
+                values.put(DataBaseParams.user_img_url,imgUrl);
                 for (OkHttpUtils.Param param:params) {
                     if (param.key.equals(SharePreferenceUtils.user_pwd)) {
                         // 给密码加密
@@ -173,6 +184,7 @@ public class LoginSuccess {
                         context.startActivity(intent);
 
                     }});
+                userDbHelper.close();
 
             } else {
                 runOnUiThread(new Runnable() {

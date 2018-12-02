@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.bean.HeightFloorMsgEvent;
 import com.vitec.task.smartrule.bean.OptionMeasure;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
@@ -152,6 +153,10 @@ public class MeasureFragment extends Fragment{
             unregisterBleRecevier();
         } else {
             registerBleRecevier();
+            checkOptionsDataList = OperateDbUtil.queryMeasureDataFromSqlite(getActivity(), checkOptions);
+            if (measureDataAdapter != null) {
+                measureDataAdapter.notifyDataSetChanged();
+            }
         }
     }
 
@@ -285,7 +290,7 @@ public class MeasureFragment extends Fragment{
                         }
                     }
                 }
-
+                EventBus.getDefault().post(new HeightFloorMsgEvent(checkOptions.getRulerOptions().getType(),optionMeasure));
                 completeResult();
                 Log.e(TAG, "onItemSelected: 查看最终参看值："+standartNum );
             }
@@ -363,19 +368,19 @@ public class MeasureFragment extends Fragment{
          *   如果无值，代表之前没有网络，按照没网的格式发送
          */
 //        先打印出管控要点的对象查看一下
-        LogUtils.show("updateMeasureDataToServer----查看测量管控要点的数据："+checkOptions);
-        LogUtils.show("updateMeasureDataToServer----查看测量管控要点的uploadOptionsDataList数据："+uploadOptionsDataList.size()+",内容:"+uploadOptionsDataList);
-        if (uploadOptionsDataList.size() > 5) {
-            Intent intent = new Intent(getActivity(), PerformMeasureNetIntentService.class);
-            List<RulerCheckOptions> list = new ArrayList<>();
-            checkOptions.setUpdateTime(DateFormatUtil.transForMilliSecond(new Date()));
-            list.add(checkOptions);
-            intent.putExtra(PerformMeasureNetIntentService.GET_FLAG_KEY, PerformMeasureNetIntentService.FLAG_UPDATE_DATA);
-            intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_OPTIONS_DATA_KEY, (Serializable) list);
-            intent.putExtra(PerformMeasureNetIntentService.GET_UPDATE_DATA_KEY, (Serializable) uploadOptionsDataList);
-            getActivity().startService(intent);
-            uploadOptionsDataList.clear();
-        }
+//        LogUtils.show("updateMeasureDataToServer----查看测量管控要点的数据："+checkOptions);
+//        LogUtils.show("updateMeasureDataToServer----查看测量管控要点的uploadOptionsDataList数据："+uploadOptionsDataList.size()+",内容:"+uploadOptionsDataList);
+//        if (uploadOptionsDataList.size() > 5) {
+//            Intent intent = new Intent(getActivity(), PerformMeasureNetIntentService.class);
+//            List<RulerCheckOptions> list = new ArrayList<>();
+//            checkOptions.setUpdateTime(DateFormatUtil.transForMilliSecond(new Date()));
+//            list.add(checkOptions);
+//            intent.putExtra(PerformMeasureNetIntentService.GET_FLAG_KEY, PerformMeasureNetIntentService.FLAG_UPDATE_DATA);
+//            intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_OPTIONS_DATA_KEY, (Serializable) list);
+//            intent.putExtra(PerformMeasureNetIntentService.GET_UPDATE_DATA_KEY, (Serializable) uploadOptionsDataList);
+//            getActivity().startService(intent);
+//            uploadOptionsDataList.clear();
+//        }
 
     }
 
@@ -400,8 +405,6 @@ public class MeasureFragment extends Fragment{
             checkOptions.setServerId(rulerCheckOptionsList.get(0).getServerId());
             LogUtils.show("netBussCallBack====查看数据库查询出来的RrulerCheckOptionsList：" + rulerCheckOptionsList.get(0));
         }
-
-
     }
 
 
@@ -486,47 +489,26 @@ public class MeasureFragment extends Fragment{
             if (action.equals(BleParam.ACTION_DATA_AVAILABLE)) {
 
                 final byte[] txValue = intent.getByteArrayExtra(BleParam.EXTRA_DATA);
+                final String uuid = intent.getStringExtra(BleParam.EXTRA_UUID);
                 runOnUiThread(new Runnable() {
                     public void run() {
                         try {
-//                            FragmentManager manager = getFragmentManager();
-//                            FragmentTransaction transaction = manager.beginTransaction();
-
                             String text = new String(txValue, "UTF-8");
                             String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                             LogUtils.show("MeasureFragment--"+checkOptions.getRulerOptions().getOptionsName()+" 收到蓝牙数据："+text);
-                            if (currentDataNum < checkOptionsDataList.size()) {
-//                                dataList.get(currentDataNum).setDataContent(text);
-                                Log.e(TAG, "run: 之前无数值，current:" + currentDataNum + ",dalist.size():" + checkOptionsDataList.size());
-                                checkOptionsDataList.get(currentDataNum).setData(text.trim());
-                                checkOptionsDataList.get(currentDataNum).setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
-                                checkOptionsDataList.get(currentDataNum).setUpdateFlag(0);
-//                                checkOptionsDataList.get(currentDataNum).setCheckOptionsId(check_option_id);
-                                int index = OperateDbUtil.addRealMeasureDataToSqlite(getActivity(), checkOptionsDataList.get(currentDataNum));
-                                LogUtils.show("新增测量数据后，查看返回的id："+index);
-                                checkOptionsDataList.get(currentDataNum).setId(index);
-                                uploadOptionsDataList.add(checkOptionsDataList.get(currentDataNum));
-
-                            } else {
-//                                dataList.add(new OnceMeasureData(text));
-                                Log.e(TAG, "run: 之前有数值，current:" + currentDataNum + ",dalist.size():" + checkOptionsDataList.size());
-                                RulerCheckOptionsData data = new RulerCheckOptionsData();
-                                data.setData(text.trim());
-                                data.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
-                                data.setUpdateFlag(0);
-                                data.setRulerCheckOptions(checkOptions);
-                                int index = OperateDbUtil.addRealMeasureDataToSqlite(getActivity(),data);
-                                data.setId(index);
-                                LogUtils.show("新增测量数据后，查看返回的id："+index);
-                                checkOptionsDataList.add(data);
-                                uploadOptionsDataList.add(data);
+                            switch (checkOptions.getRulerOptions().getType()) {
+                                case 1:
+                                    if (uuid.equalsIgnoreCase(ConnectDeviceService.VERTICALITY_TX_CHAR_UUID.toString())) {
+                                        dealData(text);
+                                    }
+                                    break;
+                                case 2:
+                                    if (uuid.equalsIgnoreCase(ConnectDeviceService.LEVELNESS_TX_CHAR_UUID.toString())) {
+                                        dealData(text);
+                                    }
+                                    break;
                             }
-                            currentDataNum++;
-                            measureDataAdapter.notifyDataSetChanged();
-//                            topic.publishRequest("蓝牙数据："+text);
-                            HeightUtils.setGridViewHeighBaseOnChildren(gvMeasureData,6);
-                            mTextToSpeechHelper.speakChinese("收到数据"+text);
-                            completeResult();
+
                         } catch (Exception e) {
                             Log.e(TAG, e.toString());
                         }
@@ -542,6 +524,29 @@ public class MeasureFragment extends Fragment{
         }
     };
 
+    private void dealData(String text) {
+        if (currentDataNum < checkOptionsDataList.size()) {
+            Log.e(TAG, "run: 之前无数值，current:" + currentDataNum + ",dalist.size():" + checkOptionsDataList.size());
+            checkOptionsDataList.get(currentDataNum).setData(text.trim());
+            checkOptionsDataList.get(currentDataNum).setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
+            checkOptionsDataList.get(currentDataNum).setUpdateFlag(0);
+            uploadOptionsDataList.add(checkOptionsDataList.get(currentDataNum));
+
+        } else {
+            Log.e(TAG, "run: 之前有数值，current:" + currentDataNum + ",dalist.size():" + checkOptionsDataList.size());
+            RulerCheckOptionsData data = new RulerCheckOptionsData();
+            data.setData(text.trim());
+            data.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
+            data.setUpdateFlag(0);
+            data.setRulerCheckOptions(checkOptions);
+            checkOptionsDataList.add(data);
+            uploadOptionsDataList.add(data);
+        }
+        currentDataNum++;
+        measureDataAdapter.notifyDataSetChanged();
+        HeightUtils.setGridViewHeighBaseOnChildren(gvMeasureData,6);
+        completeResult();
+    }
 
     class MeasureDataAdapter extends BaseAdapter {
 

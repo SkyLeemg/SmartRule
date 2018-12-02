@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
+import com.vitec.task.smartrule.bean.HandleDataResultMsgEvent;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.bean.RulerCheckOptionsData;
@@ -208,7 +209,7 @@ public class PerformMeasureNetIntentService extends IntentService {
                     rootJsArray.put(seJson);
                 }
                 LogUtils.show("initUpdateMeasureDataJson----查看更新测量数据请求的JSON：" + rootJsArray.toString());
-                requestUpdateMeasureData(rootJsArray.toString());
+                requestUpdateMeasureData(rootJsArray.toString(),rulerCheckOptions.getRulerOptions().getType());
             }
 
         } catch (JSONException e) {
@@ -217,7 +218,7 @@ public class PerformMeasureNetIntentService extends IntentService {
 
     }
 
-    private void requestUpdateMeasureData(final String jsonData) {
+    private void requestUpdateMeasureData(final String jsonData, final int flag) {
         OkHttpUtils.Param param = new OkHttpUtils.Param(DataBaseParams.options_data_content, jsonData);
         List<OkHttpUtils.Param> dataList = new ArrayList<>();
         dataList.add(param);
@@ -255,7 +256,9 @@ public class PerformMeasureNetIntentService extends IntentService {
                                         values.put(DataBaseParams.server_id, server_id);
                                         values.put(DataBaseParams.upload_flag, 1);
                                         OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), values, new String[]{String.valueOf(local_id)});
+
                                     }
+                                    EventBus.getDefault().post(new HandleDataResultMsgEvent(flag));
                                 }
                             }
                             /**
@@ -308,6 +311,7 @@ public class PerformMeasureNetIntentService extends IntentService {
                                         }
 
                                     }
+                                    EventBus.getDefault().post(new HandleDataResultMsgEvent(flag));
                                 }
                             }
 
