@@ -1,5 +1,7 @@
 package com.vitec.task.smartrule.utils;
 
+import android.widget.TextView;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -23,6 +25,24 @@ public class DateFormatUtil {
         String date = getDate("yyyy-MM-dd");
         int create_date = transForMilliSecondByTim(date, "yyyy-MM-dd");
         return create_date;
+    }
+
+    public static String stampToDateString(int time) {
+        String date;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
+        long lt = (long) time * 1000;
+        Date date1 = new Date(lt);
+        date = simpleDateFormat.format(date1);
+        return date;
+    }
+
+    public static String stampToDateString(int time,String format) {
+        String date;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+        long lt = (long) time * 1000;
+        Date date1 = new Date(lt);
+        date = simpleDateFormat.format(date1);
+        return date;
     }
 
 

@@ -1,5 +1,7 @@
 package com.vitec.task.smartrule.bean;
 
+import java.util.Objects;
+
 /**
  * 靠尺设备蓝牙信息
  */
@@ -99,5 +101,26 @@ public class BleDevice {
                 ", bleVerCode=" + bleVerCode +
                 ", bleVerName='" + bleVerName + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BleDevice bleDevice = (BleDevice) o;
+        return id == bleDevice.id &&
+                lastConnectTime == bleDevice.lastConnectTime &&
+                imgResouce == bleDevice.imgResouce &&
+                bleVerCode == bleDevice.bleVerCode &&
+                Objects.equals(bleName, bleDevice.bleName) &&
+                Objects.equals(bleMac, bleDevice.bleMac) &&
+                Objects.equals(bleAlias, bleDevice.bleAlias) &&
+                Objects.equals(bleVerName, bleDevice.bleVerName);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, bleName, bleMac, lastConnectTime, imgResouce, bleAlias, bleVerCode, bleVerName);
     }
 }

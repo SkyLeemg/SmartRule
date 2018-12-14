@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/include"
+        layout="@layout/base_toolbar"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/include"
+        android:layout_above="@+id/ll_bottom_button">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <ListView
+                android:id="@+id/lv_waiting_measure_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+
+            </ListView>
+
+            <TextView
+                android:id="@+id/tv_total"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="总数：80"
+                android:layout_gravity="center"
+                />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                >
+                <TextView
+                    android:id="@+id/tv_last_page"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="上一页"
+                    />
+                <TextView
+                    android:id="@+id/tv_current_page"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1"
+                    android:textColor="@color/blue_tv_color"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    />
+                <TextView
+                    android:id="@+id/tv_next_page"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="下一页"
+                    />
+
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+
+
+
+    <LinearLayout
+        android:id="@+id/ll_bottom_button"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:background="@color/gray_bottom_nav_bg_color"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        >
+
+        <Button
+            android:id="@+id/btn_finish"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_nomal"
+            android:text="测量完成"
+            android:textColor="@color/white_bar_word_color"
+            android:paddingLeft="25dp"
+            android:paddingRight="25dp"
+            android:textSize="18sp"
+            />
+
+    </LinearLayout>
+
+    <com.tuyenmonkey.mkloader.MKLoader
+        android:id="@+id/mkloader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_centerInParent="true"
+        app:mk_color="#aaa"
+        app:mk_type="TwinFishesSpinner" />
+
+</RelativeLayout>

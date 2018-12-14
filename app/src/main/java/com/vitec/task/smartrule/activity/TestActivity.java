@@ -1,9 +1,7 @@
 package com.vitec.task.smartrule.activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
@@ -12,13 +10,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.tencent.mm.opensdk.modelmsg.WXFileObject;
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.MeasureTable;
 import com.vitec.task.smartrule.bean.MeasureTableRow;
 import com.vitec.task.smartrule.helper.WeChatHelper;
 import com.vitec.task.smartrule.interfaces.IAddExcelResultCallBack;
-import com.vitec.task.smartrule.utils.ExportMeaureData;
+import com.vitec.task.smartrule.helper.ExportMeaureDataHelper;
 import com.vitec.task.smartrule.utils.ShareFileToQQ;
 
 import java.io.File;
@@ -104,24 +101,9 @@ public class TestActivity extends BaseActivity implements View.OnClickListener{
                             rowList.add(row);
                         }
                         table.setRowList(rowList);
-                        final ExportMeaureData exportMeaureData = new ExportMeaureData(getApplicationContext(), "测试表格12.xls");
-                        exportMeaureData.addExcelData(table, new IAddExcelResultCallBack() {
-                            @Override
-                            public void onSuccess(final String title) {
-                                Log.e("aaa", "onSuccess: 第一个表格保存完成" );
-                            }
+                        final ExportMeaureDataHelper exportMeaureData = new ExportMeaureDataHelper(getApplicationContext(), "测试表格12.xls");
+                        exportMeaureData.addExcelData(table);
 
-                            @Override
-                            public void onFail(final String msg) {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getApplicationContext(),"导出失败",Toast.LENGTH_LONG).show();
-                                        Log.e("aaa", "run: 查看失败原因："+ msg);
-                                    }
-                                });
-                            }
-                        });
 
 
                         MeasureTable measureTable = new MeasureTable();
@@ -162,25 +144,25 @@ public class TestActivity extends BaseActivity implements View.OnClickListener{
                         }
                         measureTable.setRowList(rowList1);
 
-                        exportMeaureData.addExcelData(measureTable, new IAddExcelResultCallBack() {
+                        exportMeaureData.addExcelData(measureTable);
+
+                        exportMeaureData.write( new IAddExcelResultCallBack() {
                             @Override
                             public void onSuccess(final String title) {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getApplicationContext(),"导出成功，文件路径为："+title,Toast.LENGTH_LONG).show();
-                                        Log.e("aaa", "run: 第二个表格导出完成" );
-                                        Log.e("aaaa", "run: 查看导出的路径："+title );
-                                        exportMeaureData.write();
-//                                        一定要关闭，不然表格内容会为空
-                                        exportMeaureData.close();
-                                    }
-                                });
+                                Log.e("aaa", "onSuccess: 第一个表格保存完成" );
+//                                一定要关闭，不然表格内容会为空
+                                exportMeaureData.close();
                             }
 
                             @Override
-                            public void onFail(String msg) {
-
+                            public void onFail(final String msg) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getApplicationContext(),"导出失败",Toast.LENGTH_LONG).show();
+                                        Log.e("aaa", "run: 查看失败原因："+ msg);
+                                    }
+                                });
                             }
                         });
                     }
@@ -191,7 +173,7 @@ public class TestActivity extends BaseActivity implements View.OnClickListener{
                 break;
 
             case R.id.btn_open_dir:
-                File file = new File(ExportMeaureData.path);
+                File file = new File(ExportMeaureDataHelper.path);
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setDataAndType(Uri.fromFile(file), "*/*");
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -199,9 +181,9 @@ public class TestActivity extends BaseActivity implements View.OnClickListener{
                 break;
 
             case R.id.btn_send_file:
-                WeChatHelper helper = new WeChatHelper(this);
-                helper.regToWx();
-                helper.shareFileToWx(ExportMeaureData.path+"/测试表格12.xls");
+//                WeChatHelper helper = new WeChatHelper(this);
+//                helper.regToWx();
+//                helper.shareFileToWx(ExportMeaureDataHelper.path+"/测试表格12.xls");
                 break;
 
             case R.id.btn_send_file_to_qq:

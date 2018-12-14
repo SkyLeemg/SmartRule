@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <RelativeLayout
+        android:id="@+id/relative"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        >
+
+        <com.vitec.task.smartrule.view.MyLargeImageView
+            android:id="@+id/imageView"
+            android:scrollbars="vertical|horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/pblue_bar_color"
+            android:layout_gravity="top"
+            />
+    </RelativeLayout>
+
+
+    <ToggleButton
+
+        android:id="@+id/toggleButton"
+
+        android:layout_width="match_parent"
+
+        android:layout_height="wrap_content"
+
+        android:text="ToggleButton"
+
+        android:textOff="当前可 缩放和滑动"
+
+        android:textOn="当前不可 缩放和滑动" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="添加图标"
+        android:onClick="addClick"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="保存图片"
+        android:onClick="saveClick"
+        />
+
+</LinearLayout>

@@ -1,6 +1,7 @@
 package com.vitec.task.smartrule.bean;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * 对应数据库中的iot_ruler_check表
@@ -18,6 +19,7 @@ public class RulerCheck implements Serializable{
     private String createDate;
     private int serverId;
     private int upload_flag;
+    private int status;//代表是否结束测量的标志，0-还可以测量，1-测量完成但标志未更新到服务器，2-测量完成且标志更新到服务器
 
     public int getId() {
         return id;
@@ -100,19 +102,52 @@ public class RulerCheck implements Serializable{
         this.upload_flag = upload_flag;
     }
 
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "RulerCheck{" +
                 "id=" + id +
                 ", projectName='" + projectName + '\'' +
                 ", checkFloor='" + checkFloor + '\'' +
-                ", engineer=" + engineer +
-                ", user=" + user +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 ", createDate='" + createDate + '\'' +
                 ", serverId=" + serverId +
                 ", upload_flag=" + upload_flag +
+                ", status=" + status +
+                ", user=" + user +
+                ", engineer=" + engineer +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RulerCheck that = (RulerCheck) o;
+        return id == that.id &&
+                createTime == that.createTime &&
+                updateTime == that.updateTime &&
+                serverId == that.serverId &&
+                upload_flag == that.upload_flag &&
+                status == that.status &&
+                Objects.equals(projectName, that.projectName) &&
+                Objects.equals(checkFloor, that.checkFloor) &&
+                Objects.equals(engineer, that.engineer) &&
+                Objects.equals(user, that.user) &&
+                Objects.equals(createDate, that.createDate);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, projectName, checkFloor, engineer, user, createTime, updateTime, createDate, serverId, upload_flag, status);
     }
 }

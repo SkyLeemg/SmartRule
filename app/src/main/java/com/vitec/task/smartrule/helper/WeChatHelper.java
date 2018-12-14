@@ -11,6 +11,9 @@ import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 import com.vitec.task.smartrule.wxapi.WeiXinUtil;
 
+import java.io.File;
+import java.util.List;
+
 public class WeChatHelper {
 //    App_id为应用官网申请到的合法appid
     private static final String APP_ID = "wx4543e42598b7bf6d";
@@ -50,22 +53,25 @@ public class WeChatHelper {
     }
 
 
+    public void shareFileToWx(List<File> fileList) {
 
-    public  void shareFileToWx(String filePath) {
-        WXFileObject fileObject = new WXFileObject();
-        fileObject.fileData = WeiXinUtil.inputStreamToByte(filePath);
-        fileObject.filePath = filePath;
-
+        for (File file : fileList) {
+            //        发送请求
+            SendMessageToWX.Req req = new SendMessageToWX.Req();
+            WXFileObject fileObject = new WXFileObject();
+            fileObject.fileData = WeiXinUtil.inputStreamToByte(file.getPath());
+            fileObject.filePath = file.getPath();
 //        使用媒体消息分享
-        WXMediaMessage mediaMessage = new WXMediaMessage(fileObject);
-        mediaMessage.title = "测试一下文件分享功能.xls";
-//        发送请求
-        SendMessageToWX.Req req = new SendMessageToWX.Req();
-//        创建唯一标识
-        req.transaction = String.valueOf(System.currentTimeMillis());
-        req.message = mediaMessage;
-        req.scene = SendMessageToWX.Req.WXSceneSession;
-        iwxapi.sendReq(req);
+            WXMediaMessage mediaMessage = new WXMediaMessage(fileObject);
+            mediaMessage.title = file.getName();
+            req.message = mediaMessage;//        创建唯一标识
+            req.transaction = String.valueOf(System.currentTimeMillis());
+            req.scene = SendMessageToWX.Req.WXSceneSession;
+            iwxapi.sendReq(req);
+
+        }
+
+
 
     }
 }

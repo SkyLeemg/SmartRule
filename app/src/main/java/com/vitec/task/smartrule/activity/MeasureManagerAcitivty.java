@@ -117,6 +117,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
         }
         controller = new MeasureFragmentControllerImpl(this,bottomNavigationBar,checkOptionsList);
         controller.initBottomNav();
+        HandleBleMeasureDataReceiverService.startHandleService(getApplicationContext(),checkOptionsList);
 //        controller.addBottomNav();
     }
 
@@ -131,7 +132,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
         intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_RULER_DATA_KEY, rulerCheck);
         startService(intent);
 
-        HandleBleMeasureDataReceiverService.startHandleService(getApplicationContext(),checkOptionsList);
+
     }
 
 

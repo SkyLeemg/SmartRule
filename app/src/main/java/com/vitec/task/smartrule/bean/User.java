@@ -1,6 +1,7 @@
 package com.vitec.task.smartrule.bean;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class User implements Serializable{
 
@@ -151,5 +152,32 @@ public class User implements Serializable{
                 ", userJob='" + userJob + '\'' +
                 ", token='" + token + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id &&
+                userID == user.userID &&
+                status == user.status &&
+                Objects.equals(wid, user.wid) &&
+                Objects.equals(userName, user.userName) &&
+                Objects.equals(loginName, user.loginName) &&
+                Objects.equals(wxUnionId, user.wxUnionId) &&
+                Objects.equals(password, user.password) &&
+                Objects.equals(repeatPassword, user.repeatPassword) &&
+                Objects.equals(mobile, user.mobile) &&
+                Objects.equals(mobileCode, user.mobileCode) &&
+                Objects.equals(wxData, user.wxData) &&
+                Objects.equals(userJob, user.userJob) &&
+                Objects.equals(token, user.token);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, userID, status, wid, userName, loginName, wxUnionId, password, repeatPassword, mobile, mobileCode, wxData, userJob, token);
     }
 }

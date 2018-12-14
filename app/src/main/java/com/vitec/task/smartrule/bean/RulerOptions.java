@@ -1,6 +1,7 @@
 package com.vitec.task.smartrule.bean;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * 对应数据库中的iot_ruler_options中的内容
@@ -105,5 +106,27 @@ public class RulerOptions implements Serializable{
                 ", updateTime=" + updateTime +
                 ", measure='" + measure + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RulerOptions options = (RulerOptions) o;
+        return id == options.id &&
+                serverID == options.serverID &&
+                type == options.type &&
+                createTime == options.createTime &&
+                updateTime == options.updateTime &&
+                Objects.equals(optionsName, options.optionsName) &&
+                Objects.equals(Standard, options.Standard) &&
+                Objects.equals(methods, options.methods) &&
+                Objects.equals(measure, options.measure);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, serverID, optionsName, Standard, methods, type, createTime, updateTime, measure);
     }
 }

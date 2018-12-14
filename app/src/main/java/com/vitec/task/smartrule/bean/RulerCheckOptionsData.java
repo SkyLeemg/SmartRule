@@ -1,6 +1,7 @@
 package com.vitec.task.smartrule.bean;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * 相当于数据库中的iot_ruler_check_options_data表，主要存放蓝牙发过来的数据
@@ -83,5 +84,25 @@ public class RulerCheckOptionsData implements Serializable{
                 ", upload_flag=" + upload_flag +
                 ", rulerCheckOptions=" + rulerCheckOptions +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RulerCheckOptionsData data1 = (RulerCheckOptionsData) o;
+        return id == data1.id &&
+                serverId == data1.serverId &&
+                createTime == data1.createTime &&
+                updateFlag == data1.updateFlag &&
+                upload_flag == data1.upload_flag &&
+                Objects.equals(rulerCheckOptions, data1.rulerCheckOptions) &&
+                Objects.equals(data, data1.data);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, serverId, rulerCheckOptions, data, createTime, updateFlag, upload_flag);
     }
 }

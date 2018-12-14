@@ -1,6 +1,7 @@
 package com.vitec.task.smartrule.bean;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * 对应数据库重点iot_ruler_check_options，存储正在测量表格中的一行，也就是一个正在测量的管控要点的数据
@@ -121,5 +122,30 @@ public class RulerCheckOptions implements Serializable{
                 ", rulerCheck=" + rulerCheck +
                 ", rulerOptions=" + rulerOptions +
                 '}';
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RulerCheckOptions that = (RulerCheckOptions) o;
+        return id == that.id &&
+                serverId == that.serverId &&
+                measuredNum == that.measuredNum &&
+                qualifiedNum == that.qualifiedNum &&
+                Float.compare(that.qualifiedRate, qualifiedRate) == 0 &&
+                createTime == that.createTime &&
+                updateTime == that.updateTime &&
+                upload_flag == that.upload_flag &&
+                Objects.equals(rulerCheck, that.rulerCheck) &&
+                Objects.equals(rulerOptions, that.rulerOptions) &&
+                Objects.equals(floorHeight, that.floorHeight);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, rulerCheck, serverId, rulerOptions, floorHeight, measuredNum, qualifiedNum, qualifiedRate, createTime, updateTime, upload_flag);
     }
 }

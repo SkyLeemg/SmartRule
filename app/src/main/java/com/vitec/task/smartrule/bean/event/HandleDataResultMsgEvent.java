@@ -1,4 +1,4 @@
-package com.vitec.task.smartrule.bean;
+package com.vitec.task.smartrule.bean.event;
 
 import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
 

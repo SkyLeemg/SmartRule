@@ -3,6 +3,7 @@ package com.vitec.task.smartrule.bean;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 对应iot_ruler_engineer表中的内容项
@@ -102,5 +103,26 @@ public class RulerEngineer implements Serializable{
                 ", chooseOptions='" + chooseOptions + '\'' +
                 ", optionsList=" + optionsList +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RulerEngineer engineer = (RulerEngineer) o;
+        return id == engineer.id &&
+                serverID == engineer.serverID &&
+                createTime == engineer.createTime &&
+                updateTime == engineer.updateTime &&
+                Objects.equals(engineerName, engineer.engineerName) &&
+                Objects.equals(engineerDescription, engineer.engineerDescription) &&
+                Objects.equals(chooseOptions, engineer.chooseOptions) &&
+                Objects.equals(optionsList, engineer.optionsList);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, serverID, engineerName, engineerDescription, createTime, updateTime, chooseOptions, optionsList);
     }
 }

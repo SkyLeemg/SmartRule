@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    >
+    <include
+        android:id="@+id/include"
+        layout="@layout/base_toolbar"/>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/include"
+        android:layout_above="@+id/rl_selectable"
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                >
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="项目名称："
+                    style="@style/Text"
+                    />
+                <Spinner
+                    android:id="@+id/spinner_project_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Base.Widget.AppCompat.DropDownItem.Spinner"
+                    >
+                </Spinner>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                >
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="工程类型："
+                    style="@style/Text"
+                    />
+                <Spinner
+                    android:id="@+id/spinner_engineer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Base.Widget.AppCompat.DropDownItem.Spinner"
+                    >
+                </Spinner>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                >
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="检查位置："
+                    style="@style/Text"
+                    />
+                <Spinner
+                    android:id="@+id/spinner_check_position"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Base.Widget.AppCompat.DropDownItem.Spinner"
+                    >
+                </Spinner>
+            </LinearLayout>
+
+            <ListView
+                android:id="@+id/lv_finish_measure_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >  </ListView>
+
+            <TextView
+                android:id="@+id/tv_total"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="总数：80"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="5dp"
+                />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
+                >
+                <TextView
+                    android:id="@+id/tv_last_page"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="上一页"
+                    android:textSize="16sp"
+                    />
+                <TextView
+                    android:id="@+id/tv_current_page"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1"
+                    android:textColor="@color/blue_tv_color"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    />
+                <TextView
+                    android:id="@+id/tv_next_page"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="下一页"
+                    android:textSize="16sp"
+                    />
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <com.tuyenmonkey.mkloader.MKLoader
+        android:id="@+id/mkloader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_centerInParent="true"
+        app:mk_color="#aaa"
+        app:mk_type="TwinFishesSpinner" />
+
+    <RelativeLayout
+        android:id="@+id/rl_selectable"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:background="@color/pblue_bar_color"
+        >
+        <TextView
+            android:id="@+id/tv_has_choose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="已选:0"
+            android:layout_margin="5dp"
+            android:textColor="@color/white_bar_word_color"
+            android:layout_centerVertical="true"
+            />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_alignParentRight="true"
+            >
+
+            <Button
+                android:id="@+id/btn_export_record"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_choose"
+                android:text="导 出"
+                android:textColor="@color/white_bar_word_color"
+                android:layout_margin="5dp"
+                android:minHeight="0dp"
+                android:minWidth="5dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                />
+
+            <Button
+                android:id="@+id/btn_del_record"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="删 除"
+                android:background="@drawable/btn_choose"
+                android:textColor="@color/white_bar_word_color"
+                android:layout_margin="5dp"
+                android:minHeight="0dp"
+                android:minWidth="5dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                />
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+
+</RelativeLayout>

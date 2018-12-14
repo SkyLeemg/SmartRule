@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_centerVertical="true"
+    android:padding="20dp"
+    >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:orientation="horizontal">
+        <CheckBox
+            android:id="@+id/cb_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_centerVertical="true"
+            >
+            <TextView
+                android:id="@+id/tv_item_project_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="项目名称：P21"
+                android:layout_marginTop="8dp"
+                />
+            <TextView
+                android:id="@+id/tv_item_position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="检查位置：1东2层"
+                android:layout_marginTop="8dp"
+                />
+            <TextView
+                android:id="@+id/tv_item_check_person"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="检查人：张三"
+                android:layout_marginTop="8dp"
+                />
+            <TextView
+                android:id="@+id/tv_item_check_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:text="检查时间：2018.09.19 10:22-2018.09.20 14:21"
+                android:layout_marginTop="8dp"
+                />
+
+            <TextView
+                android:id="@+id/tv_item_check_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="正在测量...."
+                android:layout_marginTop="8dp"
+                android:textColor="@color/laser_color"
+                />
+
+        </LinearLayout>
+
+    </LinearLayout>
+    
+
+
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/icon_right"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        />
+
+</RelativeLayout>

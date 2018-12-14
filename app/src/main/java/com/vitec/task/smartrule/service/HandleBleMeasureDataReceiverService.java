@@ -1,5 +1,6 @@
 package com.vitec.task.smartrule.service;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -7,13 +8,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.vitec.task.smartrule.bean.HandleDataResultMsgEvent;
-import com.vitec.task.smartrule.bean.HeightFloorMsgEvent;
+import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.bean.event.HandleDataResultMsgEvent;
+import com.vitec.task.smartrule.bean.event.HeightFloorMsgEvent;
 import com.vitec.task.smartrule.bean.OptionMeasure;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
@@ -21,7 +25,6 @@ import com.vitec.task.smartrule.bean.RulerCheckOptionsData;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.helper.TextToSpeechHelper;
-import com.vitec.task.smartrule.interfaces.IBleCallBackResult;
 import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
 import com.vitec.task.smartrule.utils.BleParam;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
@@ -64,6 +67,9 @@ public class HandleBleMeasureDataReceiverService extends Service {
     private OptionMeasure levelOptionMeasure;//用户当前选择的层高
     private OptionMeasure verticalOptionMeasure;//用户当前选择的层高
 
+    private final static int DAEMON_SERVICE_ID = -5121;
+    public static int check_id = 0;
+
 
     @Nullable
     @Override
@@ -90,6 +96,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
         try {
             checkOptionsList = (List<RulerCheckOptions>) intent.getSerializableExtra(GET_CHECK_OPTIONS_LIST);
             if (checkOptionsList.size() > 0) {
+                check_id = checkOptionsList.get(0).getRulerCheck().getId();
                 StringBuffer speakContent = new StringBuffer();
                 speakContent.append(checkOptionsList.get(0).getRulerCheck().getProjectName());
                 speakContent.append("项目");
@@ -132,9 +139,27 @@ public class HandleBleMeasureDataReceiverService extends Service {
             Log.e("aaa", "获取list异常，查看异常信息：" + e.getMessage());
         }
 
+        /************************做服务保活---设置为前台服务***************************/
+        flags = START_STICKY;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+            builder.setContentTitle("Beacon正在运行");
+            builder.setContentText("");
+            builder.setAutoCancel(false);
+            builder.setSmallIcon(R.mipmap.vlogo);
+            startForeground(DAEMON_SERVICE_ID, builder.build());
+            Log.e("onStartCommand", "版本号大于等于6.0");
+            Intent innerIntent = new Intent(this,DaemonInnerService.class);
+            startService(innerIntent);
+        }else {
+            startForeground(DAEMON_SERVICE_ID,new Notification());
+        }
 
         return super.onStartCommand(intent, flags, startId);
     }
+
+
+
 
     public static void startHandleService(Context context,List<RulerCheckOptions> optionsList) {
         Intent serviceIntent = new Intent(context, HandleBleMeasureDataReceiverService.class);
@@ -357,6 +382,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
                     if (levelOption!=null && uuid.equalsIgnoreCase(ConnectDeviceService.LEVELNESS_TX_CHAR_UUID.toString())) {
                         textToSpeechHelper.speakChinese("收到"+levelOption.getRulerOptions().getOptionsName()+"数据" + text);
                         optionsData.setRulerCheckOptions(levelOption);
+                        LogUtils.show("查看当前水平度管控要点的Id："+levelOption.getId());
                         int id = OperateDbUtil.addRealMeasureDataToSqlite(getApplicationContext(), optionsData);
                         optionsData.setId(id);
                         levelOptionsDataList.add(optionsData);
@@ -427,12 +453,21 @@ public class HandleBleMeasureDataReceiverService extends Service {
                     float datanum = Float.valueOf(data);
                     /**
                      * 根据操作标志来计算结果，
-                     * 1 - 代表要 小于等于 才合格
-                     * 2 -
+                     * 1 =, 2 <=, 3 >=, 4 +, 5 -, 6 普通, 7 高级
                      */
                     switch (optionMeasure.getOperate()) {
                         case 1:
+                            if (datanum == optionMeasure.getStandard() ) {
+                                qualifiedNum++;
+                            }
+                            break;
+                        case 2:
                             if (datanum < optionMeasure.getStandard() || datanum == optionMeasure.getStandard()) {
+                                qualifiedNum++;
+                            }
+                            break;
+                        case 3:
+                            if (datanum > optionMeasure.getStandard() || datanum == optionMeasure.getStandard()) {
                                 qualifiedNum++;
                             }
                             break;
@@ -452,6 +487,34 @@ public class HandleBleMeasureDataReceiverService extends Service {
             checkOptions.setQualifiedRate(Float.parseFloat(String.format("%.2f",qualifiedRate*100)));
         }
 
+    }
+
+
+    /**
+     * 实现一个内部的 Service，实现让后台服务的优先级提高到前台服务，这里利用了 android 系统的漏洞，
+     * 不保证所有系统可用，测试在7.1.1 之前大部分系统都是可以的，不排除个别厂商优化限制
+     */
+    public static class DaemonInnerService extends Service {
+
+        @Nullable
+        @Override
+        public IBinder onBind(Intent intent) {
+            return null;
+        }
+
+        @Override
+        public int onStartCommand(Intent intent, int flags, int startId) {
+            Log.e("DaemonInnerService", "ceshi,DaemonInnerService.CLASS开启");
+            startForeground(DAEMON_SERVICE_ID,new Notification());
+            stopSelf();
+            return super.onStartCommand(intent, flags, startId);
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            Log.e("DaemonInnerService", "ceshi,DaemonInnerService销毁了");
+        }
     }
 
 }

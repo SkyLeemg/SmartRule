@@ -8,6 +8,28 @@
     <include
         android:id="@+id/layout"
         layout="@layout/base_toolbar"/>
+    <LinearLayout
+        android:id="@+id/ll_continue_measure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_gravity="right"
+        >
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:src="@mipmap/icon_running"
+            android:layout_margin="10dp"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/color_running"
+            android:text="继续测量"
+            android:layout_marginRight="20dp"
+            />
+    </LinearLayout>
 
     <GridView
         android:id="@+id/gv_mng_list"

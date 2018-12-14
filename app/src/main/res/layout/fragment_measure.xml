@@ -68,6 +68,15 @@
                 android:layout_height="wrap_content"
                 android:numColumns="5"
                 ></GridView>
+            <ImageView
+                android:id="@+id/img_add"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:src="@mipmap/btn_add"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone"
+                />
             <LinearLayout
                 android:id="@+id/ll_floor_height"
                 android:layout_width="match_parent"

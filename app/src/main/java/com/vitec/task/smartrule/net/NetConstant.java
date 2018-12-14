@@ -76,6 +76,16 @@ public class NetConstant {
     public static final String update_record_url = "/api/ruler/updateRecord";
 
     /**
+     * 查询测量记录表接口
+     */
+    public static final String get_measure_record_url = "/api/ruler/getMeasureRecordList";
+    public static final String record_status = "status";
+    public static final String current_Page = "currentPage";
+    public static final String page_size = "pageSize";
+
+
+
+    /**
      * 更新测量数据的接口
      */
     public static final String update_data_url = "/api/ruler/updateData";
@@ -95,6 +105,19 @@ public class NetConstant {
     public static final String check_update_url = "/api/user/checkUpdate";
     public static final String check_update_type = "type";
     public static final String check_update_app_name = "app_name";
+
+    /**
+     * 停止测量
+     */
+    public static final String stop_measure_url = "/api/ruler/stopMeasure";
+    public static final String stop_measure_check_id = "check_id";
+
+
+    /**
+     * 删除记录表
+     */
+    public static final String del_record_url = "/api/ruler/deleteRecord";
+    public static final String del_check_list = "check_list";
 
 
 

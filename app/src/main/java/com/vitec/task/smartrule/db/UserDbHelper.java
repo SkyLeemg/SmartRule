@@ -48,7 +48,7 @@ public class UserDbHelper {
                 user.setWxData(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_data)));
                 user.setUserJob(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_job)));
                 user.setToken(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_token)));
-                Log.e(TAG, "queryUserDataFromSqlite: 搜索到的用户:"+user );
+//                Log.e(TAG, "queryUserDataFromSqlite: 搜索到的用户:"+user );
                 userList.add(user);
             } while (cursor.moveToNext());
         }
@@ -62,7 +62,7 @@ public class UserDbHelper {
      */
     public boolean insertUserToSqlite(String tableName,ContentValues values) {
         int renum = (int) sqLiteDatabase.insert(tableName, "", values);
-        Log.e(TAG, "insertDevToSqlite: 打印插入数据库后返回的数字："+renum );
+//        Log.e(TAG, "insertDevToSqlite: 打印插入数据库后返回的数字："+renum );
         if (renum!=-1)
             return true;
         else return false;
@@ -77,7 +77,7 @@ public class UserDbHelper {
      */
     public boolean updateUserData(ContentValues values,String[] id) {
         int result = sqLiteDatabase.update(DataBaseParams.user_table_name, values, new String(DataBaseParams.measure_id + "=?"), id);
-        Log.e(TAG, "insertDevToSqlite: 打印插入数据库后返回的数字："+result );
+//        Log.e(TAG, "insertDevToSqlite: 打印插入数据库后返回的数字："+result );
         if (result!=-1)
             return true;
         else return false;

@@ -21,13 +21,14 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.vitec.task.smartrule.R;
-import com.vitec.task.smartrule.bean.HeightFloorMsgEvent;
+import com.vitec.task.smartrule.bean.event.HeightFloorMsgEvent;
 import com.vitec.task.smartrule.bean.OptionMeasure;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
@@ -35,7 +36,6 @@ import com.vitec.task.smartrule.bean.RulerCheckOptionsData;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.helper.TextToSpeechHelper;
 import com.vitec.task.smartrule.service.ConnectDeviceService;
-import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
 import com.vitec.task.smartrule.utils.BleParam;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.HeightUtils;
@@ -48,7 +48,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -63,7 +62,7 @@ import static com.vitec.task.smartrule.utils.BleParam.UART_PROFILE_DISCONNECTED;
  * 真正测量的fragment。一个管控要点为一个fragment
  * 多个管控要点重复new MeasureFragment
  */
-public class MeasureFragment extends Fragment{
+public class MeasureFragment extends Fragment implements View.OnClickListener {
 
     private static final String TAG = "MeasureFragment";
     private View view;
@@ -75,6 +74,7 @@ public class MeasureFragment extends Fragment{
     private EditText etStandartNum;
     private EditText etRealMeasureNum;
     private Spinner spinnerFloorHeight;
+    private ImageView imgAdd;
 
 
     private MeasureDataAdapter measureDataAdapter;
@@ -125,6 +125,7 @@ public class MeasureFragment extends Fragment{
         etRealMeasureNum = view.findViewById(R.id.et_real_measure_num);
         spinnerFloorHeight = view.findViewById(R.id.spinner_floor_height);
         llFloorHeight = view.findViewById(R.id.ll_floor_height);
+        imgAdd = view.findViewById(R.id.img_add);
 
     }
 
@@ -193,6 +194,10 @@ public class MeasureFragment extends Fragment{
         }
     };
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
     private void initData() {
         /**
@@ -227,6 +232,8 @@ public class MeasureFragment extends Fragment{
         tvQualifiedStandard.setText(standard);
 
 
+
+
         /**
          * 初始化保存蓝牙数据的集合对象
          */
@@ -244,6 +251,14 @@ public class MeasureFragment extends Fragment{
 
         updateCompleteResult();
         service_init();
+
+        /********************初始化ImgAdd按钮**********************/
+        if (checkOptions.getRulerOptions().getType() < 3) {
+          imgAdd.setVisibility(View.GONE);
+        } else {
+          imgAdd.setVisibility(View.VISIBLE);
+        }
+
         /**
          * 初始化接受数据的gridview
          */
@@ -548,6 +563,13 @@ public class MeasureFragment extends Fragment{
         completeResult();
     }
 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+
+        }
+    }
+
     class MeasureDataAdapter extends BaseAdapter {
 
         @Override
@@ -580,6 +602,12 @@ public class MeasureFragment extends Fragment{
             }
 
             holder.etData.setText(checkOptionsDataList.get(i).getData());
+//
+            if (checkOptions.getRulerOptions().getType() == 1 || checkOptions.getRulerOptions().getType() == 2) {
+                holder.etData.setEnabled(false);
+            } else {
+                holder.etData.setEnabled(true);
+            }
             return view;
         }
     }

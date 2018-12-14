@@ -46,39 +46,6 @@ public class BleDataDbHelper {
         else return false;
     }
 
-    /**
-     * 查询工程表格中所有的数据
-     */
-//    public List<RulerEngineer> queryEnginAllDataFromSqlite() {
-//        List<RulerEngineer> engineerList = new ArrayList<>();
-//        Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM iot_ruler_engineer", null);
-//        if (cursor.moveToFirst()) {
-//            do {
-//                RulerEngineer engineer = new RulerEngineer();
-//                engineer.setServerID(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
-//                engineer.setEngineerName(cursor.getString(cursor.getColumnIndex(DataBaseParams.enginer_name)));
-//                engineer.setChooseOptions(cursor.getString(cursor.getColumnIndex(DataBaseParams.enineer_options_choose)));
-//                String[] options_id = engineer.getChooseOptions().split(",");
-//                LogUtils.show("查看区分开来的几个Options："+options_id);
-//                StringBuffer whereSb = new StringBuffer();
-//                whereSb.append(" where ");
-//                for (int i = 0; i < options_id.length; i++) {
-//                    whereSb.append(DataBaseParams.server_id);
-//                    whereSb.append(" = ");
-//                    if (i < (options_id.length - 1)) {
-//                        whereSb.append(" or ");
-//                    }
-//
-//                }
-//                LogUtils.show("在查询所有的工程模板中查看查询管控要点模板的where语句：" + whereSb.toString());
-//
-//
-//                engineerList.add(engineer);
-//            } while (cursor.moveToNext());
-//        }
-//        Log.e(TAG, "queryEnginAllDataFromSqlite: 查看搜索到的所有数据："+engineerList.toString() );
-//        return engineerList;
-//    }
 
     /**
      * 查询工程表格中所有的数据
@@ -93,7 +60,7 @@ public class BleDataDbHelper {
                 engineer.setEngineerName(cursor.getString(cursor.getColumnIndex(DataBaseParams.enginer_name)));
                 engineer.setChooseOptions(cursor.getString(cursor.getColumnIndex(DataBaseParams.enineer_options_choose)));
                 String[] options_id = engineer.getChooseOptions().split(",");
-                LogUtils.show("查看区分开来的几个Options："+options_id);
+//                LogUtils.show("查看区分开来的几个Options："+options_id);
                 StringBuffer whereSb = new StringBuffer();
                 whereSb.append(" where ");
                 for (int i = 0; i < options_id.length; i++) {
@@ -104,13 +71,13 @@ public class BleDataDbHelper {
                     }
 
                 }
-                LogUtils.show("在查询所有的工程模板中查看查询管控要点模板的where语句：" + whereSb.toString());
+//                LogUtils.show("在查询所有的工程模板中查看查询管控要点模板的where语句：" + whereSb.toString());
                 List<RulerOptions> optionsList = queryOptionsAllDataFromSqlite(where);
                 engineer.setOptionsList(optionsList);
                 engineerList.add(engineer);
             } while (cursor.moveToNext());
         }
-        Log.e(TAG, "queryEnginAllDataFromSqlite: 查看搜索到的所有数据："+engineerList.toString() );
+//        Log.e(TAG, "queryEnginAllDataFromSqlite: 查看搜索到的所有数据："+engineerList.toString() );
         return engineerList;
     }
 
@@ -150,6 +117,7 @@ public class BleDataDbHelper {
     public List<RulerCheck> queryRulerCheckTableDataFromSqlite(String where) {
         List<RulerCheck> checkList = new ArrayList<>();
         String sql = "SELECT * FROM iot_ruler_check " +where;
+//        LogUtils.show("queryRulerCheckTableDataFromSqlite----查看获取RulerCheck表格的数据的sql语句："+sql);
         Cursor cursor = sqLiteDatabase.rawQuery(sql, null);
         if (cursor.moveToFirst()) {
             do {
@@ -162,6 +130,7 @@ public class BleDataDbHelper {
                 rulerCheck.setUpdateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_update_time)));
                 rulerCheck.setServerId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
                 rulerCheck.setUpload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.upload_flag)));
+                rulerCheck.setStatus(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_is_finish)));
                 List<RulerEngineer> engineerList = queryEnginDataFromSqlite(" where " + DataBaseParams.server_id + " = " + cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_engin_id)));
                 if (engineerList.size() > 0) {
                     RulerEngineer engineer = engineerList.get(0);
@@ -197,7 +166,8 @@ public class BleDataDbHelper {
     }
 
     public Cursor queryMeasureOptionsFromSqlite(String tableName,String cols,String where) {
-        String sql = "SELECT " + cols + "  FROM "+tableName + where;
+        String sWhere = " " + where;
+        String sql = "SELECT " + cols + "  FROM "+tableName + sWhere;
         Log.e(TAG, "queryMeasureOptionsFromSqlite: 查看最终的sql语句："+sql );
         Cursor cursor = sqLiteDatabase.rawQuery(sql,null);
 
@@ -215,14 +185,31 @@ public class BleDataDbHelper {
         values.put(DataBaseParams.measure_option_percent_pass,rulerCheckOptions.getQualifiedRate());
         values.put(DataBaseParams.measure_option_update_time,(int)System.currentTimeMillis());
         int result = sqLiteDatabase.update(DataBaseParams.measure_option_table_name, values, DataBaseParams.measure_id + "=?", new String[]{String.valueOf(rulerCheckOptions.getId())});
-        Log.e(TAG, "updateMeasureOptonsToSqlite: 合格点数更新状态：" + result + ",更新的数据内容：" + rulerCheckOptions.toString());
+//        Log.e(TAG, "updateMeasureOptonsToSqlite: 合格点数更新状态：" + result + ",更新的数据内容：" + rulerCheckOptions.toString());
         return result;
     }
 
     public int updateDataToSqlite(String table, ContentValues values, String where, String[] whereValues) {
         int result = sqLiteDatabase.update(table, values, where, whereValues);
-        LogUtils.show("查看"+table+",表格的"+values+",值，更新是否成功："+result);
+//        LogUtils.show("查看"+table+",表格的"+values+",值，更新是否成功："+result);
         return result;
+    }
+
+    public boolean delData(String tableName,String[] id) {
+        int result = sqLiteDatabase.delete(tableName, "id=?", id);
+        LogUtils.show("delData: 删除数据返回的状态："+result );
+        if (result!=-1)
+            return true;
+        else return false;
+    }
+
+
+    public boolean delData(String tableName,String where,String[] id) {
+        int result = sqLiteDatabase.delete(tableName, where, id);
+        LogUtils.show("delData: 删除数据返回的状态："+result );
+        if (result!=-1)
+            return true;
+        else return false;
     }
 
 

@@ -24,8 +24,10 @@ import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.interfaces.IChooseGetter;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
+import com.vitec.task.smartrule.utils.LogUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -204,7 +206,8 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                     rulerCheck.setCheckFloor(holder.autoTvCheckPosition.getText().toString().trim());
                     rulerCheck.setUser(chooseMeasureMsgList.get(i).getUser());
                     rulerCheck.setCreateDate(String.valueOf(DateFormatUtil.getDate()));
-                    rulerCheck.setCreateTime((int) System.currentTimeMillis());
+                    rulerCheck.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
+                    LogUtils.show("保存下来的createtime时间戳："+DateFormatUtil.transForMilliSecond(new Date()));
                     rulerCheck.setUpload_flag(0);
                     if (chooseEngineerIndex < engineerList.size()) {
                         if (engineerList.get(chooseEngineerIndex).equals(chooseEngineerName)) {

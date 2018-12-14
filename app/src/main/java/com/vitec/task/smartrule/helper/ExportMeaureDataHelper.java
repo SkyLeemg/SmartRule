@@ -1,4 +1,4 @@
-package com.vitec.task.smartrule.utils;
+package com.vitec.task.smartrule.helper;
 
 import android.content.Context;
 import android.os.Environment;
@@ -46,7 +46,7 @@ import jxl.write.biff.RowsExceededException;
  *   7.5 开启data循环，依次将数据写入到01~10列下的单元格中，每10个单元格dataRowNum++
  *
  */
-public class ExportMeaureData {
+public class ExportMeaureDataHelper {
 //    sheet表，工作簿的名
     private WritableSheet mWritableSheet;
     //    excel文件
@@ -65,9 +65,10 @@ public class ExportMeaureData {
     public static final String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
 //    public static final String path = Environment.getExternalStorageDirectory() + "/excel";
 
-    public ExportMeaureData(Context context,String fileName) {
+    public ExportMeaureDataHelper(Context context, String fileName) {
         createExcelFile(context,fileName);
     }
+
 
     private void createExcelFile(Context context,String fileName) {
 //        path = "data/data/" + context.getPackageName() + "/excel";
@@ -146,7 +147,7 @@ public class ExportMeaureData {
 
     }
 
-    public void addExcelData(MeasureTable measureTable, IAddExcelResultCallBack callBack) {
+    public void addExcelData(MeasureTable measureTable) {
 
         try {
             /**
@@ -263,23 +264,24 @@ public class ExportMeaureData {
             rowCucor++;
             Log.e("aaa", "addExcelData: 最后的行游标号："+rowCucor );
 
-            callBack.onSuccess(path);
+
 
         } catch (RowsExceededException e) {
-            callBack.onFail("行异常");
+
             e.printStackTrace();
         } catch (WriteException e) {
-            callBack.onFail("写入异常");
             e.printStackTrace();
         }
 
     }
 
-    public void write() {
+    public void write( IAddExcelResultCallBack callBack) {
         try {
             mWritableWorkbook.write();
+            callBack.onSuccess(path);
         } catch (IOException e) {
             e.printStackTrace();
+            callBack.onFail("写入异常");
         }
     }
 

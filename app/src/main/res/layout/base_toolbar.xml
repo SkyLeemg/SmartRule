@@ -32,6 +32,7 @@
             android:text="智能靠尺"
             android:textColor="@color/white_bar_word_color"
             android:layout_centerInParent="true"
+            android:textStyle="bold"
             android:textSize="18sp"/>
 
         <ImageView
