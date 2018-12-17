@@ -23,6 +23,7 @@ import com.shizhefei.view.largeimage.LargeImageView;
 import com.shizhefei.view.largeimage.UpdateImageView;
 import com.shizhefei.view.largeimage.factory.InputStreamBitmapDecoderFactory;
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.interfaces.ViewTouchCallBack;
 import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.utils.ScreenSizeUtil;
 import com.vitec.task.smartrule.view.IconImageView;
@@ -30,11 +31,12 @@ import com.vitec.task.smartrule.view.MyLargeImageView;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageTestActivity extends Activity {
+public class ImageTestActivity extends Activity implements ViewTouchCallBack{
 
     private MyLargeImageView largeImageView;
     private RelativeLayout relativeLayout;
@@ -65,6 +67,7 @@ public class ImageTestActivity extends Activity {
         relativeLayout = findViewById(R.id.relative);
         iconImgList = new ArrayList<>();
         initViewSetting();
+
     }
 
     private void initViewSetting() {
@@ -88,9 +91,11 @@ public class ImageTestActivity extends Activity {
         }
         LogUtils.show("查看scale：" + largeImageView.getScale()+", FitScale:"+largeImageView.getFitScale());
 
-        largeImageView.setOnTouchListener(listener);
+//        largeImageView.setOnTouchListener(listener);
 
         rate = largeImageView.getImageWidth() / ScreenSizeUtil.getScreenWidth(getApplicationContext());
+        largeImageView.setTouchCallBack(this);
+
 
 //        BlockImageLoader.OnImageLoadListener onImageLoadListener=largeImageView.getOnImageLoadListener();
 //       largeImageView.
@@ -101,96 +106,72 @@ public class ImageTestActivity extends Activity {
 
 
 
-    float preOffsetX;
-    float preOffsetY;
-    View.OnTouchListener listener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            boolean result = onTouchEvent(motionEvent);
-            switch (motionEvent.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    LogUtils.show("查看刚按下去的偏移坐标：" + motionEvent.getRawX() + "," + motionEvent.getX());
-                    preX = motionEvent.getX();
-                    preY = motionEvent.getY();
-                    preOffsetX = largeImageView.getScrollX();
-                    preOffsetY = largeImageView.getScrollY();
-                    if (motionEvent.getPointerCount() > 1) {
-                        double pointdxPow2 = Math.pow(motionEvent.getX(1) - motionEvent.getX(0), 2);
-                        double pointdyPow2 = Math.pow(motionEvent.getY(1) - motionEvent.getY(0), 2);
-                        prevDistance = (float) Math.sqrt(pointdxPow2 + pointdyPow2);
-
-                    }
-                    break;
-
-                case MotionEvent.ACTION_MOVE:
-
-                    float dx = motionEvent.getX() - preX;
-                    float dy = motionEvent.getY() - preY;
-
-                    preX = motionEvent.getX();
-                    preY = motionEvent.getY();
-                    LogUtils.show("手指的坐标："+preX+","+preY+"，手指计算出来的偏移量：" + dx + "," + dy);
-                    float dOffsetX = -1*(largeImageView.getScrollX() - preOffsetX) * rate;
-                    float dOffsetY = -1*(largeImageView.getScrollY() - preOffsetY) * rate;
-                    LogUtils.show("父控件的偏移坐标："+largeImageView.getScrollX()+","+largeImageView.getScrollY()+",父控件的偏移量："+dOffsetX+","+dOffsetY);
-                    preOffsetX = largeImageView.getScrollX();
-                    preOffsetY = largeImageView.getScrollY();
-                    if (motionEvent.getPointerCount() == 1 && largeImageView.getScale() > 1) {
-                        translateView(dx, dy);
-                    }
+//    float preOffsetX;
+//    float preOffsetY;
+//    View.OnTouchListener listener = new View.OnTouchListener() {
+//        @Override
+//        public boolean onTouch(View view, MotionEvent motionEvent) {
+//            boolean result = onTouchEvent(motionEvent);
+//            switch (motionEvent.getAction()) {
+//                case MotionEvent.ACTION_DOWN:
+////                    LogUtils.show("查看刚按下去的偏移坐标：" + motionEvent.getRawX() + "," + motionEvent.getX());
+//                    preX = motionEvent.getX();
+//                    preY = motionEvent.getY();
+//                    preOffsetX = largeImageView.getScrollX();
+//                    preOffsetY = largeImageView.getScrollY();
+//                    if (motionEvent.getPointerCount() > 1) {
+//                        double pointdxPow2 = Math.pow(motionEvent.getX(1) - motionEvent.getX(0), 2);
+//                        double pointdyPow2 = Math.pow(motionEvent.getY(1) - motionEvent.getY(0), 2);
+//                        prevDistance = (float) Math.sqrt(pointdxPow2 + pointdyPow2);
 //
-                    if (motionEvent.getPointerCount() > 1 && largeImageView.getScale() != preScale) {
+//                    }
+//                    break;
+//
+//                case MotionEvent.ACTION_MOVE:
+//
+//                    int dx = (int) (motionEvent.getX() - preX);
+//                    int dy = (int) (motionEvent.getY() - preY);
+//
+//                    preX = motionEvent.getX();
+//                    preY = motionEvent.getY();
+////                    LogUtils.show("手指的坐标："+preX+","+preY+"，手指计算出来的偏移量：" + dx + "," + dy);
+//                    float dOffsetX = -1*(largeImageView.getScrollX() - preOffsetX) * rate;
+//                    float dOffsetY = -1*(largeImageView.getScrollY() - preOffsetY) * rate;
+////                    LogUtils.show("父控件的偏移坐标："+largeImageView.getScrollX()+","+largeImageView.getScrollY()+",父控件的偏移量："+dOffsetX+","+dOffsetY);
+////                    preOffsetX = largeImageView.getScrollX();
+////                    preOffsetY = largeImageView.getScrollY();
+//                    if (motionEvent.getPointerCount() == 1 && largeImageView.getScale() > 1) {
 //                        translateView(dx, dy);
-                        double pointdxPow2 = Math.pow(motionEvent.getX(1) - motionEvent.getX(0), 2);
-                        double pointdyPow2 = Math.pow(motionEvent.getY(1) - motionEvent.getY(0), 2);
-                        float nowDistance = (float) Math.sqrt(pointdxPow2 + pointdyPow2);
-                        if (prevDistance != Float.MIN_VALUE) {
-                            float scale = nowDistance / prevDistance;
-                            totalScale *= scale;
-//                            scaleView(scale, motionEvent.getX(0), motionEvent.getY(0));
-                        }
-                        prevDistance = nowDistance;
+//                    }
+////
+////                    if (motionEvent.getPointerCount() > 1 && largeImageView.getScale() != preScale) {
+//////                        translateView(dx, dy);
+////                        double pointdxPow2 = Math.pow(motionEvent.getX(1) - motionEvent.getX(0), 2);
+////                        double pointdyPow2 = Math.pow(motionEvent.getY(1) - motionEvent.getY(0), 2);
+////                        float nowDistance = (float) Math.sqrt(pointdxPow2 + pointdyPow2);
+////                        if (prevDistance != Float.MIN_VALUE) {
+////                            float scale = nowDistance / prevDistance;
+////                            totalScale *= scale;
+//////                            scaleView(scale, motionEvent.getX(0), motionEvent.getY(0));
+////                        }
+////                        prevDistance = nowDistance;
+////
+////                    }
+//
+//                    preScale = largeImageView.getScale();
+//                    break;
+//                case MotionEvent.ACTION_UP:
+//                    prevDistance = Float.MIN_VALUE;
+////                    totalScale = 1f;
+////                    LogUtils.show("查看抬起后的缩放比：" + largeImageView.getScale());
+////                    LogUtils.show("查看抬起的偏移坐标：" + motionEvent.getRawX() + "," + motionEvent.getRawY());
+//                    break;
+//            }
+//            return result;
+//        }
+//    };
 
-                    }
 
-                    preScale = largeImageView.getScale();
-                    break;
-                case MotionEvent.ACTION_UP:
-                    prevDistance = Float.MIN_VALUE;
-//                    totalScale = 1f;
-                    LogUtils.show("查看抬起后的缩放比：" + largeImageView.getScale());
-                    LogUtils.show("查看抬起的偏移坐标：" + motionEvent.getRawX() + "," + motionEvent.getRawY());
-                    break;
-            }
-            return result;
-        }
-    };
-
-    /**
-     * 平移
-     * @param dx
-     * @param dy
-     */
-    private void translateView(float dx, float dy) {
-        for (IconImageView view : iconImgList) {
-            view.setX(view.getX() + (dx));
-            view.setY(view.getY() + (dy));
-        }
-    }
-
-    private void scaleView(float scale, float px, float py) {
-        for (IconImageView view : iconImgList) {
-            view.setScaleX(largeImageView.getScaleX());
-            view.setScaleY(largeImageView.getScaleY());
-            float centerX = view.getX() + view.getWidth() / 2;
-            float centerY = view.getY() + view.getHeight() / 2;
-            float leftBoardAfterScale = centerX + (px - centerX) * (1 - scale);
-            float topBoardAfterScale = centerY + (py - centerY) * (1 - scale);
-            view.setX(leftBoardAfterScale-view.getWidth()/2);
-            view.setY(topBoardAfterScale-view.getHeight()/2);
-
-        }
-    }
 
 
     /**
@@ -367,6 +348,51 @@ public class ImageTestActivity extends Activity {
         }
     };
 
+
+    /**
+     * 平移
+     * @param dx
+     * @param dy
+     */
+    private void translateView(float dx, float dy) {
+        LogUtils.show("translateView-----移动的距离："+dx+","+dy);
+        for (IconImageView view : iconImgList) {
+            view.setX(view.getX() + (dx));
+            view.setY(view.getY() + (dy));
+        }
+    }
+
+    private void scaleView(float scale, float px, float py) {
+        for (IconImageView view : iconImgList) {
+            view.setScaleX(largeImageView.getScaleX());
+            view.setScaleY(largeImageView.getScaleY());
+            float centerX = view.getX() + view.getWidth() / 2;
+            float centerY = view.getY() + view.getHeight() / 2;
+            float leftBoardAfterScale = centerX + (px - centerX) * (1 - scale);
+            float topBoardAfterScale = centerY + (py - centerY) * (1 - scale);
+            view.setX(leftBoardAfterScale-view.getWidth()/2);
+            view.setY(topBoardAfterScale-view.getHeight()/2);
+
+        }
+    }
+
+    private void scaleView(float scale) {
+        for (IconImageView view : iconImgList) {
+            view.setScaleX(largeImageView.getScaleX());
+            view.setScaleY(largeImageView.getScaleY());
+
+        }
+    }
+
+    @Override
+    public void onScroll(float distanceX, float distanceY) {
+        translateView(distanceX*(-1), distanceY*(-1));
+    }
+
+    @Override
+    public void onScale(float scale, float px, float py) {
+        scaleView(scale);
+    }
 
 
     class Layout {
