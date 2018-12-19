@@ -14,6 +14,7 @@ public class IconImageView extends ImageView {
 
     private float preX;
     private float preY;
+
     public IconImageView(Context context) {
         super(context);
     }

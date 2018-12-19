@@ -4,21 +4,27 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     >
-    <RelativeLayout
-        android:id="@+id/relative"
+    <FrameLayout
+        android:id="@+id/frame_layout"
         android:layout_width="match_parent"
         android:layout_height="300dp"
         >
 
-        <com.vitec.task.smartrule.view.MyLargeImageView
+        <com.vitec.task.smartrule.view.large_img.LargeImageView
             android:id="@+id/imageView"
             android:scrollbars="vertical|horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/pblue_bar_color"
             android:layout_gravity="top"
+            android:visibility="gone"
             />
-    </RelativeLayout>
+
+        <com.vitec.task.smartrule.view.MyImageView
+            android:id="@+id/my_img_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </FrameLayout>
 
 
     <ToggleButton

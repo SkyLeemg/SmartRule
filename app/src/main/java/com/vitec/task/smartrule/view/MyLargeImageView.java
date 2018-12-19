@@ -7,9 +7,9 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
-import com.shizhefei.view.largeimage.LargeImageView;
 import com.vitec.task.smartrule.interfaces.ViewTouchCallBack;
 import com.vitec.task.smartrule.utils.LogUtils;
+import com.vitec.task.smartrule.view.large_img.LargeImageView;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -112,7 +112,7 @@ public class MyLargeImageView extends LargeImageView {
             gestureDetector.onTouchEvent(event);
         }
         if (event.getPointerCount() == 2) {
-            touchCallBack.onScale(getScale(),event.getX(0),event.getY(0));
+//            touchCallBack.onScale(getScale(),event.getX(0),event.getY(0));
         }
 
         return result;

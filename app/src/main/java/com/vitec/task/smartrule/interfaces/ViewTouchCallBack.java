@@ -4,5 +4,7 @@ public interface ViewTouchCallBack {
 
     void onScroll(float distanceX, float distanceY);
 
-    void onScale(float scale, float px, float py);
+    void onScroll(float distanceX, float distanceY, int flag);
+
+    void onScale(float preScale,float scale, float px, float py);
 }
