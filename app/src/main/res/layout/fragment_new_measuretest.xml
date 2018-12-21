@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <com.vitec.task.smartrule.view.ZoomMoveFrameLayout
+        android:id="@+id/frame_layout"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:background="@color/pblue_bar_color"
+        android:layout_gravity="center"
+        >
+
+
+        <!--<ImageView-->
+            <!--android:id="@+id/my_img_view"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content" />-->
+        <!--<com.vitec.task.smartrule.view.IconImageView-->
+            <!--android:id="@+id/icon_img_view"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:src="@mipmap/icon_measure_lever"-->
+            <!--/>-->
+
+    </com.vitec.task.smartrule.view.ZoomMoveFrameLayout>
+
+
+    <ToggleButton
+
+        android:id="@+id/toggleButton"
+
+        android:layout_width="match_parent"
+
+        android:layout_height="wrap_content"
+
+        android:text="ToggleButton"
+
+        android:textOff="当前可 缩放和滑动"
+
+        android:textOn="当前不可 缩放和滑动" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="上传图纸"
+        android:onClick="uploadImgClick"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="添加图标"
+        android:onClick="addClick"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="保存图片"
+        android:onClick="saveClick"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="删除图标"
+        android:onClick="delIconClick"
+        />
+
+</LinearLayout>

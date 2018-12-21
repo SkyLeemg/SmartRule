@@ -4,13 +4,19 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.PointF;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -20,8 +26,10 @@ import com.vitec.task.smartrule.bean.IconViewBean;
 import com.vitec.task.smartrule.bean.ViewLayout;
 import com.vitec.task.smartrule.interfaces.ViewTouchCallBack;
 import com.vitec.task.smartrule.utils.LogUtils;
+import com.vitec.task.smartrule.utils.ScreenSizeUtil;
 import com.vitec.task.smartrule.view.IconImageView;
 import com.vitec.task.smartrule.view.MyImageView;
+import com.vitec.task.smartrule.view.ZoomMoveFrameLayout;
 import com.vitec.task.smartrule.view.large_img.LargeImageView;
 
 import java.io.IOException;
@@ -29,21 +37,24 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageTestActivity2 extends Activity implements ViewTouchCallBack{
+public class ImageTestActivity2 extends Activity {
 
-    private FrameLayout frameLayout;
+    private ZoomMoveFrameLayout frameLayout;
     private ToggleButton toggleButton;
-    private Bitmap bitmap;
-    private MyImageView myImageView;
+//    private Bitmap bitmap;
+    private ImageView myImageView;
+//    private IconImageView iconImageView;
 
     private List<IconViewBean> iconImgList;
     private float total = 1f;
+    private float srcScaleX;
+    private float srcScaleY;
+    private PointF srcCenterPoint;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_new_measure);
-
+        setContentView(R.layout.fragment_new_measuretest);
         initView();
 
     }
@@ -51,81 +62,72 @@ public class ImageTestActivity2 extends Activity implements ViewTouchCallBack{
     private void initView() {
         toggleButton = findViewById(R.id.toggleButton);
         frameLayout = findViewById(R.id.frame_layout);
-        myImageView = findViewById(R.id.my_img_view);
         iconImgList = new ArrayList<>();
-        initViewSetting();
 
     }
-
-    private void initViewSetting() {
-        InputStream inputStream = null;
-        try {
-            inputStream = getAssets().open("f.jpg");
-            bitmap = BitmapFactory.decodeStream(inputStream);
-            myImageView.setImageBitmap(bitmap);
-            myImageView.setTouchCallBack(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-
 
 
     /**
      * 添加图标按钮
+     *
      * @param view
      */
-//    ViewLayout layout ;
     public void addClick(View view) {
-        InputStream inputStream = null;
-//        try {
-            if (iconImgList.size() > 0) {
-                for (int i=0;i<iconImgList.size();i++) {
-                    IconImageView img = iconImgList.get(i).getImageView();
-                    int mx = (int) img.getX();
-                    int my = (int) img.getY();
-                    ViewLayout layout = new ViewLayout(mx-img.getWidth()/2,my-img.getHeight()/2,mx+img.getWidth()/2,my+img.getHeight()/2);
-                    iconImgList.get(i).setLayout(layout);
-                    LogUtils.show("按添加按钮前的坐标："+layout.getLeft()+","+layout.getTop()+","+layout.getRight()+","+layout.getBottom());
-                }
-            }
-//            inputStream = getAssets().open("log.jpg");
-//            Bitmap logoBitmap = BitmapFactory.decodeStream(inputStream);
-            final IconImageView imageView = new IconImageView(ImageTestActivity2.this);
-//            imageView.setImageBitmap(logoBitmap);
-            imageView.setImageResource(R.mipmap.icon_measure_lever);
-            imageView.setMaxWidth(150);
-            imageView.setMaxHeight(150);
-            imageView.layout(imageView.getLeft(),imageView.getTop(),imageView.getRight(),imageView.getBottom());
-            frameLayout.addView(imageView);
-            iconImgList.add(new IconViewBean(imageView,1));
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-
-                    if (iconImgList.size() > 1) {
-                        for (int i=0;i<iconImgList.size()-1;i++) {
-                            ViewLayout layout = iconImgList.get(i).getLayout();
-                            iconImgList.get(i).getImageView().layout(layout.getLeft(), layout.getTop(), layout.getRight(), layout.getBottom());
-                        }
-                    }
-
-                }
-            }, 200);
-
+        final IconImageView imageView = new IconImageView(ImageTestActivity2.this);
+        imageView.setImageResource(R.mipmap.icon_measure_lever);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(new ViewGroup.LayoutParams(100, 100));
+        imageView.setLayoutParams(lp);
+        frameLayout.addView(imageView);
+        iconImgList.add(new IconViewBean(imageView, 1));
 
     }
 
 
     /**
      * 保存图片，将图标和图片合成
+     *
      * @param view
      */
     public void saveClick(View view) {
+        if (myImageView != null) {
+            /*******把图片缩为原来的大小********/
+            LogUtils.show("查看当前缩放值：" + myImageView.getScaleX() + "," + myImageView.getScaleY());
+            float currentScale = myImageView.getScaleX();
+            float deltaScale = srcScaleX / currentScale;
+            frameLayout.scale(deltaScale, srcCenterPoint.x, srcCenterPoint.y);
 
+            /*********把图片挪回中间*********/
+            PointF currentPoint = new PointF();
+            currentPoint.x = myImageView.getX() + (myImageView.getWidth() / 2);
+            currentPoint.y = myImageView.getY() + (myImageView.getHeight() / 2);
+            LogUtils.show("当前中心点位置：" + currentPoint.x + "," + currentPoint.y);
+            PointF deltaPoint = new PointF();
+//            计算偏移值
+            deltaPoint.x = currentPoint.x - srcCenterPoint.x;
+            deltaPoint.y = currentPoint.y - srcCenterPoint.y;
+//            开始平移
+            frameLayout.transLate(deltaPoint.x * -1, deltaPoint.y * -1);
+//            合并图像
+            Bitmap newBitmap = saveBitmap();
+
+            myImageView.setImageBitmap(newBitmap);
+            for (int i=0;i<iconImgList.size();i++) {
+                frameLayout.removeView(iconImgList.get(i).getImageView());
+            }
+            iconImgList.clear();
+
+//
+//            LogUtils.show("查看保存时的长宽：" + myImageView.getWidth() + "," + myImageView.getHeight());
+//            LogUtils.show("查看大图的右上角坐标：" + myImageView.getLeft() + "," + myImageView.getTop() + "，XY坐标：" + myImageView.getX() + "," + myImageView.getY());
+//            if (iconImgList.size() > 0) {
+//                for (IconViewBean bean : iconImgList) {
+//                    LogUtils.show("查看小图标的右上角坐标：" + bean.getImageView().getX() + "," + bean.getImageView().getY());
+//
+//                }
+//            }
+////            LogUtils.show("查看屏幕的长款："+ ScreenSizeUtil.getScreenWidth(getApplicationContext()));
+//            LogUtils.show("查看图片的偏距："+myImageView.getPaddingLeft()+"，"+myImageView.getPaddingRight());
+        }
     }
 
     private Bitmap createBitmap(Bitmap src, Bitmap watermark) {
@@ -152,33 +154,58 @@ public class ImageTestActivity2 extends Activity implements ViewTouchCallBack{
         return newb;
     }
 
+    /**
+     * 合成图像
+     * @return
+     */
     private Bitmap saveBitmap() {
         if (iconImgList.size() > 0) {
+//            获取大图的bitmap
+            myImageView.setDrawingCacheEnabled(true);
+            Bitmap bitmap = myImageView.getDrawingCache();
+//            获取大图的图片大小
             int srcWidth = bitmap.getWidth();
             int srcHeight = bitmap.getHeight();
 
-
-//            float rate = srcWidth / ScreenSizeUtil.getScreenWidth(getApplicationContext());
-            float rate = 1.77778f;
-//            LogUtils.show("查看计算出的比例值：" + rate);
             LogUtils.show("查看图片宽度：" + srcWidth + ",图片高度：" + srcHeight);
-//            LogUtils.show("查看屏幕宽度："+ ScreenSizeUtil.getScreenWidth(getApplicationContext())+",屏幕高度："+ScreenSizeUtil.getScreenHeight(getApplicationContext()));
+//            根据大图的图片大小创建一个bitmap容器
             Bitmap newBitmap = Bitmap.createBitmap(srcWidth, srcHeight, Bitmap.Config.ARGB_8888);
             Canvas cv = new Canvas(newBitmap);
 //            先画背景图
             cv.drawBitmap(bitmap, 0, 0, null);
-            for (int i=0;i<iconImgList.size();i++) {
-                iconImgList.get(i).getImageView().setDrawingCacheEnabled(true);
-                LogUtils.show("查看计算前的的坐标点left："+iconImgList.get(i).getImageView().getLeft()+",top："+iconImgList.get(i).getImageView().getTop());
+//            bitmap用完了之后再回收 不然会报错
+            myImageView.setDrawingCacheEnabled(false);
+//            循环画小图标
+            //                    计算图片比例
+            float sizeScale = (float) srcWidth / (float)myImageView.getWidth();
+            LogUtils.show("查看图片和画布比例："+srcWidth+",宽度："+myImageView.getWidth()+",比例："+sizeScale);
 
-                int left;
-                int top;
-//                left = (int) (iconImgList.get(i).getImageView().getLeft() *rate *largeImageView.getScale());
-//                top = (int) (iconImgList.get(i).getImageView().getTop() *rate*largeImageView.getScale());
+            if (iconImgList.size() > 0) {
+                for (int i = 0; i < iconImgList.size(); i++) {
+                    IconImageView iconImageView = iconImgList.get(i).getImageView();
+                    iconImageView.setDrawingCacheEnabled(true);
+                    /**
+                     * 1.获取图标的bitmap
+                     * 2.把图标按照getScale的参数进行放大缩小
+                     * 3.再按照画布比例进行放大缩小
+                     */
+                    Bitmap iconBitmap = iconImageView.getDrawingCache();
+                    LogUtils.show("查看iconBitmap的大小：" + iconBitmap.getWidth() + "," + iconBitmap.getHeight()+",缩放倍率："+iconImageView.getScaleX()+","+iconImageView.getScaleY());
+                    LogUtils.show("查看计算前的的坐标点left：" + iconImageView.getX() + ",top：" + iconImageView.getY());
+                    int iconWidth = (int) (iconImageView.getWidth() * iconImageView.getScaleX() * sizeScale);
+                    int iconHeight = (int) (iconImageView.getHeight() * iconImageView.getScaleY() * sizeScale);
+                    Bitmap newIconBitmap = Bitmap.createScaledBitmap(iconBitmap, iconWidth, iconHeight, true);
+                    LogUtils.show("查看计算后的图标大小：" + iconWidth + "," + iconHeight);
+
+                    float left = iconImageView.getX() - myImageView.getX();
+                    float top = iconImageView.getY() - myImageView.getY();
 //                LogUtils.show("查看计算后的的坐标点left："+left+",top："+top);
 
-//                cv.drawBitmap(iconImgList.get(i).getImageView().getDrawingCache(),left,top,null);
-                iconImgList.get(i).getImageView().setDrawingCacheEnabled(false);
+                    cv.drawBitmap(newIconBitmap,left,top,null);
+                    iconImageView.setDrawingCacheEnabled(false);
+                    iconBitmap = null;
+                    newIconBitmap = null;
+                }
             }
             cv.save(Canvas.ALL_SAVE_FLAG);
             cv.restore();
@@ -189,53 +216,7 @@ public class ImageTestActivity2 extends Activity implements ViewTouchCallBack{
     }
 
 
-
-    /**
-     * 平移
-     * @param dx
-     * @param dy
-     */
-    private void translateView(float dx, float dy) {
-//        LogUtils.show("translateView-----移动的距离："+dx+","+dy);
-        myImageView.setX(myImageView.getX() + (dx));
-        myImageView.setY(myImageView.getY() + (dy));
-        for (int i = 0; i < iconImgList.size(); i++) {
-
-           iconImgList.get(i).getImageView().setX(iconImgList.get(i).getImageView().getX() + (dx));
-           iconImgList.get(i).getImageView().setY(iconImgList.get(i).getImageView().getY() + (dy));
-
-            LogUtils.show("translateView-----平移最终坐标："+(iconImgList.get(i).getImageView().getX()+dx)+","+(iconImgList.get(i).getImageView().getY()+dy));
-        }
-    }
-
-
-    /**
-     * 平移
-     * @param dx
-     * @param dy
-     */
-    private void translateView(float dx, float dy,int flag) {
-//        LogUtils.show("translateView-----移动的距离："+dx+","+dy);
-        for (int i = 0; i < iconImgList.size(); i++) {
-
-            if (flag==0){
-                iconImgList.get(i).getImageView().setX(iconImgList.get(i).getImageView().getX() + (dx));
-                iconImgList.get(i).getImageView().setY(iconImgList.get(i).getImageView().getY() + (dy));
-            }else if(flag==1){
-                iconImgList.get(i).getImageView().setX(iconImgList.get(i).getImageView().getX() - (dx));
-                iconImgList.get(i).getImageView().setY(iconImgList.get(i).getImageView().getY() - (dy));
-            }
-
-            LogUtils.show("translateView-----平移最终坐标："+(iconImgList.get(i).getImageView().getX()+dx)+","+(iconImgList.get(i).getImageView().getY()+dy));
-        }
-    }
-
-    private void scaleView(float preScale,float scale, float px, float py) {
-        total *= scale;
-        scaleView(myImageView,scale,px,py);
-    }
-
-    private void scaleView(View view,float scale, float px, float py) {
+    private void scaleView(View view, float scale, float px, float py) {
         view.setScaleX(total);
         view.setScaleY(total);
         //求本view中心点在屏幕中的坐标
@@ -250,19 +231,84 @@ public class ImageTestActivity2 extends Activity implements ViewTouchCallBack{
     }
 
 
-    @Override
-    public void onScroll(float distanceX, float distanceY) {
-        translateView(distanceX, distanceY);
+    public void delIconClick(View view) {
+        if (iconImgList.size() > 0) {
+            int index = iconImgList.size() - 1;
+            frameLayout.removeView(iconImgList.get(index).getImageView());
+            iconImgList.remove(index);
+            Toast.makeText(getApplicationContext(), "删除成功", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    @Override
-    public void onScroll(float distanceX, float distanceY, int flag) {
-        translateView(distanceX,distanceY,flag);
-    }
+    /***
+     * 添加大图
+     * @param view
+     */
+    public void uploadImgClick(View view) {
 
-    @Override
-    public void onScale(float preScale,float scale, float px, float py) {
-        scaleView(preScale,scale,px,py);
-    }
+        try {
+            myImageView = new ImageView(ImageTestActivity2.this);
+            InputStream inputStream = getAssets().open("paper.png");
+            Bitmap imgBitmap = BitmapFactory.decodeStream(inputStream);
+            LogUtils.show("查看FrameLayout的长宽：" + frameLayout.getWidth() + "," + frameLayout.getHeight());
 
+            LogUtils.show("查看bitmap的图片大小：" + imgBitmap.getWidth() + "," + imgBitmap.getHeight());
+//            按比例设置图片的长宽
+            float imgWidth, imgHeight;
+            if (imgBitmap.getWidth() / imgBitmap.getHeight() >= frameLayout.getWidth() / frameLayout.getHeight()) {
+//                imgHeight = LinearLayout.LayoutParams.WRAP_CONTENT;
+                imgHeight = imgBitmap.getHeight() / (imgBitmap.getWidth() / frameLayout.getWidth());
+                imgWidth = frameLayout.getWidth();
+            } else {
+//                imgWidth = LinearLayout.LayoutParams.WRAP_CONTENT;
+                float bitmapHeight = imgBitmap.getHeight();
+                float frameHeight = frameLayout.getHeight();
+                float scale = bitmapHeight / frameHeight;
+                imgWidth = imgBitmap.getWidth() / scale;
+                imgHeight = frameLayout.getHeight();
+            }
+            myImageView.setImageBitmap(imgBitmap);
+            LogUtils.show("查看计算后的图片长宽：" + imgWidth + "," + imgHeight);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams((int) imgWidth, (int) imgHeight);
+//            lp.gravity = Gravity.CENTER;
+            myImageView.setLayoutParams(lp);
+//            将图片添加到frameLayout中
+            frameLayout.addView(myImageView);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+//        初始化原始的缩放倍率，之后复位用
+                srcScaleX = myImageView.getScaleX();
+                srcScaleY = myImageView.getScaleY();
+                LogUtils.show("查看初始化后，大图的缩放值：" + srcScaleX + "," + srcScaleY);
+//        初始化原始大图的中心点坐标
+                srcCenterPoint = new PointF();
+                srcCenterPoint.x = myImageView.getX() + (myImageView.getWidth() / 2);
+                srcCenterPoint.y = myImageView.getY() + (myImageView.getHeight() / 2);
+                if (srcCenterPoint.x != frameLayout.getWidth() / 2 || srcCenterPoint.y != frameLayout.getHeight() / 2) {
+                    float deltax = srcCenterPoint.x - frameLayout.getWidth() / 2;
+                    float deltaY = srcCenterPoint.y - frameLayout.getHeight() / 2;
+                    RectF rectF = new RectF();
+                    rectF.left = myImageView.getLeft() - deltax;
+                    rectF.top = myImageView.getTop() - deltaY;
+                    rectF.right = myImageView.getRight() - deltax;
+                    rectF.bottom = myImageView.getBottom() - deltaY;
+                    myImageView.setX(rectF.left);
+                    myImageView.setY(rectF.top);
+                    srcCenterPoint.x = myImageView.getX() + (myImageView.getWidth() / 2);
+                    srcCenterPoint.y = myImageView.getY() + (myImageView.getHeight() / 2);
+//                    myImageView.layout(rectF.left, rectF.top, rectF.right, rectF.bottom);
+                }
+                LogUtils.show("查看初始化后，大图的中心点坐标：" + srcCenterPoint.x + "," + srcCenterPoint.y);
+                LogUtils.show("查看原始的长宽：" + myImageView.getWidth() + "," + myImageView.getHeight());
+                LogUtils.show("查看大图的右上角坐标：" + myImageView.getLeft() + "," + myImageView.getTop() + ",XY坐标：" + myImageView.getX() + "," + myImageView.getY());
+            }
+        }, 100);
+
+    }
 }
