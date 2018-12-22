@@ -27,24 +27,17 @@
     </com.vitec.task.smartrule.view.ZoomMoveFrameLayout>
 
 
-    <ToggleButton
-
-        android:id="@+id/toggleButton"
-
-        android:layout_width="match_parent"
-
-        android:layout_height="wrap_content"
-
-        android:text="ToggleButton"
-
-        android:textOff="当前可 缩放和滑动"
-
-        android:textOn="当前不可 缩放和滑动" />
+   <Button
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:text="上传图纸测试"
+       android:onClick="uploadPicTest"
+       />
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="上传图纸"
+        android:text="显示图纸"
         android:onClick="uploadImgClick"
         />
 

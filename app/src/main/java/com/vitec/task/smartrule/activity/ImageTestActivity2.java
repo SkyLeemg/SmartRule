@@ -1,12 +1,14 @@
 package com.vitec.task.smartrule.activity;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.view.Gravity;
@@ -25,22 +27,28 @@ import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.IconViewBean;
 import com.vitec.task.smartrule.bean.ViewLayout;
 import com.vitec.task.smartrule.interfaces.ViewTouchCallBack;
+import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.utils.ScreenSizeUtil;
+import com.vitec.task.smartrule.view.BottomDialog;
 import com.vitec.task.smartrule.view.IconImageView;
 import com.vitec.task.smartrule.view.MyImageView;
 import com.vitec.task.smartrule.view.ZoomMoveFrameLayout;
 import com.vitec.task.smartrule.view.large_img.LargeImageView;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ImageTestActivity2 extends Activity {
 
     private ZoomMoveFrameLayout frameLayout;
-    private ToggleButton toggleButton;
+//    private ToggleButton toggleButton;
 //    private Bitmap bitmap;
     private ImageView myImageView;
 //    private IconImageView iconImageView;
@@ -60,7 +68,7 @@ public class ImageTestActivity2 extends Activity {
     }
 
     private void initView() {
-        toggleButton = findViewById(R.id.toggleButton);
+//        toggleButton = findViewById(R.id.toggleButton);
         frameLayout = findViewById(R.id.frame_layout);
         iconImgList = new ArrayList<>();
 
@@ -74,6 +82,8 @@ public class ImageTestActivity2 extends Activity {
      */
     public void addClick(View view) {
         final IconImageView imageView = new IconImageView(ImageTestActivity2.this);
+        String text = iconImgList.size() + 1+"";
+        imageView.setText(text);
         imageView.setImageResource(R.mipmap.icon_measure_lever);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(new ViewGroup.LayoutParams(100, 100));
         imageView.setLayoutParams(lp);
@@ -109,12 +119,31 @@ public class ImageTestActivity2 extends Activity {
             frameLayout.transLate(deltaPoint.x * -1, deltaPoint.y * -1);
 //            合并图像
             Bitmap newBitmap = saveBitmap();
+            String path= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
+            String imgFileName = DateFormatUtil.formatDate(new Date(), "yyyyMMddHHmmSS")+".jpg";
 
-            myImageView.setImageBitmap(newBitmap);
-            for (int i=0;i<iconImgList.size();i++) {
-                frameLayout.removeView(iconImgList.get(i).getImageView());
+            File imgFile = new File(path, imgFileName);
+            if (imgFile.exists()) {
+                imgFile.delete();
             }
-            iconImgList.clear();
+            try {
+                FileOutputStream fos = new FileOutputStream(imgFile);
+                newBitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+                fos.flush();
+                fos.close();
+                Toast.makeText(getApplicationContext(),"保存成功",Toast.LENGTH_SHORT).show();
+                LogUtils.show("查看保存的目录："+imgFile.getPath());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+//            myImageView.setImageBitmap(newBitmap);
+//            for (int i=0;i<iconImgList.size();i++) {
+//                frameLayout.removeView(iconImgList.get(i).getImageView());
+//            }
+//            iconImgList.clear();
 
 //
 //            LogUtils.show("查看保存时的长宽：" + myImageView.getWidth() + "," + myImageView.getHeight());
@@ -192,13 +221,29 @@ public class ImageTestActivity2 extends Activity {
                     Bitmap iconBitmap = iconImageView.getDrawingCache();
                     LogUtils.show("查看iconBitmap的大小：" + iconBitmap.getWidth() + "," + iconBitmap.getHeight()+",缩放倍率："+iconImageView.getScaleX()+","+iconImageView.getScaleY());
                     LogUtils.show("查看计算前的的坐标点left：" + iconImageView.getX() + ",top：" + iconImageView.getY());
-                    int iconWidth = (int) (iconImageView.getWidth() * iconImageView.getScaleX() * sizeScale);
-                    int iconHeight = (int) (iconImageView.getHeight() * iconImageView.getScaleY() * sizeScale);
-                    Bitmap newIconBitmap = Bitmap.createScaledBitmap(iconBitmap, iconWidth, iconHeight, true);
+                    float iconWidth = (iconImageView.getWidth() * iconImageView.getScaleX() * sizeScale);
+                    float iconHeight = (iconImageView.getHeight() * iconImageView.getScaleY() * sizeScale);
+                    int iw = (int) iconWidth;
+                    int ih = (int) iconHeight;
+                    Bitmap newIconBitmap = Bitmap.createScaledBitmap(iconBitmap, iw, ih, true);
                     LogUtils.show("查看计算后的图标大小：" + iconWidth + "," + iconHeight);
-
                     float left = iconImageView.getX() - myImageView.getX();
                     float top = iconImageView.getY() - myImageView.getY();
+                    /**
+                     * 1.如果原始宽度不是整型则会画布大小会变小，影响位置，要将位置挪到中间
+                     * 2.如果图标有缩小的话，那么图标的坐标还要加上原始宽度与缩放后的宽度除二
+                     *   因为我们获取到的左上角的坐标是原始宽度的坐标
+                     * **/
+                    left += ((iconImageView.getWidth() * sizeScale - iw) / 2);
+                    top += ((iconImageView.getHeight() * sizeScale - ih) / 2);
+                    if (iconWidth > iw) {
+                        float deltaW = iconWidth - iw;
+                        left += (deltaW / 2);
+                    }
+                    if (iconHeight > ih) {
+                        float deltaH = iconHeight - ih;
+                        top += (deltaH /2);
+                    }
 //                LogUtils.show("查看计算后的的坐标点left："+left+",top："+top);
 
                     cv.drawBitmap(newIconBitmap,left,top,null);
@@ -309,6 +354,12 @@ public class ImageTestActivity2 extends Activity {
                 LogUtils.show("查看大图的右上角坐标：" + myImageView.getLeft() + "," + myImageView.getTop() + ",XY坐标：" + myImageView.getX() + "," + myImageView.getY());
             }
         }, 100);
+
+    }
+
+    public void uploadPicTest(View view) {
+        BottomDialog bottomDialog = new BottomDialog(ImageTestActivity2.this, R.style.BottomDialog);
+        bottomDialog.show();
 
     }
 }
