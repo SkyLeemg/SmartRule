@@ -90,7 +90,7 @@ public class IconImageView extends ImageView {
         this.mPaint = new Paint();
         this.mPaint.setTextSize(40);
         this.mPaint.setColor(Color.WHITE);
-        this.mPaint.setStyle(Paint.Style.STROKE);
+        this.mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
     }
 }
