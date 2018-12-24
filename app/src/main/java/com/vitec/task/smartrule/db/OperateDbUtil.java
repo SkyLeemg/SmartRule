@@ -35,7 +35,7 @@ public class OperateDbUtil {
      */
     public static void addEngineerMudelData(Context context, List<RulerEngineer> engineerList) {
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
-        Log.e(TAG, "addEngineerMudelData: 保存模板数据到数据库："+engineerList.toString() );
+//        Log.e(TAG, "addEngineerMudelData: 保存模板数据到数据库："+engineerList.toString() );
         for (int i = 0; i < engineerList.size(); i++) {
 //            先存储工程（iot_ruler_engineer）表格的数据
             ContentValues values = new ContentValues();
@@ -46,7 +46,7 @@ public class OperateDbUtil {
             values.put(DataBaseParams.enginer_description, rulerEngineer.getEngineerDescription());
             values.put(DataBaseParams.enineer_options_choose,rulerEngineer.getChooseOptions());
             boolean isSuccess = bleDataDbHelper.insertDevToSqlite(DataBaseParams.engineer_table_name, values);
-            Log.e(TAG, "addEngineerMudelData: 查看工程模板是否保存成功：" + isSuccess+",数据内容："+values.toString());
+//            Log.e(TAG, "addEngineerMudelData: 查看工程模板是否保存成功：" + isSuccess+",数据内容："+values.toString());
         }
         bleDataDbHelper.close();
     }
@@ -59,7 +59,7 @@ public class OperateDbUtil {
      */
     public static void addOptionsMudelData(Context context, List<RulerOptions> rulerOptions) {
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
-        Log.e(TAG, "addOptionsMudelData: 保存模板数据到数据库："+rulerOptions.toString() );
+//        Log.e(TAG, "addOptionsMudelData: 保存模板数据到数据库："+rulerOptions.toString() );
         for (int i = 0; i < rulerOptions.size(); i++) {
 //            先存储工程（iot_ruler_engineer）表格的数据
 //            RulerEngineer rulerEngineer = rulerOptions.get(i).getEngineer();
@@ -76,7 +76,7 @@ public class OperateDbUtil {
             optionsValues.put(DataBaseParams.options_create_time,option.getCreateTime());
             optionsValues.put(DataBaseParams.options_measure, option.getMeasure());
             boolean flag = bleDataDbHelper.insertDevToSqlite(DataBaseParams.options_table_name, optionsValues);
-            Log.e(TAG, "addOptionsMudelData: 查看管控要点是否添加成功："+flag+"," + optionsValues);
+//            Log.e(TAG, "addOptionsMudelData: 查看管控要点是否添加成功："+flag+"," + optionsValues);
 //                }
         }
         bleDataDbHelper.close();
@@ -90,7 +90,7 @@ public class OperateDbUtil {
      * @return -1添加失败，0查找id失败，>0返回正确的id
      */
     public static int addMeasureDataToSqlite(Context context,RulerCheck rulerCheck) {
-        Log.e(TAG, "addMeasureDataToSqlite: 查看数据库添加这里收到的rulercheck："+rulerCheck.toString() );
+//        Log.e(TAG, "addMeasureDataToSqlite: 查看数据库添加这里收到的rulercheck："+rulerCheck.toString() );
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
         ContentValues values = new ContentValues();
         values.put(DataBaseParams.measure_engin_id,rulerCheck.getEngineer().getServerID());
@@ -104,7 +104,7 @@ public class OperateDbUtil {
         values.put(DataBaseParams.server_id,rulerCheck.getServerId());
         boolean flag = bleDataDbHelper.insertDevToSqlite(DataBaseParams.measure_table_name, values);
 
-        Log.e(TAG, "addMeasureDataToSqlite: 查看测量表头是否添加成功："+flag+",查看内容：" +values);
+//        Log.e(TAG, "addMeasureDataToSqlite: 查看测量表头是否添加成功："+flag+",查看内容：" +values);
 //        如果添加成功，则返回添加的哪一行的id
         if (flag) {
             String where = "where " + DataBaseParams.measure_engin_id + "=" + rulerCheck.getEngineer().getServerID() + " AND " +
@@ -112,7 +112,7 @@ public class OperateDbUtil {
                     DataBaseParams.measure_project_name+"= \""+rulerCheck.getProjectName()+"\" AND "+
                     DataBaseParams.measure_check_floor+"= \""+rulerCheck.getCheckFloor()+"\" ;"
                     ;
-            Log.e(TAG, "addMeasureDataToSqlite: 查看where条件：" + where);
+//            Log.e(TAG, "addMeasureDataToSqlite: 查看where条件：" + where);
             Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite("id", where);
 
             int resultId = 0;
@@ -157,7 +157,7 @@ public class OperateDbUtil {
                  * 查找刚添加的管控要点的id
                  */
                 String where = " where " + DataBaseParams.measure_option_check_id + "=" + rulerCheckOption.getRulerCheck().getId()+" ;";
-                Log.e(TAG, "添加管控要点: 查看where条件：" + where);
+//                Log.e(TAG, "添加管控要点: 查看where条件：" + where);
                 Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.measure_option_table_name,"id", where);
 
                 if (cursor.moveToFirst()) {
@@ -192,7 +192,7 @@ public class OperateDbUtil {
             } while (cursor.moveToNext());
         }
         bleDataDbHelper.close();
-        LogUtils.show("保存测量数据------数据ID："+index+",对应的管控要点ID："+data.getRulerCheckOptions().getId());
+//        LogUtils.show("保存测量数据------数据ID："+index+",对应的管控要点ID："+data.getRulerCheckOptions().getId());
         return index;
     }
 
@@ -206,7 +206,7 @@ public class OperateDbUtil {
         List<RulerCheckOptionsData> checkOptionsDataList = new ArrayList<>();
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
         String where = " where " + DataBaseParams.options_data_check_options_id + "=" + checkOption.getId();
-        Log.e(TAG, "queryMeasureDataFromSqlite: 查看option_data表格中的where语句："+ where);
+//        Log.e(TAG, "queryMeasureDataFromSqlite: 查看option_data表格中的where语句："+ where);
         Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.options_data_table_name,"*", where);
         if (cursor.moveToFirst()) {
             do {
@@ -221,7 +221,7 @@ public class OperateDbUtil {
                 checkOptionsDataList.add(data);
             } while (cursor.moveToNext());
         }
-        Log.e(TAG, "queryMeasureDataFromSqlite: 查看返回的数据内容："+checkOptionsDataList );
+//        Log.e(TAG, "queryMeasureDataFromSqlite: 查看返回的数据内容："+checkOptionsDataList );
         bleDataDbHelper.close();
         return checkOptionsDataList;
     }
@@ -272,7 +272,7 @@ public class OperateDbUtil {
 //                MeasureData data = new MeasureData();
                 RulerCheckOptionsData data = new RulerCheckOptionsData();
                 data.setId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id)));
-                LogUtils.show("查看搜索到的options_data_check_options_id：" + cursor.getInt(cursor.getColumnIndex(DataBaseParams.options_data_check_options_id)));
+//                LogUtils.show("查看搜索到的options_data_check_options_id：" + cursor.getInt(cursor.getColumnIndex(DataBaseParams.options_data_check_options_id)));
                 String optionWhere = " where id =" + cursor.getInt(cursor.getColumnIndex(DataBaseParams.options_data_check_options_id));
                 List<RulerCheckOptions> optionsList = queryCheckOptionFromSqlite(context, optionWhere);
                 if (optionsList.size() > 0) {

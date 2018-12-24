@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,6 +24,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +45,7 @@ import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.utils.OptionsMeasureUtils;
 import com.vitec.task.smartrule.utils.ServiceUtils;
+import com.vitec.task.smartrule.view.CommonEditPicView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -75,6 +78,13 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
     private EditText etRealMeasureNum;
     private Spinner spinnerFloorHeight;
     private ImageView imgAdd;
+
+    /****编辑图片的布局****/
+    private View layoutEditPic;
+    private RelativeLayout rlEditPic;
+    private CommonEditPicView commonEditPicView;
+
+    private TextView tvAddmPic;//添加图纸按钮
 
 
     private MeasureDataAdapter measureDataAdapter;
@@ -126,6 +136,15 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
         spinnerFloorHeight = view.findViewById(R.id.spinner_floor_height);
         llFloorHeight = view.findViewById(R.id.ll_floor_height);
         imgAdd = view.findViewById(R.id.img_add);
+        tvAddmPic = view.findViewById(R.id.tv_add_mpic);
+
+        layoutEditPic = view.findViewById(R.id.layout_edit_pic);
+        rlEditPic = view.findViewById(R.id.rl_edit_pic);
+
+        tvAddmPic.setOnClickListener(this);
+
+
+//        layoutEditPic.setVisibility(View.VISIBLE);
 
     }
 
@@ -566,7 +585,20 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.tv_add_mpic:
+                //        将编辑图纸的页面添加到rlEditPic中
+                commonEditPicView = new CommonEditPicView(getActivity());
+                rlEditPic.addView(commonEditPicView);
 
+                tvAddmPic.setVisibility(View.GONE);
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        commonEditPicView.setmImageView(getActivity());
+                    }
+                }, 200);
+                break;
         }
     }
 

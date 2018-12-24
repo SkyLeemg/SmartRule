@@ -83,7 +83,7 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
     private void initView() {
         initWidget();
         setTvTitle("设备管理");
-        setImgSource(R.mipmap.icon_home_unselected,R.mipmap.icon_back);
+        setImgSource(R.mipmap.icon_back,R.mipmap.icon_back);
         imgMenu.setVisibility(View.VISIBLE);
         imgMenu.setOnClickListener(this);
 

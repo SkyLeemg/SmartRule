@@ -159,7 +159,7 @@ public class BleDataDbHelper {
      */
     public Cursor queryMeasureOptionsFromSqlite(String cols,String where) {
         String sql = "SELECT " + cols + "  FROM iot_ruler_check " + where;
-        Log.e(TAG, "queryMeasureOptionsFromSqlite: 查看最终的sql语句："+sql );
+//        Log.e(TAG, "queryMeasureOptionsFromSqlite: 查看最终的sql语句："+sql );
         Cursor cursor = sqLiteDatabase.rawQuery(sql,null);
 
         return cursor;
@@ -168,7 +168,7 @@ public class BleDataDbHelper {
     public Cursor queryMeasureOptionsFromSqlite(String tableName,String cols,String where) {
         String sWhere = " " + where;
         String sql = "SELECT " + cols + "  FROM "+tableName + sWhere;
-        Log.e(TAG, "queryMeasureOptionsFromSqlite: 查看最终的sql语句："+sql );
+//        Log.e(TAG, "queryMeasureOptionsFromSqlite: 查看最终的sql语句："+sql );
         Cursor cursor = sqLiteDatabase.rawQuery(sql,null);
 
         return cursor;
@@ -197,7 +197,7 @@ public class BleDataDbHelper {
 
     public boolean delData(String tableName,String[] id) {
         int result = sqLiteDatabase.delete(tableName, "id=?", id);
-        LogUtils.show("delData: 删除数据返回的状态："+result );
+//        LogUtils.show("delData: 删除数据返回的状态："+result );
         if (result!=-1)
             return true;
         else return false;
@@ -206,7 +206,7 @@ public class BleDataDbHelper {
 
     public boolean delData(String tableName,String where,String[] id) {
         int result = sqLiteDatabase.delete(tableName, where, id);
-        LogUtils.show("delData: 删除数据返回的状态："+result );
+//        LogUtils.show("delData: 删除数据返回的状态："+result );
         if (result!=-1)
             return true;
         else return false;

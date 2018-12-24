@@ -39,7 +39,7 @@ public class IconImageView extends ImageView {
         LogUtils.show("调用了onDraw-------方法："+text);
         mPaint.getTextBounds(text, 0, text.length(), rect);
         int x = getWidth()/2 - rect.centerX();
-        int y = getHeight()/2 - rect.centerY();
+        int y = getHeight()/2 - rect.centerY()-5;
         LogUtils.show("onDraw-----查看x,y:"+x+","+y);
         canvas.drawText(this.text, x, y, mPaint);
 

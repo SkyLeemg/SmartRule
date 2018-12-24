@@ -45,11 +45,10 @@
 
         <activity android:name=".activity.LoginActivity">
 
-
         </activity>
-        <activity android:name=".activity.DeviceActivity">
-
-        </activity>
+        <!--<activity android:name=".activity.DeviceActivity">-->
+            <!---->
+        <!--</activity>-->
         <activity android:name=".activity.MainActivity"/>
         <activity android:name=".activity.ChooseMeasureMsgActivity"/>
 
@@ -73,11 +72,7 @@
         <activity android:name=".activity.MeasureRecordManagerAcitivty"/>
         <activity android:name=".activity.MeasureFileActivity"/>
         <activity android:name=".activity.ImageTestActivity2">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <!--注册微信回调 WXEntryActivity -->
@@ -105,8 +100,15 @@
         </activity>
         <activity android:name=".activity.SmsLoginActivity"/>
         <activity android:name=".activity.MainHomeActivity"
-            android:launchMode="singleTask"
-            />
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
         <!--<activity android:name=".dfu.DfuDialog"/>-->
 
         <service android:name=".service.BleScanService"/>

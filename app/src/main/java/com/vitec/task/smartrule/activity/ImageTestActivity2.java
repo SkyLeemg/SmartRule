@@ -125,8 +125,16 @@ public class ImageTestActivity2 extends Activity {
             String imgFileName = DateFormatUtil.formatDate(new Date(), "yyyyMMddHHmmSS")+".jpg";
 
             File imgFile = new File(path, imgFileName);
+            if (!imgFile.getParentFile().exists()) {
+                imgFile.getParentFile().mkdir();
+            }
             if (imgFile.exists()) {
                 imgFile.delete();
+            }
+            try {
+                imgFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
             try {
                 FileOutputStream fos = new FileOutputStream(imgFile);
@@ -226,8 +234,8 @@ public class ImageTestActivity2 extends Activity {
 
                     cv.drawBitmap(newIconBitmap,left,top,null);
                     iconImageView.setDrawingCacheEnabled(false);
-                    iconBitmap = null;
-                    newIconBitmap = null;
+                    iconBitmap.recycle();
+                    newIconBitmap.recycle();
                 }
             }
             cv.save(Canvas.ALL_SAVE_FLAG);

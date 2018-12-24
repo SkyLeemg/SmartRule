@@ -61,21 +61,22 @@ public class ZoomMoveFrameLayout extends FrameLayout {
         scaleGestureDetector.onTouchEvent(event);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-
+//                preCurrentCenter.x = event.getX();
+//                preCurrentCenter.y = event.getY();
                 break;
 
             case MotionEvent.ACTION_MOVE:
 //                LogUtils.show("ZoomMoveFrameLayout----ACTION_MOVE");
 //                奇序号点平均值
-                PointF oddAveragePoint = new PointF();
-//                偶序号点平均值
-                PointF evenAveragePoint = new PointF();
-                for (int i=0;i<event.getPointerCount();i++) {
-                    currentCenter.x += event.getX(i);
-                    currentCenter.y += event.getY(i);
-                }
-                currentCenter.x /= event.getPointerCount();
-                currentCenter.y /= event.getPointerCount();
+//                PointF oddAveragePoint = new PointF();
+////                偶序号点平均值
+//                PointF evenAveragePoint = new PointF();
+//                for (int i=0;i<event.getPointerCount();i++) {
+//                    currentCenter.x += event.getX(i);
+//                    currentCenter.y += event.getY(i);
+//                }
+//                currentCenter.x /= event.getPointerCount();
+//                currentCenter.y /= event.getPointerCount();
 
                 if (event.getPointerCount() > 1) {
 //                    int oddCount = 0;
@@ -140,6 +141,8 @@ public class ZoomMoveFrameLayout extends FrameLayout {
 //                    }
 
                 } else {
+                    currentCenter.x = event.getX();
+                    currentCenter.y = event.getY();
                     if (preCurrentCenter != null) {
                         float distanceX = currentCenter.x - preCurrentCenter.x;
                         float distanceY = currentCenter.y - preCurrentCenter.y;
@@ -160,6 +163,12 @@ public class ZoomMoveFrameLayout extends FrameLayout {
         }
         return true;
 
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        getParent().requestDisallowInterceptTouchEvent(true);
+        return super.onInterceptTouchEvent(ev);
     }
 
     @Override
@@ -198,7 +207,7 @@ public class ZoomMoveFrameLayout extends FrameLayout {
      * @param px,py 缩放中心，图标们向哪个坐标收缩聚拢
      **/
     public void scale(float scale, float px, float py) {
-        LogUtils.show("scale---查看缩放间隔："+scale+",坐标："+px+","+py);
+//        LogUtils.show("scale---查看缩放间隔："+scale+",坐标："+px+","+py);
         for (View view : childViewList) {
             //以本View中心点为缩放中心缩放
             view.setScaleX(view.getScaleX() * scale);
@@ -220,7 +229,7 @@ public class ZoomMoveFrameLayout extends FrameLayout {
     private ScaleGestureDetector.OnScaleGestureListener onScaleGestureListener=new ScaleGestureDetector.OnScaleGestureListener() {
         @Override
         public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
-            LogUtils.show("onScaleGestureListener---打印查看缩放间隔：" + scaleGestureDetector.getScaleFactor());
+//            LogUtils.show("onScaleGestureListener---打印查看缩放间隔：" + scaleGestureDetector.getScaleFactor());
             LogUtils.show("onScaleGestureListener---打印查看缩放坐标：" + scaleGestureDetector.getFocusX() + "," + scaleGestureDetector.getFocusY());
             scale(scaleGestureDetector.getScaleFactor(), scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
             return true;
@@ -233,7 +242,9 @@ public class ZoomMoveFrameLayout extends FrameLayout {
 
         @Override
         public void onScaleEnd(ScaleGestureDetector scaleGestureDetector) {
-
+//            LogUtils.show("onScaleEnd---打印查看抬起时的缩放间隔：" + scaleGestureDetector.getScaleFactor());
+//            LogUtils.show("onScaleEnd---打印查看抬起时的缩放坐标：" + scaleGestureDetector.getFocusX() + "," + scaleGestureDetector.getFocusY());
+//            scale(scaleGestureDetector.getScaleFactor(), scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
         }
     };
 

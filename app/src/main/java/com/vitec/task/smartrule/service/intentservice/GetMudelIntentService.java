@@ -54,7 +54,7 @@ public class GetMudelIntentService extends IntentService {
             OkHttpUtils.get(NetConstant.getEngineerInfoUrl, new OkHttpUtils.ResultCallback<String>() {
                 @Override
                 public void onSuccess(String response) {
-                    LogUtils.show("查看服务器返回的工程模板Json："+response);
+//                    LogUtils.show("查看服务器返回的工程模板Json："+response);
                     /**
                      * {
                      "status":"success",
@@ -90,7 +90,7 @@ public class GetMudelIntentService extends IntentService {
                                     engineer.setChooseOptions(object.optString("options_choose"));
                                     engineer.setUpdateTime(DateFormatUtil.transForMilliSecond(new Date()));
                                     engineerList.add(engineer);
-                                    LogUtils.show("netBussCallBack: 从服务器下载下来保存成为对象后的数据："+engineer.toString() );
+//                                    LogUtils.show("netBussCallBack: 从服务器下载下来保存成为对象后的数据："+engineer.toString() );
                                 }
                                 //                    将数据保存到数据库
                                 OperateDbUtil.addEngineerMudelData(getApplicationContext(),engineerList);
@@ -130,7 +130,7 @@ public class GetMudelIntentService extends IntentService {
     OkHttpUtils.ResultCallback<String> optionsResultCallback = new OkHttpUtils.ResultCallback<String>() {
         @Override
         public void onSuccess(String response) {
-            LogUtils.show("查看服务器返回的管控要点模板信息："+response);
+//            LogUtils.show("查看服务器返回的管控要点模板信息："+response);
             if (!response.equals("")) {
                 try {
                     JSONObject optionJsons = new JSONObject(response);
@@ -148,7 +148,7 @@ public class GetMudelIntentService extends IntentService {
                             option.setOptionsName(object.optString("name"));
                             option.setMeasure(object.optString(DataBaseParams.options_measure));
                             option.setType(object.optInt("type"));
-                            LogUtils.show("netBussCallBack: 服务器下载下来的管控要点："+option);
+//                            LogUtils.show("netBussCallBack: 服务器下载下来的管控要点："+option);
                             optionsList.add(option);
                         }
                     }
@@ -174,8 +174,8 @@ public class GetMudelIntentService extends IntentService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        LogUtils.show("GetMudelIntentService--onDestroy--模板获取完成");
-        LogUtils.show("GetMudelIntentService--onDestroy--查看所有的工程模板大小："+engineerList.size()+",内容:"+engineerList);
-        LogUtils.show("GetMudelIntentService--onDestroy--查看所有的管控要点大小："+optionsList.size()+",内容："+optionsList);
+//        LogUtils.show("GetMudelIntentService--onDestroy--模板获取完成");
+//        LogUtils.show("GetMudelIntentService--onDestroy--查看所有的工程模板大小："+engineerList.size()+",内容:"+engineerList);
+//        LogUtils.show("GetMudelIntentService--onDestroy--查看所有的管控要点大小："+optionsList.size()+",内容："+optionsList);
     }
 }

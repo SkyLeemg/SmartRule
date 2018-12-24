@@ -32,9 +32,9 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
     private static final String TAG = "MeasureManagerAcitivty";
     private BottomNavigationBar bottomNavigationBar;
     private MeasureFragmentControllerImpl controller;
-    public TextView tvToolBarTitle;
     public ImageView imgMenu;
-    public ImageView imgOtherIcon;
+    public TextView tvTitle;
+    public ImageView imgIcon;
     private MKLoader mkLoader;
     private RelativeLayout llToolBar;
 
@@ -71,6 +71,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
 //        rulerCheckOption = new RulerCheckOptions();
 //        rulerCheckOption.setRulerCheck(rulerCheck);
         bleDataDbHelper = new BleDataDbHelper(getApplicationContext());
+        tvTitle.setText(rulerCheck.getEngineer().getEngineerName());
 
         /**
          * 先查找Iot_ruler_check_options表格有没有同样checkid的，如果有则，不创建直接用之前的
@@ -174,9 +175,10 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
     }
 
     public void initToolBarView() {
-        tvToolBarTitle = findViewById(R.id.tv_toolbar_title);
+        tvTitle = findViewById(R.id.tv_toolbar_title);
         imgMenu = findViewById(R.id.img_menu_toolbar);
-        imgOtherIcon = findViewById(R.id.img_icon_toolbar);
+        imgIcon = findViewById(R.id.img_icon_toolbar);
         llToolBar = findViewById(R.id.ll_toolbar);
+
     }
 }

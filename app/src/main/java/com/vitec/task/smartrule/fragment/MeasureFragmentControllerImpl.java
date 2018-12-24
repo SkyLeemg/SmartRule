@@ -1,6 +1,8 @@
 package com.vitec.task.smartrule.fragment;
 
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -41,13 +43,15 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void initBottomNav() {
         bottomNavigationBar.setTabSelectedListener(this)
-                .setMode(BottomNavigationBar.MODE_DEFAULT)
-                .setBarBackgroundColor(R.color.pblue_bar_color)//选中颜色
-                .setInActiveColor(R.color.word_color)//未选中颜色
-                .setActiveColor(R.color.gray_bottom_nav_bg_color);//导航栏背景颜色
+                .setMode(BottomNavigationBar.MODE_FIXED)
+                .setBarBackgroundColor(R.color.white)//选中颜色
+                .setInActiveColor(R.color.color_unselect_bar)//未选中颜色
+                .setActiveColor(R.color.title_color)//导航栏背景颜色
+                .setElevation(0f);//设置阴影
         initFragmentData();
     }
 
@@ -87,7 +91,7 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
     public void addBottomNav() {
 
         for (int i = 0; i < checkOptionsList.size(); i++) {
-            bottomNavigationBar.addItem(new BottomNavigationItem(R.mipmap.icon_data_unselected, checkOptionsList.get(i).getRulerOptions().getOptionsName()));
+            bottomNavigationBar.addItem(new BottomNavigationItem(R.mipmap.icon_black, checkOptionsList.get(i).getRulerOptions().getOptionsName()));
         }
         bottomNavigationBar.setFirstSelectedPosition(lastSelectedPosition)
                 .initialise();//定要放在 所有设置的最后一项
