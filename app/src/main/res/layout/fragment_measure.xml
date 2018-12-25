@@ -27,19 +27,24 @@
                 android:layout_height="wrap_content">
 
             </RelativeLayout>
-            <include
-                android:id="@+id/layout_edit_pic"
-                layout="@layout/item_common_edit_measure_pic"
-                android:visibility="gone"
-                />
-
-
+            <!--<include-->
+                <!--android:id="@+id/layout_edit_pic"-->
+                <!--layout="@layout/item_common_edit_measure_pic"-->
+                <!--android:visibility="gone"-->
+                <!--/>-->
+            <!--占一个位，将动态添加显示测量数据的view进来-->
+            <LinearLayout
+                android:id="@+id/ll_display_mdata"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                ></LinearLayout>
 
             <!--*************************垂直度部分开始****************************-->
-            <include layout="@layout/item_common_display_measure_data"/>
+            <!--<include layout="@layout/item_common_display_measure_data"/>-->
 
             <!--*************************水平度部分结束****************************-->
-            <include layout="@layout/item_common_display_measure_data"/>
+            <!--<include layout="@layout/item_common_display_measure_data"/>-->
 
             <TextView
                 android:id="@+id/tv_project_type"

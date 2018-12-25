@@ -16,6 +16,7 @@ import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.interfaces.IFragmentController;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,21 +60,28 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
         fragments = new ArrayList<>();
         tags = new ArrayList<>();
         Log.e("sssd", "initFragmentData: 查看checkoptionsList:"+checkOptionsList.size()+",内容："+checkOptionsList.toString() );
+        List<RulerCheckOptions> optionsList = new ArrayList<>();
         for (int i = 0; i< checkOptionsList.size(); i++) {
-            MeasureFragment fragment = new MeasureFragment();
+
+            if (checkOptionsList.get(i).getRulerOptions().getType() == 1 || checkOptionsList.get(i).getRulerOptions().getType() == 2) {
+                optionsList.add(checkOptionsList.get(i));
+                if (optionsList.size() == 2) {
+                    MeasureFragment fragment = new MeasureFragment();
+                    Bundle bundle = new Bundle();
+//            此id对应iot_ruler_check_options表的id
+                    bundle.putInt(DataBaseParams.options_data_check_options_id, checkOptionsList.get(i).getId());
+                    bundle.putSerializable("checkoptions", (Serializable) optionsList);
+                    fragment.setArguments(bundle);
+                    fragments.add(fragment);
+                    tags.add("垂直/水平度");
+                }
+                continue;
+            }
+            MeasureFragmentOthers fragment = new MeasureFragmentOthers();
             RulerCheckOptions checkOptions = checkOptionsList.get(i);
             Bundle bundle = new Bundle();
-//            bundle.putString(ParameterKey.projectNameKey,checkOptions.getRulerCheck().getProjectName());
-//            bundle.putString(ParameterKey.checkPersonKey, checkOptions.getRulerCheck().getUser().getUserName());
-//            bundle.putString(ParameterKey.checkPositonKey, checkOptions.getRulerCheck().getCheckFloor());
-//            bundle.putString(ParameterKey.projectTypeKey, checkOptions.getRulerCheck().getEngineer().getEngineerName());
-//            bundle.putString(ParameterKey.measureItemKey, checkOptions.getRulerOptions().getOptionsName());
-//            bundle.putString(ParameterKey.standardKey,checkOptions.getRulerOptions().getStandard());
 //            此id对应iot_ruler_check_options表的id
             bundle.putInt(DataBaseParams.options_data_check_options_id, checkOptions.getId());
-//            String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-//            bundle.putString(DataBaseParams.options_data_create_time, currentDateTimeString);
-//            bundle.putInt(ParameterKey.resourceIDKey,R.mipmap.icon_data_selected);
             bundle.putSerializable("checkoptions",checkOptions);
             fragment.setArguments(bundle);
             fragments.add(fragment);

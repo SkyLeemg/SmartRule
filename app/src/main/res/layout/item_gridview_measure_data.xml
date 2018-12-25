@@ -15,6 +15,7 @@
         >
 
         <TextView
+            android:id="@+id/tv_title_index"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/color_measure_data_gv_title"
@@ -42,7 +43,7 @@
             android:visibility="gone"
             />
         <TextView
-            android:id="@+id/tv_measure_data"
+            android:id="@+id/tv_measure_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"

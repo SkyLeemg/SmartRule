@@ -374,14 +374,18 @@ public class MeasureRecordFragment extends Fragment implements View.OnClickListe
                 view = inflater.inflate(R.layout.item_gridview_measure_data, null);
                 holder = new ViewHolder();
                 holder.etData = view.findViewById(R.id.et_measure_data);
+                holder.tvContent = view.findViewById(R.id.tv_measure_content);
+                holder.tvTitleIndex = view.findViewById(R.id.tv_title_index);
                 view.setTag(holder);
 
             } else {
                 holder = (ViewHolder) view.getTag();
             }
 
-            holder.etData.setText(checkOptionsDataList.get(i).getData());
-//
+//            holder.etData.setText(checkOptionsDataList.get(i).getData());
+
+            holder.tvContent.setText(checkOptionsDataList.get(i).getData());
+            holder.tvTitleIndex.setText(i+1);
             if (checkOptions.getRulerOptions().getType() == 1 || checkOptions.getRulerOptions().getType() == 2) {
                 holder.etData.setEnabled(false);
             } else {
@@ -393,6 +397,8 @@ public class MeasureRecordFragment extends Fragment implements View.OnClickListe
 
     class ViewHolder {
         EditText etData;
+        TextView tvTitleIndex;
+        TextView tvContent;
     }
 
 }
