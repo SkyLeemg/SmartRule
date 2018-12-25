@@ -1,6 +1,9 @@
 package com.vitec.task.smartrule.view;
 
+import android.app.AlertDialog;
+import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -11,16 +14,20 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.activity.ImageTestActivity2;
 import com.vitec.task.smartrule.bean.IconViewBean;
+import com.vitec.task.smartrule.fragment.MeasureFragment;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
 
@@ -31,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 public class CommonEditPicView extends RelativeLayout implements View.OnClickListener {
@@ -52,6 +60,11 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
 
     private List<IconImageView> verticalIconList;//垂直度图标集合
     private List<IconImageView> levelIconList;//水平度图标集合
+    private int verticalIndex = 0;//垂直度图标序号
+    private int leverIndex = 0;//水平度图标序号
+
+    private MeasureFragment fragment;
+    private List<Integer> addLink;//图标添加的顺序记录，删除图标用,添加的1代表垂直度，2代表水平度
 
     private Context context;
 
@@ -89,20 +102,30 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
 
         levelIconList = new ArrayList<>();
         verticalIconList = new ArrayList<>();
+        addLink = new ArrayList<>();
     }
 
+    /**
+     * 设置fragment对象，用于调用fragment里面的方法
+     * @param fragment
+     */
+    public void setFragment(MeasureFragment fragment) {
+        this.fragment = fragment;
+    }
 
     /**
      * 设置图纸的图片
      */
-    public void setmImageView(Context context) {
+    public void setmImageView(Context context,String path) {
         zoomWidth = zoomMoveFrameLayout.getWidth();
         zoomHeight = zoomMoveFrameLayout.getHeight();
         if (mImageView == null) {
-            try {
+//            try {
                 mImageView = new ImageView(context);
-                InputStream inputStream = context.getAssets().open("paper.png");
-                Bitmap imgBitmap = BitmapFactory.decodeStream(inputStream);
+
+//                InputStream inputStream = context.getAssets().open("paper.png");
+//                Bitmap imgBitmap = BitmapFactory.decodeStream(inputStream);
+                Bitmap imgBitmap = BitmapFactory.decodeFile(path);
                 this.imgBitmap = Bitmap.createBitmap(imgBitmap);
                 LogUtils.show("查看FrameLayout的长宽：" +zoomWidth+ "," + zoomHeight);
 
@@ -132,9 +155,9 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                 mImageView.setLayoutParams(lp);
 //            将图片添加到frameLayout中
                 zoomMoveFrameLayout.addView(mImageView);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
 
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
@@ -179,7 +202,8 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
              */
             case R.id.rl_add_level:
                 IconImageView imageView = new IconImageView(context);
-                String text = levelIconList.size() + 1+"";
+                leverIndex++;
+                String text = leverIndex+"";
                 imageView.setText(text);
                 imageView.setImageResource(R.mipmap.icon_measure_lever);
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(new ViewGroup.LayoutParams(100, 100));
@@ -187,7 +211,9 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                 zoomMoveFrameLayout.addView(imageView);
                 levelIconList.add(imageView);
                 imageView.setX(srcCenterPoint.x);
-                imageView.setY(srcScaleY);
+                imageView.setY(srcCenterPoint.y);
+                addLink.add(2);
+
                 break;
 
             /**
@@ -195,16 +221,19 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
              */
             case R.id.rl_add_vertical:
 
-                IconImageView leverImg = new IconImageView(context);
-                String levertext = levelIconList.size() + 1+"";
-                leverImg.setText(levertext);
-                leverImg.setImageResource(R.mipmap.icon_measure_vertical);
+                IconImageView verImg = new IconImageView(context);
+                verticalIndex++;
+                String verrtext =verticalIndex+"";
+                verImg.setText(verrtext);
+                verImg.setImageResource(R.mipmap.icon_measure_vertical);
                 LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(new ViewGroup.LayoutParams(100, 100));
-                leverImg.setLayoutParams(layoutParams);
-                zoomMoveFrameLayout.addView(leverImg);
-                levelIconList.add(leverImg);
-                leverImg.setX(srcCenterPoint.x);
-                leverImg.setY(srcCenterPoint.y);
+                verImg.setLayoutParams(layoutParams);
+                zoomMoveFrameLayout.addView(verImg);
+                verticalIconList.add(verImg);
+                verImg.setX(srcCenterPoint.x);
+                verImg.setY(srcCenterPoint.y);
+                addLink.add(1);
+
                 break;
 
             /**
@@ -268,6 +297,7 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                     }
                     levelIconList.clear();
                     verticalIconList.clear();
+                    addLink.clear();
 
 //
 //            LogUtils.show("查看保存时的长宽：" + myImageView.getWidth() + "," + myImageView.getHeight());
@@ -287,7 +317,71 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
              * 其他菜单栏
              */
             case R.id.rl_menu_more:
+                final PopupMenu menu = new PopupMenu(context, view);
+                MenuInflater inflater = menu.getMenuInflater();
+                inflater.inflate(R.menu.menu_measure_more, menu.getMenu());
+                menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        switch (menuItem.getItemId()) {
+                            /**
+                             * 删除图标
+                             */
+                            case R.id.item_del_icon:
+                                if (addLink.size() > 0) {
+                                    int index = addLink.size() - 1;
+                                    /**
+                                     * 如果为1则删除垂直度的最后一个图标
+                                     */
+                                    if (addLink.get(index) == 1) {
+                                        zoomMoveFrameLayout.removeView(verticalIconList.get(verticalIconList.size() - 1));
+                                        verticalIconList.remove(verticalIconList.size() - 1);
+                                        verticalIndex--;
+                                        addLink.remove(index);
+                                    }
+                                    /****如果为2则删除水平度的最后一个图标*****/
+                                    else if ((addLink.get(index) == 2)) {
+                                        zoomMoveFrameLayout.removeView(levelIconList.get(levelIconList.size() - 1));
+                                        levelIconList.remove(levelIconList.size() - 1);
+                                        leverIndex--;
+                                        addLink.remove(index);
+                                    }
+                                }
 
+                                break;
+
+                            /**
+                             * 删除图纸
+                             */
+                            case R.id.item_del_pic:
+                                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                                builder.setTitle("提示");
+                                builder.setMessage("是否确定删除图纸？图标也会同步删除。");
+                                builder.setPositiveButton("确定删除", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        zoomMoveFrameLayout.removeAllViews();
+                                        verticalIconList.clear();
+                                        levelIconList.clear();
+                                        mImageView = null;
+                                        imgBitmap.recycle();
+                                        if (fragment != null) {
+                                            fragment.setTvAddmPicVisibale(1);
+                                        }
+
+                                        Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+                                builder.setNegativeButton("取消", null);
+                                builder.show();
+                                break;
+
+                        }
+                        return false;
+                    }
+                });
+                menu.show();
                 break;
         }
 

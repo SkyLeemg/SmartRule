@@ -1,17 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="10dp"
-    android:orientation="vertical">
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    android:background="@color/background"
+  >
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_add_mpic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="添加图纸"
+                android:textColor="@color/color_word"
+                android:textStyle="bold"
+                android:textSize="17sp"
+                android:layout_marginTop="11dp"
+                />
+            <!--**************************图纸编辑部分*****************************-->
+            <RelativeLayout
+                android:id="@+id/rl_edit_pic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            </RelativeLayout>
+            <include
+                android:id="@+id/layout_edit_pic"
+                layout="@layout/item_common_edit_measure_pic"
+                android:visibility="gone"
+                />
+
+
+
+            <!--*************************垂直度部分开始****************************-->
+            <include layout="@layout/item_common_display_measure_data"/>
+
+            <!--*************************水平度部分结束****************************-->
+            <include layout="@layout/item_common_display_measure_data"/>
+
             <TextView
                 android:id="@+id/tv_project_type"
                 android:layout_width="wrap_content"
@@ -171,7 +200,7 @@
 
 
         </LinearLayout>
-    </ScrollView>
 
 
-</RelativeLayout>
+
+</ScrollView>

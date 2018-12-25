@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -179,6 +180,13 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
         imgMenu = findViewById(R.id.img_menu_toolbar);
         imgIcon = findViewById(R.id.img_icon_toolbar);
         llToolBar = findViewById(R.id.ll_toolbar);
+
+        imgMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
 
     }
 }

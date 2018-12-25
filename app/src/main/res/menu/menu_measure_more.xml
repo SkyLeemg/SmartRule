@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/item_del_pic"
+        android:title="删除图纸"/>
+    <item android:id="@+id/item_del_icon"
+        android:title="删除图标"/>
+</menu>

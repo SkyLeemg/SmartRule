@@ -73,6 +73,10 @@ public class ConnectDeviceService extends Service {
     public static final UUID VERTICALITY_RX_CHAR_UUID = UUID.fromString("6e400022-b5a3-f393-e0a9-e50e24dcca9e");
     public static final UUID VERTICALITY_TX_CHAR_UUID = UUID.fromString("6e400023-b5a3-f393-e0a9-e50e24dcca9e");
 
+    public static int LEVEL_DISCOVER_FLAG = 0;
+    public static int VERTICAL_DISCOVER_FLAG = 0;
+
+
 
     public static String current_connecting_mac_address = "";//连接成功后的地址
     private String connectAdress = "";//用户请求连接时的mac地址，不一定请求成功
@@ -373,7 +377,15 @@ public class ConnectDeviceService extends Service {
             return;
         }
 //        开启监听
-        mBluetoothGatt.setCharacteristicNotification(TxChar,true);
+        boolean result = mBluetoothGatt.setCharacteristicNotification(TxChar, true);
+        if (result) {
+            if (serverUUID.equals(LEVELNESS_SERVICE_UUID)) {
+                LEVEL_DISCOVER_FLAG = 1;
+            } else if (serverUUID.equals(VERTICALITY_SERVICE_UUID)) {
+                VERTICAL_DISCOVER_FLAG = 1;
+            }
+        }
+
 
 //            Log.e(TAG, "enableTXNotification: 查看TxChar值："+TxChar.getValue().length);
         Log.e(TAG, "enableTXNotification: 通知" );

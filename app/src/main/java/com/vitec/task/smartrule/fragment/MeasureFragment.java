@@ -1,5 +1,6 @@
 package com.vitec.task.smartrule.fragment;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -21,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -29,6 +31,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.luck.picture.lib.PictureSelector;
+import com.luck.picture.lib.config.PictureConfig;
+import com.luck.picture.lib.entity.LocalMedia;
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.event.HeightFloorMsgEvent;
 import com.vitec.task.smartrule.bean.OptionMeasure;
@@ -45,6 +50,7 @@ import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.utils.OptionsMeasureUtils;
 import com.vitec.task.smartrule.utils.ServiceUtils;
+import com.vitec.task.smartrule.view.BottomDialog;
 import com.vitec.task.smartrule.view.CommonEditPicView;
 
 import org.greenrobot.eventbus.EventBus;
@@ -213,9 +219,57 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
         }
     };
 
+    public void setTvAddmPicVisibale(int flag) {
+        if (flag == 1) {
+            tvAddmPic.setVisibility(View.VISIBLE);
+            commonEditPicView.setVisibility(View.GONE);
+        } else if (flag == 0) {
+            tvAddmPic.setVisibility(View.GONE);
+            commonEditPicView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    /**
+     * 相册或者拍照返回的照片
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK) {
+            switch (requestCode) {
+                case PictureConfig.CHOOSE_REQUEST:
+                    List<LocalMedia> selectList = PictureSelector.obtainMultipleResult(data);
+                    if (selectList.size() > 0) {
+                        for (final LocalMedia media : selectList) {
+                            LogUtils.show("onActivityResult---打印查看返回的原图片路径：" + media.getPath() + ",长宽：" + media.getWidth() + "," + media.getHeight());
+                            LogUtils.show("onActivityResult---打印查看返回裁剪后的图片路径：" + media.getCutPath());
+                            LogUtils.show("onActivityResult---打印查看压缩后的图片路径：" + media.getCompressPath());
+
+                            //        将编辑图纸的页面添加到rlEditPic中
+                            if (commonEditPicView == null) {
+                                commonEditPicView = new CommonEditPicView(getActivity());
+
+                                rlEditPic.addView(commonEditPicView);
+                            } else {
+                                commonEditPicView.setVisibility(View.VISIBLE);
+                            }
+                            commonEditPicView.setFragment(MeasureFragment.this);
+                            tvAddmPic.setVisibility(View.GONE);
+                            Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    commonEditPicView.setmImageView(getActivity(),media.getPath());
+                                }
+                            }, 100);
+                        }
+                    }
+                    break;
+            }
+        }
     }
 
     private void initData() {
@@ -586,18 +640,10 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.tv_add_mpic:
-                //        将编辑图纸的页面添加到rlEditPic中
-                commonEditPicView = new CommonEditPicView(getActivity());
-                rlEditPic.addView(commonEditPicView);
-
-                tvAddmPic.setVisibility(View.GONE);
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        commonEditPicView.setmImageView(getActivity());
-                    }
-                }, 200);
+//
+                BottomDialog bottomDialog = new BottomDialog(getActivity(), R.style.BottomDialog);
+                bottomDialog.setFragment(MeasureFragment.this);
+                bottomDialog.show();
                 break;
         }
     }

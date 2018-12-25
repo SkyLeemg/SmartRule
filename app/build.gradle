@@ -55,6 +55,9 @@ dependencies {
     implementation 'jexcelapi:jxl:2.6'
     implementation files('libs/open_sdk_r6019_lite.jar')
     implementation 'no.nordicsemi.android:dfu:1.6.1'
+//    打开拍照/相册
+    implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.2.3'
+
     //加载大图的框架
 //    implementation 'com.shizhefei:LargeImageView:1.1.0'
 }

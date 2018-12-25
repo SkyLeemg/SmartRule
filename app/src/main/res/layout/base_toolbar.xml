@@ -5,8 +5,10 @@
     android:id="@+id/ll_toolbar"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
-    android:background="@color/pblue_bar_color"
+    android:background="#ffffff"
     >
+
+    <!--android:layout_height="?attr/actionBarSize"-->
 
     <!--<RelativeLayout-->
         <!--android:id="@+id/ll_toolbar"-->
@@ -16,13 +18,15 @@
 
         <ImageView
             android:id="@+id/img_menu_toolbar"
-            android:layout_width="60dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="20dp"
+            android:paddingLeft="15dp"
             android:paddingRight="12dp"
+            android:paddingTop="10dp"
             android:layout_alignParentLeft="true"
-            android:visibility="gone"
-            android:src="@mipmap/icon_memu_in"/>
+            android:paddingBottom="10dp"
+            android:layout_centerVertical="true"
+            android:src="@mipmap/icon_back"/>
 
         <TextView
             android:id="@+id/tv_toolbar_title"
@@ -30,10 +34,10 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="智能靠尺"
-            android:textColor="@color/white_bar_word_color"
+            android:textColor="@color/title_color"
             android:layout_centerInParent="true"
             android:textStyle="bold"
-            android:textSize="18sp"/>
+            android:textSize="17sp"/>
 
         <ImageView
             android:id="@+id/img_icon_toolbar"
@@ -44,6 +48,12 @@
             android:layout_alignParentRight="true"
             android:visibility="gone"
             android:src="@mipmap/icon_scan_qr"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0.3dp"
+        android:background="@color/viewfinder_mask"
+        android:layout_alignParentBottom="true"
+        />
         <!--<ImageView-->
         <!--android:id="@+id/scanner_toolbar_more"-->
         <!--android:layout_width="wrap_content"-->

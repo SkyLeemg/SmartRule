@@ -10,15 +10,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:background="@color/content_bg_color"
+        android:background="@drawable/shape_gv_measure_data_stroke_title"
         android:gravity="center"
         >
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/white_bar_word_color"
+            android:textColor="@color/color_measure_data_gv_title"
             android:textStyle="bold"
+            android:textSize="17sp"
             android:text="1"
             />
 
@@ -29,6 +30,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:background="@color/viewfinder_frame"
+        android:orientation="horizontal"
         >
 
         <EditText
@@ -36,7 +38,16 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:textColor="@color/pblue_bar_color"
+            android:textColor="@color/title_color"
+            android:visibility="gone"
+            />
+        <TextView
+            android:id="@+id/tv_measure_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/title_color"
+            android:textSize="14sp"
             />
 
     </LinearLayout>
