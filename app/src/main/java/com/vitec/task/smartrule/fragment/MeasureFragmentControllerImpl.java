@@ -35,12 +35,14 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
     private List<String> tags;
 
     private List<RulerCheckOptions> checkOptionsList;
+//    private int chooseIndex = 0;
 
     public MeasureFragmentControllerImpl(FragmentActivity activity, BottomNavigationBar bottomNavigationBar, List<RulerCheckOptions> checkOptionsList) {
 
         this.activity = activity;
         this.bottomNavigationBar = bottomNavigationBar;
         this.checkOptionsList = checkOptionsList;
+//        this.chooseIndex = chooseIndex;
     }
 
 
@@ -70,6 +72,7 @@ public class MeasureFragmentControllerImpl implements IFragmentController,Bottom
                     Bundle bundle = new Bundle();
 //            此id对应iot_ruler_check_options表的id
                     bundle.putInt(DataBaseParams.options_data_check_options_id, checkOptionsList.get(i).getId());
+//                    bundle.putInt("floor_height", chooseIndex);
                     bundle.putSerializable("checkoptions", (Serializable) optionsList);
                     fragment.setArguments(bundle);
                     fragments.add(fragment);

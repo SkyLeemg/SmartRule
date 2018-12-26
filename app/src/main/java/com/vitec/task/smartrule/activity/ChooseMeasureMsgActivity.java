@@ -51,7 +51,7 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
 
     private static final String TAG ="ChooseMeasureMsgActivity";
     private ListView lvChoose;
-    private ImageView imgAddProject;
+//    private ImageView imgAddProject;
     private ChooseMeasureProjectAdapter projectAdapter;
     private int projectCount = 1;
 
@@ -142,8 +142,11 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
 
     private void initView() {
         lvChoose = findViewById(R.id.lv_choose_msg);
-        imgAddProject = findViewById(R.id.img_add_project);
-        imgAddProject.setOnClickListener(this);
+        initWidget();
+        imgMenu.setOnClickListener(this);
+        setTvTitle("新建测量");
+//        imgAddProject = findViewById(R.id.img_add_project);
+//        imgAddProject.setOnClickListener(this);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -268,6 +271,10 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
                 projectAdapter.notifyDataSetChanged();
                 HeightUtils.setListViewHeighBaseOnChildren(lvChoose);
                 Log.e("aaa", "onClick: 点击了添加按钮" );
+                break;
+
+            case R.id.img_menu_toolbar:
+                this.finish();
                 break;
         }
     }

@@ -2,6 +2,7 @@ package com.vitec.task.smartrule.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -23,8 +25,10 @@ import com.vitec.task.smartrule.bean.RulerOptions;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.interfaces.IChooseGetter;
 import com.vitec.task.smartrule.db.OperateDbUtil;
+import com.vitec.task.smartrule.interfaces.ISelectorResultCallBack;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
+import com.vitec.task.smartrule.view.BottomSelectorDialog;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,6 +59,7 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
 
     private ArrayAdapter projectNameAdapter;//项目名的adapter
     private ArrayAdapter checkFloorAdapter;//检查位置的adapter
+    private int chooseIndex = 0;//层高选择定位，0代表≤6，1代表＞6
 
 
 //    private List<String> engineers;
@@ -132,15 +137,54 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
             holder.tvCheckTime = view.findViewById(R.id.tv_check_time);
             holder.autoTvCheckPosition = view.findViewById(R.id.tv_check_position);
             holder.autoTvProjectName = view.findViewById(R.id.tv_project_type);
-            holder.spinnerCheckProjectType = view.findViewById(R.id.spinner_project_type);
+//            holder.spinnerCheckProjectType = view.findViewById(R.id.spinner_project_type);
+            holder.tvEngineer = view.findViewById(R.id.tv_engineer_choose);
+            holder.rlFloorHeight = view.findViewById(R.id.rl_floor_height);
+            holder.tvFloorHeight = view.findViewById(R.id.tv_floor_height);
             view.setTag(holder);
 
         } else {
             holder = (ViewHolder) view.getTag();
         }
         if (spinnerList.size() > 0) {
-            final ArrayAdapter listArrayAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, spinnerList);
-            holder.spinnerCheckProjectType.setAdapter(listArrayAdapter);
+//            final ArrayAdapter listArrayAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, spinnerList);
+//            holder.spinnerCheckProjectType.setAdapter(listArrayAdapter);
+            /**
+             * 初始化工程类型的选择
+             */
+            holder.tvEngineer.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    final BottomSelectorDialog selectorDialog = new BottomSelectorDialog(context, R.style.BottomDialog);
+                    selectorDialog.setDatalist(spinnerList);
+                    selectorDialog.setSelectorResultCallBack(new ISelectorResultCallBack() {
+                        @Override
+                        public void onSelectCallBack(String item, int index) {
+                            holder.tvEngineer.setText(item);
+                            holder.tvFloorHeight.setTextColor(Color.rgb(51,51,51));
+                            if (index < spinnerList.size()) {
+                                chooseEngineerName = spinnerList.get(index);
+                                chooseEngineerIndex = index;
+                            }
+
+                            if (chooseEngineerIndex < engineerList.size()) {
+                                if (engineerList.get(chooseEngineerIndex).equals(chooseEngineerName)) {
+
+                                } else {
+                                    for (RulerEngineer engineer1 : engineerList) {
+                                        if (engineer1.getEngineerName().equals(chooseEngineerName)) {
+
+                                        }
+                                    }
+                                }
+                            }
+
+                            selectorDialog.dismiss();
+                        }
+                    });
+                    selectorDialog.show();
+                }
+            });
         }
         Log.e("aaa", "getView: Adapter中收到的集合对象："+ chooseMeasureMsgList.size()+",内容"+chooseMeasureMsgList.get(i).toString());
 //        如果是之前就测量过的项目则不可更改
@@ -160,20 +204,35 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
         holder.autoTvCheckPosition.setAdapter(checkFloorAdapter);
         holder.autoTvProjectName.setAdapter(projectNameAdapter);
 
-        holder.spinnerCheckProjectType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if (i < spinnerList.size()) {
-                    chooseEngineerName = spinnerList.get(i);
-                    chooseEngineerIndex = i;
-                }
-            }
 
+
+        /**
+         * 层高点击事件
+         * 点击层高，弹出层高选择框
+         */
+        holder.rlFloorHeight.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
+            public void onClick(View view) {
+                final BottomSelectorDialog selectorDialog = new BottomSelectorDialog(context,R.style.BottomDialog);
+                List<String> datalist = new ArrayList<>();
+                datalist.add(context.getString(R.string.floor_height_1));
+                datalist.add(context.getString(R.string.floor_height_2));
+                selectorDialog.setDatalist(datalist);
+                selectorDialog.show();
+                selectorDialog.setSelectorResultCallBack(new ISelectorResultCallBack() {
+                    @Override
+                    public void onSelectCallBack(String item, int index) {
+                        holder.tvFloorHeight.setText(item);
+                        holder.tvFloorHeight.setTextColor(Color.rgb(51,51,51));
+                        chooseIndex = index;
+                        selectorDialog.dismiss();
+                    }
+                });
 
             }
         });
+
+        /***进入测量点击事件**/
         holder.btnEnterMeasure.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -235,6 +294,7 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                 Intent startIntent = new Intent(context, MeasureManagerAcitivty.class);
                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startIntent.putExtra("projectMsg", rulerCheck);
+                startIntent.putExtra("floor_height", chooseIndex);
                 Log.e("chakabiaozhi", "onClick: 查看准备发给另外一个界面的数据信息："+rulerCheck.toString() );
                 context.startActivity(startIntent);
             }
@@ -252,13 +312,18 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
         this.chooseMeasureMsgList = chooseMeasureMsgList;
     }
 
+
+
     class ViewHolder{
         Button btnEnterMeasure;
         TextView tvCheckTime;
         TextView tvCheckPerson;
+        TextView tvEngineer;
         AutoCompleteTextView autoTvCheckPosition;
         AutoCompleteTextView autoTvProjectName;
-        Spinner spinnerCheckProjectType;
+//        Spinner spinnerCheckProjectType;
+        RelativeLayout rlFloorHeight;//层高选择
+        TextView tvFloorHeight;//层高显示
 
     }
 }

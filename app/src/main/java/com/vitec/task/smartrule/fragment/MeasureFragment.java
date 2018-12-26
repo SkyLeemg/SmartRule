@@ -85,7 +85,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
     private ImageView imgAdd;
 
     /****编辑图片的布局****/
-    private View layoutEditPic;
+//    private View layoutEditPic;
     private RelativeLayout rlEditPic;//图纸编辑的占位RL
     private CommonEditPicView commonEditPicView;
 
@@ -149,7 +149,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
         imgAdd = view.findViewById(R.id.img_add);
         tvAddmPic = view.findViewById(R.id.tv_add_mpic);
 
-        layoutEditPic = view.findViewById(R.id.layout_edit_pic);
+//        layoutEditPic = view.findViewById(R.id.layout_edit_pic);
         rlEditPic = view.findViewById(R.id.rl_edit_pic);
         llDisplayData = view.findViewById(R.id.ll_display_mdata);
 
@@ -290,6 +290,9 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
         bundle = getArguments();
         levelOptionDataMudel = new RulerCheckOptionsData();
         verticalOptionDataMudel = new RulerCheckOptionsData();
+//        获取用户在新建界面传来的层高
+//        int chooseIndex = bundle.getInt("floor_height");
+
         /**
          * checkOptions里面包含了项目信息、工程和管控要点的模板信息
          */

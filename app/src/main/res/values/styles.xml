@@ -9,7 +9,8 @@
     </style>
 
     <!--底部对话框的样式-->
-    <style name="BottomDialog" parent="@style/Base.V7.Theme.AppCompat.Light.Dialog">
+    <!--<style name="BottomDialog" parent="@style/Base.V7.Theme.AppCompat.Light.Dialog">-->
+    <style name="BottomDialog" parent="@android:style/Theme.Holo.Dialog">
         <!--无标题-->
         <item name="android:windowNoTitle">true</item>
         <!-- 背景透明 -->
@@ -49,7 +50,7 @@
     </style>
 
     <style name="Text" >
-        <item name="android:textColor">@color/pblue_bar_color</item>
+        <item name="android:textColor">@color/title_color</item>
         <item name="android:textSize">16sp</item>
     </style>
 

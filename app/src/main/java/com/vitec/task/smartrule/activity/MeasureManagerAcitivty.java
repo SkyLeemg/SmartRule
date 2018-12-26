@@ -2,8 +2,10 @@ package com.vitec.task.smartrule.activity;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -59,6 +61,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
         initData();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void initData() {
         /**
          * 下面的每一个MeasureBean的数据，就是每一个Fragment页面上需要显示的数据
@@ -67,6 +70,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
          */
 //        获取上一个类（ChooseMeasureProjectAdapter）传过来的数据
         rulerCheck = (RulerCheck) getIntent().getSerializableExtra("projectMsg");
+        int chooseIndex = getIntent().getIntExtra("floor_height", 0);
         Log.e(TAG, "initData: 查看收到的rulercheck:"+rulerCheck.toString() );
         checkOptionsList = new ArrayList<>();
 //        rulerCheckOption = new RulerCheckOptions();
@@ -94,6 +98,11 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
                 rulerCheckOption.setRulerCheck(rulerCheck);
                 rulerCheckOption.setRulerOptions(rulerOption);
                 rulerCheckOption.setUpload_flag(0);
+                if (chooseIndex == 0) {
+                    rulerCheckOption.setFloorHeight(getString(R.string.floor_height_1));
+                } else {
+                    rulerCheckOption.setFloorHeight(getString(R.string.floor_height_2));
+                }
                 int id = OperateDbUtil.addMeasureOptionsDataToSqlite(getApplicationContext(), rulerCheckOption);
                 rulerCheckOption.setId(id);
                 checkOptionsList.add(rulerCheckOption);
@@ -103,7 +112,11 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
                 RulerCheckOptions rulerCheckOption = new RulerCheckOptions();
                 rulerCheckOption.setCreateTime((int) System.currentTimeMillis());
                 rulerCheckOption.setRulerCheck(rulerCheck);
-
+                if (chooseIndex == 0) {
+                    rulerCheckOption.setFloorHeight(getString(R.string.floor_height_1));
+                } else {
+                    rulerCheckOption.setFloorHeight(getString(R.string.floor_height_2));
+                }
                 checkOptionsList.add(rulerCheckOption);
             }
             startRequestServer();
@@ -161,6 +174,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
                 checkOption.setRulerCheck(rulerCheck);
                 checkOption.setCreateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_create_time)));
                 checkOption.setId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id)));
+                checkOption.setFloorHeight(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_floor_height)));
                 int optionId = cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_options_id));
                 checkOption.setUpload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.upload_flag)));
 //                根据optionid查询iot_ruler_options模板表里对应的数据

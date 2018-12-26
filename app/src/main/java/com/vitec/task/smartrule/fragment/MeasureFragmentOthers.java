@@ -144,7 +144,7 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
         imgAdd = view.findViewById(R.id.img_add);
         tvAddmPic = view.findViewById(R.id.tv_add_mpic);
 
-        layoutEditPic = view.findViewById(R.id.layout_edit_pic);
+//        layoutEditPic = view.findViewById(R.id.layout_edit_pic);
         rlEditPic = view.findViewById(R.id.rl_edit_pic);
         llDisplayData = view.findViewById(R.id.ll_display_mdata);
 

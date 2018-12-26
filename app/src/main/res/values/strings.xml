@@ -5,6 +5,11 @@
     <string name="code_text">请输入生成二维码的文本信息</string>
     <string name="qrcodetext">这里显示扫描结果</string>
 
+
+    <!--层高选择-->
+    <string name="floor_height_1">≤6</string>
+    <string name="floor_height_2">＞6</string>
+
     <string-array name="project_name">
         <item></item>
     </string-array>

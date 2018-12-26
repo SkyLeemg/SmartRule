@@ -38,13 +38,13 @@ public class HeightUtils {
     }
 
 
-    public static void setListViewHeighBaseOnChildren(ListView listView) {
+    public static int setListViewHeighBaseOnChildren(ListView listView) {
         if (listView == null) {
-            return;
+            return 0;
         }
         ListAdapter listAdapter = listView.getAdapter();
         if (listAdapter == null) {
-            return;
+            return 0;
         }
         int totalHeight = 0;
 
@@ -56,6 +56,35 @@ public class HeightUtils {
             }
 
 
+        }
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+//        params.height = totalHeight + (gridView.getMeasuredHeight() * (listAdapter.getCount() - 1));
+        params.height = totalHeight;
+        listView.setLayoutParams(params);
+        return totalHeight;
+    }
+
+    /**
+     *
+     * @param listView
+     * @param maxItem
+     */
+    public static void setListViewHeighBaseOnChildren(ListView listView,int maxItem) {
+        if (listView == null) {
+            return;
+        }
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null) {
+            return;
+        }
+        int totalHeight = 0;
+
+        for (int i = 0; i < maxItem; i++) {
+            View listItem = listAdapter.getView(i, null, listView);
+            if (listItem != null) {
+                listItem.measure(0, 0);
+                totalHeight += listItem.getMeasuredHeight();
+            }
         }
         ViewGroup.LayoutParams params = listView.getLayoutParams();
 //        params.height = totalHeight + (gridView.getMeasuredHeight() * (listAdapter.getCount() - 1));

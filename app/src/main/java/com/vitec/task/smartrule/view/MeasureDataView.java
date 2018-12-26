@@ -75,6 +75,9 @@ public class MeasureDataView extends RelativeLayout {
         optionsDataMudel.setRulerCheckOptions(rulerCheckOptions);
 //        初始化计算标准的模板信息
         optionMeasures = new ArrayList<>();
+        if (rulerCheckOptions.getRulerOptions().getType() == 1) {
+
+        }
         final String measures = rulerCheckOptions.getRulerOptions().getMeasure();
         optionMeasures = OptionsMeasureUtils.getOptionMeasure(measures);
 //        初始化测量标准提示信息

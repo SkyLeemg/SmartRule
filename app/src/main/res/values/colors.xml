@@ -37,6 +37,7 @@
     <!--测量模块的颜色-->
     <color name="color_measure_pic_bg">#dfdfdf</color>
     <color name="color_word">#3581fb</color>
+    <color name="color_btn_bg">#ecf4fe</color>
     <color name="color_unselect_bar">#999999</color>
     <color name="color_measure_result_tip_word">#303c4f</color>
     <color name="color_measure_data_gv_title_bg">#f5f5f5</color>

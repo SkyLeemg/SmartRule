@@ -1,98 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/background"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tv_msg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="基本信息："
-        style="@style/Text"
-        android:layout_margin="20dp"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        />
-    <ScrollView
-        android:layout_below="@+id/tv_msg"
-        android:layout_width="match_parent"
-        android:layout_above="@+id/ll_bottom_button"
-        android:layout_height="wrap_content">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-            <ListView
-                android:id="@+id/lv_choose_msg"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            </ListView>
-
-            <LinearLayout
-
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="?attr/actionBarSize"
-                android:layout_marginTop="20dp"
-                >
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="增加测量项"
-                    style="@style/Text"
-                    android:layout_gravity="center_vertical"
-                    />
-                <ImageView
-                    android:id="@+id/img_add_project"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@mipmap/btn_add"
-                    android:layout_marginLeft="15dp"
-                    />
-
-            </LinearLayout>
-        </LinearLayout>
-
-    </ScrollView>
+    <include
+        layout="@layout/base_toolbar"/>
 
     <LinearLayout
-        android:id="@+id/ll_bottom_button"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:background="@color/gray_bottom_nav_bg_color"
-        android:layout_alignParentBottom="true"
-        android:gravity="center"
+        android:layout_marginTop="14dp"
+        android:gravity="center_vertical"
         >
-
-        <Button
+        <View
+            android:layout_width="4dp"
+            android:layout_height="16dp"
+            android:background="@color/color_word"
+            />
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_nomal"
-            android:text="结束测量"
-            android:textColor="@color/white_bar_word_color"
-            android:paddingLeft="25dp"
-            android:paddingRight="25dp"
-            android:textSize="18sp"
+            android:textColor="@color/title_color"
+            android:layout_marginLeft="11dp"
+            android:text="测量"
+            android:textStyle="bold"
+            android:textSize="15sp"
             />
-        <!--<Button-->
 
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:layout_marginTop="5dp"
+        >
+        <ListView
+            android:id="@+id/lv_choose_msg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            >
+        </ListView>
+
+
+    </LinearLayout>
+    <!--<TextView-->
+        <!--android:id="@+id/tv_msg"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="基本信息："-->
+        <!--style="@style/Text"-->
+        <!--android:layout_margin="20dp"-->
+        <!--android:textSize="20sp"-->
+        <!--android:textStyle="bold"-->
+        <!--app:layout_constraintTop_toTopOf="parent"-->
+        <!--app:layout_constraintLeft_toLeftOf="parent"-->
+        <!--/>-->
+    <!--<ScrollView-->
+        <!--android:layout_below="@+id/tv_msg"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_above="@+id/ll_bottom_button"-->
+        <!--android:layout_height="wrap_content">-->
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:orientation="vertical">-->
+
+            <!--<LinearLayout-->
+
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:orientation="horizontal"-->
+                <!--android:layout_gravity="center_horizontal"-->
+                <!--android:layout_marginBottom="?attr/actionBarSize"-->
+                <!--android:layout_marginTop="20dp"-->
+                <!--&gt;-->
+                <!--<TextView-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:text="增加测量项"-->
+                    <!--style="@style/Text"-->
+                    <!--android:layout_gravity="center_vertical"-->
+                    <!--/>-->
+                <!--<ImageView-->
+                    <!--android:id="@+id/img_add_project"-->
+                    <!--android:layout_width="35dp"-->
+                    <!--android:layout_height="35dp"-->
+                    <!--android:src="@mipmap/btn_add"-->
+                    <!--android:layout_marginLeft="15dp"-->
+                    <!--/>-->
+
+            <!--</LinearLayout>-->
+        <!--</LinearLayout>-->
+
+    <!--</ScrollView>-->
+
+    <!--<LinearLayout-->
+        <!--android:id="@+id/ll_bottom_button"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="?attr/actionBarSize"-->
+        <!--android:orientation="horizontal"-->
+        <!--app:layout_constraintBottom_toBottomOf="parent"-->
+        <!--android:background="@color/gray_bottom_nav_bg_color"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:gravity="center"-->
+        <!--&gt;-->
+
+        <!--<Button-->
             <!--android:layout_width="wrap_content"-->
             <!--android:layout_height="wrap_content"-->
             <!--android:background="@drawable/btn_nomal"-->
-            <!--android:text="导出"-->
+            <!--android:text="结束测量"-->
             <!--android:textColor="@color/white_bar_word_color"-->
+            <!--android:paddingLeft="25dp"-->
+            <!--android:paddingRight="25dp"-->
             <!--android:textSize="18sp"-->
-            <!--android:layout_marginLeft="20dp"-->
             <!--/>-->
+        <!--&lt;!&ndash;<Button&ndash;&gt;-->
 
-    </LinearLayout>
+            <!--&lt;!&ndash;android:layout_width="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_height="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:background="@drawable/btn_nomal"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:text="导出"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:textColor="@color/white_bar_word_color"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:textSize="18sp"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_marginLeft="20dp"&ndash;&gt;-->
+            <!--&lt;!&ndash;/>&ndash;&gt;-->
 
-</RelativeLayout>
+    <!--</LinearLayout>-->
+
+</LinearLayout>
