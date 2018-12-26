@@ -15,10 +15,13 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.activity.MeasureManagerAcitivty;
 import com.vitec.task.smartrule.bean.ChooseMeasureMsg;
+import com.vitec.task.smartrule.bean.MeasureData;
+import com.vitec.task.smartrule.bean.OptionMeasure;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerEngineer;
 import com.vitec.task.smartrule.bean.RulerOptions;
@@ -28,6 +31,7 @@ import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.interfaces.ISelectorResultCallBack;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
+import com.vitec.task.smartrule.utils.OptionsMeasureUtils;
 import com.vitec.task.smartrule.view.BottomSelectorDialog;
 
 import java.util.ArrayList;
@@ -60,6 +64,7 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
     private ArrayAdapter projectNameAdapter;//项目名的adapter
     private ArrayAdapter checkFloorAdapter;//检查位置的adapter
     private int chooseIndex = 0;//层高选择定位，0代表≤6，1代表＞6
+    private List<String> floorHeightDatalist;
 
 
 //    private List<String> engineers;
@@ -169,11 +174,11 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
 
                             if (chooseEngineerIndex < engineerList.size()) {
                                 if (engineerList.get(chooseEngineerIndex).equals(chooseEngineerName)) {
-
+                                    floorHeightDatalist = initFloorHeightData(engineerList.get(chooseEngineerIndex));
                                 } else {
                                     for (RulerEngineer engineer1 : engineerList) {
                                         if (engineer1.getEngineerName().equals(chooseEngineerName)) {
-
+                                            floorHeightDatalist = initFloorHeightData(engineer1);
                                         }
                                     }
                                 }
@@ -207,17 +212,22 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
 
 
         /**
-         * 层高点击事件
+         * TODO  层高点击事件
          * 点击层高，弹出层高选择框
          */
         holder.rlFloorHeight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                if (floorHeightDatalist == null || floorHeightDatalist.size() == 0) {
+                    Toast.makeText(context,"请先选择工程类型",Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 final BottomSelectorDialog selectorDialog = new BottomSelectorDialog(context,R.style.BottomDialog);
-                List<String> datalist = new ArrayList<>();
-                datalist.add(context.getString(R.string.floor_height_1));
-                datalist.add(context.getString(R.string.floor_height_2));
-                selectorDialog.setDatalist(datalist);
+//                floorHeightDatalist = new ArrayList<>();
+//                datalist.add(context.getString(R.string.floor_height_1));
+//                datalist.add(context.getString(R.string.floor_height_2));
+                selectorDialog.setDatalist(floorHeightDatalist);
                 selectorDialog.show();
                 selectorDialog.setSelectorResultCallBack(new ISelectorResultCallBack() {
                     @Override
@@ -294,7 +304,7 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                 Intent startIntent = new Intent(context, MeasureManagerAcitivty.class);
                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startIntent.putExtra("projectMsg", rulerCheck);
-                startIntent.putExtra("floor_height", chooseIndex);
+                startIntent.putExtra("floor_height", holder.tvFloorHeight.getText().toString().trim());
                 Log.e("chakabiaozhi", "onClick: 查看准备发给另外一个界面的数据信息："+rulerCheck.toString() );
                 context.startActivity(startIntent);
             }
@@ -302,6 +312,29 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
 
 
         return view;
+    }
+
+    /**
+     * 选择完工程类型之后，根据所选的工程类型初始化层高的数据源
+     * @param rulerEngineer
+     * @return
+     */
+    private List<String> initFloorHeightData(RulerEngineer rulerEngineer) {
+        List<String> datalist = new ArrayList<>();
+        if (rulerEngineer.getOptionsList() == null || rulerEngineer.getOptionsList().size() == 0) {
+            return datalist;
+        }
+        List<RulerOptions> optionsList = rulerEngineer.getOptionsList();
+        for (RulerOptions options : rulerEngineer.getOptionsList()) {
+            if (options.getType() == 1) {
+                List<OptionMeasure> measureList = OptionsMeasureUtils.getOptionMeasure(options.getMeasure());
+                for (OptionMeasure measure : measureList) {
+                    datalist.add(measure.getData());
+                }
+                break;
+            }
+        }
+        return datalist;
     }
 
     public List<ChooseMeasureMsg> getChooseMeasureMsgList() {

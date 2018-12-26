@@ -67,6 +67,10 @@ public class MeasureDataView extends RelativeLayout {
         tvQualifiedRate = findViewById(R.id.tv_qualified_rate);
     }
 
+    /**
+     * 新建对象后，要初始化数据
+     * @param rulerCheckOptions
+     */
     public void initData(RulerCheckOptions rulerCheckOptions) {
         this.rulerCheckOptions = rulerCheckOptions;
 //        初始化数据模板
@@ -75,14 +79,35 @@ public class MeasureDataView extends RelativeLayout {
         optionsDataMudel.setRulerCheckOptions(rulerCheckOptions);
 //        初始化计算标准的模板信息
         optionMeasures = new ArrayList<>();
+        //初始化标题信息
         if (rulerCheckOptions.getRulerOptions().getType() == 1) {
-
+            tvTitle.setText("垂直度");
+            imgTitle.setImageResource(R.mipmap.icon_measure_vertical);
+        } else if (rulerCheckOptions.getRulerOptions().getType() == 2) {
+            tvTitle.setText("平整度");
+            imgTitle.setImageResource(R.mipmap.icon_measure_lever);
+        } else {
+            tvTitle.setText(rulerCheckOptions.getRulerOptions().getOptionsName());
         }
+//        获取测量计算参考标准的数据
         final String measures = rulerCheckOptions.getRulerOptions().getMeasure();
         optionMeasures = OptionsMeasureUtils.getOptionMeasure(measures);
+        if (optionMeasures.size() > 1) {
+            int count = 0;
+            for (int k = 0; k < optionMeasures.size(); k++) {
+                if (optionMeasures.get(k).getData().equals(rulerCheckOptions.getFloorHeight())) {
+                    optionMeasure = optionMeasures.get(k);
+                    count++;
+                }
+            }
+        } else if (optionMeasures.size() > 0) {
+            optionMeasure = optionMeasures.get(0);
+        }
 //        初始化测量标准提示信息
         String standard = rulerCheckOptions.getRulerOptions().getStandard();
         tvQualifiedStandard.setText("合格标准："+standard);
+
+//        接下来根据rulerOptionsID去数据库查找有没有相同的数据，有则显示出来，无则新建
 
     }
 

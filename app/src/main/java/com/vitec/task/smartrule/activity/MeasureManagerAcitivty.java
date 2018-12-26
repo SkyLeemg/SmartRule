@@ -70,7 +70,8 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
          */
 //        获取上一个类（ChooseMeasureProjectAdapter）传过来的数据
         rulerCheck = (RulerCheck) getIntent().getSerializableExtra("projectMsg");
-        int chooseIndex = getIntent().getIntExtra("floor_height", 0);
+//        int chooseIndex = getIntent().getIntExtra("floor_height", 0);
+        String chooseFloorHeight = getIntent().getStringExtra("floor_height");
         Log.e(TAG, "initData: 查看收到的rulercheck:"+rulerCheck.toString() );
         checkOptionsList = new ArrayList<>();
 //        rulerCheckOption = new RulerCheckOptions();
@@ -98,11 +99,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
                 rulerCheckOption.setRulerCheck(rulerCheck);
                 rulerCheckOption.setRulerOptions(rulerOption);
                 rulerCheckOption.setUpload_flag(0);
-                if (chooseIndex == 0) {
-                    rulerCheckOption.setFloorHeight(getString(R.string.floor_height_1));
-                } else {
-                    rulerCheckOption.setFloorHeight(getString(R.string.floor_height_2));
-                }
+                rulerCheckOption.setFloorHeight(chooseFloorHeight);
                 int id = OperateDbUtil.addMeasureOptionsDataToSqlite(getApplicationContext(), rulerCheckOption);
                 rulerCheckOption.setId(id);
                 checkOptionsList.add(rulerCheckOption);
@@ -112,11 +109,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
                 RulerCheckOptions rulerCheckOption = new RulerCheckOptions();
                 rulerCheckOption.setCreateTime((int) System.currentTimeMillis());
                 rulerCheckOption.setRulerCheck(rulerCheck);
-                if (chooseIndex == 0) {
-                    rulerCheckOption.setFloorHeight(getString(R.string.floor_height_1));
-                } else {
-                    rulerCheckOption.setFloorHeight(getString(R.string.floor_height_2));
-                }
+                rulerCheckOption.setFloorHeight(chooseFloorHeight);
                 checkOptionsList.add(rulerCheckOption);
             }
             startRequestServer();

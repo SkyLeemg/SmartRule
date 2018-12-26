@@ -51,6 +51,7 @@ import com.vitec.task.smartrule.utils.OptionsMeasureUtils;
 import com.vitec.task.smartrule.utils.ServiceUtils;
 import com.vitec.task.smartrule.view.BottomDialog;
 import com.vitec.task.smartrule.view.CommonEditPicView;
+import com.vitec.task.smartrule.view.MeasureDataView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -123,6 +124,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
 
     private List<OptionMeasure> optionMeasures;//该管控要点可选的层高，还要测量数据标准都在这里
     private OptionMeasure optionMeasure;//上面是该管控要点所有的层高，这个是用户当前选择的层高
+    private MeasureDataView verticalMeasureView;
 
 
     @Nullable
@@ -297,19 +299,26 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
          * checkOptions里面包含了项目信息、工程和管控要点的模板信息
          */
         List<RulerCheckOptions> accessOptions = (List<RulerCheckOptions>) bundle.getSerializable("checkoptions");
-        for (int k = 0; k < accessOptions.size(); k++) {
-            //1是垂直度
-            if (accessOptions.get(k).getRulerOptions().getType() == 1) {
-                verticalCheckOption = accessOptions.get(k);
-                verticalOptionDataMudel.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
-                verticalOptionDataMudel.setRulerCheckOptions(verticalCheckOption);
-            } else if (accessOptions.get(k).getRulerOptions().getType() == 2) {
-                //2是水平度
-                levelCheckOption = accessOptions.get(k);
-                levelOptionDataMudel.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
-                levelOptionDataMudel.setRulerCheckOptions(levelCheckOption);
+        if (accessOptions.size() > 0) {
+            for (int k = 0; k < accessOptions.size(); k++) {
+                //1是垂直度
+                if (accessOptions.get(k).getRulerOptions().getType() == 1) {
+                    verticalCheckOption = accessOptions.get(k);
+                    verticalMeasureView = new MeasureDataView(getActivity());
+                    verticalMeasureView.initData(accessOptions.get(k));
+                    verticalOptionDataMudel.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
+                    verticalOptionDataMudel.setRulerCheckOptions(verticalCheckOption);
+                } else if (accessOptions.get(k).getRulerOptions().getType() == 2) {
+                    //2是水平度
+                    levelCheckOption = accessOptions.get(k);
+                    MeasureDataView levelMeausreView = new MeasureDataView(getActivity());
+                    levelMeausreView.initData(accessOptions.get(k));
+                    levelOptionDataMudel.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
+                    levelOptionDataMudel.setRulerCheckOptions(levelCheckOption);
+                }
             }
         }
+
 
 //        初始化optionMeasures
         optionMeasures = new ArrayList<>();
