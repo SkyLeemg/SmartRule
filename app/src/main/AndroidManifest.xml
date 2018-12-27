@@ -101,12 +101,12 @@
         <activity android:name=".activity.SmsLoginActivity"/>
         <activity android:name=".activity.MainHomeActivity"
             android:launchMode="singleTask">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
 
         <!--<activity android:name=".dfu.DfuDialog"/>-->

@@ -2,6 +2,7 @@ package com.vitec.task.smartrule.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
@@ -10,16 +11,23 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.adapter.DisplayMeasureDataAdapter;
 import com.vitec.task.smartrule.bean.OptionMeasure;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.bean.RulerCheckOptionsData;
+import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
+import com.vitec.task.smartrule.utils.HeightUtils;
+import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.utils.OptionsMeasureUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ *
+ */
 public class MeasureDataView extends RelativeLayout {
     private Context context;
     private ImageView imgTitle;
@@ -33,10 +41,16 @@ public class MeasureDataView extends RelativeLayout {
 
     private RulerCheckOptions rulerCheckOptions;//从界面中传递过来的rulerchekcoption
     private RulerCheckOptionsData optionsDataMudel;//为一个空的data模板
+    private List<RulerCheckOptionsData> usingCheckOptionsDataList;//给GridView使用的数据源
 
     private List<OptionMeasure> optionMeasures;//该管控要点可选的层高，还要测量数据标准都在这里
     private OptionMeasure optionMeasure;//上面是该管控要点所有的层高，这个是用户当前选择的层高
+    private int realDataCount;
 
+    private int realNum = 0;
+    private int qualifiedNum=0;
+    private float qualifiedRate=0f;
+    private DisplayMeasureDataAdapter measureDataAdapter;
 
 
     public MeasureDataView(Context context) {
@@ -65,6 +79,7 @@ public class MeasureDataView extends RelativeLayout {
         tvRealMeasureNum = findViewById(R.id.tv_real_measure_num);
         tvQualifiedNum = findViewById(R.id.tv_qualified_num);
         tvQualifiedRate = findViewById(R.id.tv_qualified_rate);
+        LogUtils.show("已初始化控件");
     }
 
     /**
@@ -72,6 +87,7 @@ public class MeasureDataView extends RelativeLayout {
      * @param rulerCheckOptions
      */
     public void initData(RulerCheckOptions rulerCheckOptions) {
+        LogUtils.show("正在初始化数据");
         this.rulerCheckOptions = rulerCheckOptions;
 //        初始化数据模板
         optionsDataMudel = new RulerCheckOptionsData();
@@ -103,42 +119,126 @@ public class MeasureDataView extends RelativeLayout {
         } else if (optionMeasures.size() > 0) {
             optionMeasure = optionMeasures.get(0);
         }
+        LogUtils.show("查看计算标准optionMeasure----"+optionMeasure);
+
 //        初始化测量标准提示信息
         String standard = rulerCheckOptions.getRulerOptions().getStandard();
         tvQualifiedStandard.setText("合格标准："+standard);
 
 //        接下来根据rulerOptionsID去数据库查找有没有相同的数据，有则显示出来，无则新建
+        usingCheckOptionsDataList= OperateDbUtil.queryMeasureDataFromSqlite(context, rulerCheckOptions);
+        //实际有数据的统计个数
+        realDataCount = usingCheckOptionsDataList.size();
+//        如果没有测量数据，则模拟空的数据传过来
+        if (usingCheckOptionsDataList.size() == 0) {
+            rulerCheckOptions.setMeasuredNum(0);
+            rulerCheckOptions.setQualifiedNum(0);
+            for (int i = 0; i < 12; i++) {
+                RulerCheckOptionsData data = new RulerCheckOptionsData();
+                data.setData("");
+                data.setQualified(true);
+                data.setRulerCheckOptions(rulerCheckOptions);
+                usingCheckOptionsDataList.add(data);
+            }
+            updateCompleteResult();
+        } else {
+            completeResult();
+        }
+
+        measureDataAdapter = new DisplayMeasureDataAdapter(context, usingCheckOptionsDataList);
+        gvDisplayData.setAdapter(measureDataAdapter);
+        HeightUtils.setGridViewHeighBaseOnChildren(gvDisplayData,7);
 
     }
 
-    public void setDisplayDataAdapter(BaseAdapter adapter) {
-        this.adapter = adapter;
-        gvDisplayData.setAdapter(adapter);
+    /**
+     * 计算测量数据的结果
+     */
+    public void completeResult() {
+        if (optionMeasure != null) {
+            realNum = 0;
+            qualifiedNum = 0;
+            float frealnum = 0.0f;
+            float fq = 0.0f;
+            for (int i=0; i<realDataCount;i++) {
+                String data = usingCheckOptionsDataList.get(i).getData().trim();
+                try {
+                    float datanum = Float.valueOf(data);
+                    /**
+                     * 根据操作标志来计算结果，
+                     * 1 - 代表要 小于等于 才合格
+                     * 2 -
+                     */
+                    switch (optionMeasure.getOperate()) {
+                        case 1:
+                            if (datanum < optionMeasure.getStandard() || datanum == optionMeasure.getStandard()) {
+                                qualifiedNum++;
+//                               设置合格
+                                usingCheckOptionsDataList.get(i).setQualified(true);
+                            } else {
+                                usingCheckOptionsDataList.get(i).setQualified(false);
+                            }
+                            break;
+                        case 2:
+
+                            break;
+                    }
+                    realNum++;
+                } catch (Exception e) {
+                }
+            }
+            frealnum = realNum;
+            fq = qualifiedNum;
+            qualifiedRate = (fq / frealnum);
+            rulerCheckOptions.setMeasuredNum(realNum);
+            rulerCheckOptions.setQualifiedNum(qualifiedNum);
+            rulerCheckOptions.setQualifiedRate(Float.parseFloat(String.format("%.2f", qualifiedRate *100)));
+            updateCompleteResult();
+        }
     }
 
-
-    public ImageView getImgTitle() {
-        return imgTitle;
+    /**
+     * 更新显示计算结果的控件
+     */
+    private void updateCompleteResult() {
+        tvQualifiedNum.setText(rulerCheckOptions.getQualifiedNum()+"");
+        tvRealMeasureNum.setText(rulerCheckOptions.getMeasuredNum()+"");
+        if (qualifiedRate >=0) {
+            tvQualifiedRate.setText(String.format("%.2f",qualifiedRate*100));
+        }else tvQualifiedRate.setText("0.00");
     }
 
-    public void setImgTitle(ImageView imgTitle) {
-        this.imgTitle = imgTitle;
+    /**以下是需要跟调用此View者需要交互的数据变量**/
+    public DisplayMeasureDataAdapter getMeasureDataAdapter() {
+        return measureDataAdapter;
     }
 
-    public TextView getTvTitle() {
-        return tvTitle;
+    public void setMeasureDataAdapter(DisplayMeasureDataAdapter measureDataAdapter) {
+        this.measureDataAdapter = measureDataAdapter;
     }
 
-    public void setTvTitle(TextView tvTitle) {
-        this.tvTitle = tvTitle;
+    public List<RulerCheckOptionsData> getUsingCheckOptionsDataList() {
+        return usingCheckOptionsDataList;
     }
 
-    public TextView getTvQualifiedStandard() {
-        return tvQualifiedStandard;
+    public void setUsingCheckOptionsDataList(List<RulerCheckOptionsData> usingCheckOptionsDataList) {
+        this.usingCheckOptionsDataList = usingCheckOptionsDataList;
     }
 
-    public void setTvQualifiedStandard(TextView tvQualifiedStandard) {
-        this.tvQualifiedStandard = tvQualifiedStandard;
+    public int getRealDataCount() {
+        return realDataCount;
+    }
+
+    public void setRealDataCount(int realDataCount) {
+        this.realDataCount = realDataCount;
+    }
+
+    public RulerCheckOptions getRulerCheckOptions() {
+        return rulerCheckOptions;
+    }
+
+    public void setRulerCheckOptions(RulerCheckOptions rulerCheckOptions) {
+        this.rulerCheckOptions = rulerCheckOptions;
     }
 
     public GridView getGvDisplayData() {
@@ -147,29 +247,5 @@ public class MeasureDataView extends RelativeLayout {
 
     public void setGvDisplayData(GridView gvDisplayData) {
         this.gvDisplayData = gvDisplayData;
-    }
-
-    public TextView getTvRealMeasureNum() {
-        return tvRealMeasureNum;
-    }
-
-    public void setTvRealMeasureNum(TextView tvRealMeasureNum) {
-        this.tvRealMeasureNum = tvRealMeasureNum;
-    }
-
-    public TextView getTvQualifiedNum() {
-        return tvQualifiedNum;
-    }
-
-    public void setTvQualifiedNum(TextView tvQualifiedNum) {
-        this.tvQualifiedNum = tvQualifiedNum;
-    }
-
-    public TextView getTvQualifiedRate() {
-        return tvQualifiedRate;
-    }
-
-    public void setTvQualifiedRate(TextView tvQualifiedRate) {
-        this.tvQualifiedRate = tvQualifiedRate;
     }
 }

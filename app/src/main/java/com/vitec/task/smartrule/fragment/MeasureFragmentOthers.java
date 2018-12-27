@@ -123,7 +123,7 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_measure, null);
+        view = inflater.inflate(R.layout.fragment_measure_other, null);
         EventBus.getDefault().register(this);
         initView();
         initData();

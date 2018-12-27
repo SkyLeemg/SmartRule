@@ -166,9 +166,9 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                         @Override
                         public void onSelectCallBack(String item, int index) {
                             holder.tvEngineer.setText(item);
-                            holder.tvFloorHeight.setTextColor(Color.rgb(51,51,51));
+                            holder.tvEngineer.setTextColor(Color.rgb(51,51,51));
                             if (index < spinnerList.size()) {
-                                chooseEngineerName = spinnerList.get(index);
+                                chooseEngineerName = item;
                                 chooseEngineerIndex = index;
                             }
 
@@ -277,7 +277,9 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                     rulerCheck.setCreateDate(String.valueOf(DateFormatUtil.getDate()));
                     rulerCheck.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
                     LogUtils.show("保存下来的createtime时间戳："+DateFormatUtil.transForMilliSecond(new Date()));
+                    rulerCheck.setServerId(0);
                     rulerCheck.setUpload_flag(0);
+                    rulerCheck.setStatus(0);
                     if (chooseEngineerIndex < engineerList.size()) {
                         if (engineerList.get(chooseEngineerIndex).equals(chooseEngineerName)) {
                             rulerCheck.setEngineer(engineerList.get(chooseEngineerIndex));

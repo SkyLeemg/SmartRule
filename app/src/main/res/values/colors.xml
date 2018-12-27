@@ -43,5 +43,7 @@
     <color name="color_measure_data_gv_title_bg">#f5f5f5</color>
     <color name="color_measure_data_gv_title">#666</color>
     <color name="color_gv_border">#ddd</color>
+    <color name="color_word_green">#37b877</color>
+    <color name="color_word_blue">#2479fb</color>
 
 </resources>

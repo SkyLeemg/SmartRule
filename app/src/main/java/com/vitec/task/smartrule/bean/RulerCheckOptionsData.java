@@ -13,6 +13,7 @@ public class RulerCheckOptionsData implements Serializable{
     private int serverId;
     private RulerCheckOptions rulerCheckOptions;
     private String data;
+    private boolean isQualified;//是否合格
     private int createTime;
     private int updateFlag;
     private int upload_flag;
@@ -70,7 +71,18 @@ public class RulerCheckOptionsData implements Serializable{
     }
 
     public void setUpload_flag(int upload_flag) {
+
+
         this.upload_flag = upload_flag;
+    }
+
+
+    public boolean isQualified() {
+        return isQualified;
+    }
+
+    public void setQualified(boolean qualified) {
+        isQualified = qualified;
     }
 
     @Override

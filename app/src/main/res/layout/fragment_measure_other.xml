@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+  >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_add_mpic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="添加图纸"
+                android:textColor="@color/color_word"
+                android:textStyle="bold"
+                android:textSize="17sp"
+                android:layout_marginTop="11dp"
+                />
+            <!--**************************图纸编辑部分*****************************-->
+            <RelativeLayout
+                android:id="@+id/rl_edit_pic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            </RelativeLayout>
+            <!--<include-->
+                <!--android:id="@+id/layout_edit_pic"-->
+                <!--layout="@layout/item_common_edit_measure_pic"-->
+                <!--android:visibility="gone"-->
+                <!--/>-->
+            <!--占一个位，将动态添加显示测量数据的view进来-->
+            <LinearLayout
+                android:id="@+id/ll_display_mdata"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                ></LinearLayout>
+
+            <!--*************************垂直度部分开始****************************-->
+            <!--<include layout="@layout/item_common_display_measure_data"/>-->
+
+            <!--*************************水平度部分结束****************************-->
+            <!--<include layout="@layout/item_common_display_measure_data"/>-->
+
+            <TextView
+                android:id="@+id/tv_project_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/pblue_bar_color"
+                android:text="混凝土工程测量："
+                android:textSize="20sp"
+                />
+
+            <TextView
+                android:id="@+id/tv_measure_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Text"
+                android:text="管控要点：立面垂直度"
+                />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Text"
+                    android:text="合格标准："
+                    />
+                <TextView
+                    android:id="@+id/tv_qualified_flag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Text"
+                    android:text="≤8mm/≤10mm(≤6m取8mm)"
+                    />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Text"
+                android:text="测量数据：接受数据后直接写入"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="数据由只能测量设备自动写入，也可手动输入"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                />
+
+            <GridView
+                android:id="@+id/gv_measure_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:numColumns="5"
+                ></GridView>
+            <ImageView
+                android:id="@+id/img_add"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:src="@mipmap/btn_add"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone"
+                />
+            <LinearLayout
+                android:id="@+id/ll_floor_height"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Text"
+                    android:text="层高："
+                    />
+                <Spinner
+                    android:id="@+id/spinner_floor_height"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"></Spinner>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Text"
+                    android:text="实测点数："
+                    />
+                <EditText
+                    android:id="@+id/et_real_measure_num"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:text="30"
+                    android:gravity="center"
+                    android:enabled="false"
+                    android:textColor="@color/pblue_bar_color"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Text"
+                    android:text="合格点数："
+                    android:layout_marginLeft="30dp"
+                    />
+                <EditText
+                    android:id="@+id/et_standard_num"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:text="30"
+                    android:clickable="false"
+                    android:gravity="center"
+                    android:enabled="false"
+                    android:textColor="@color/pblue_bar_color"
+                    />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal">
+                <TextView
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Text"
+                    android:text="合格率："
+                    />
+                <EditText
+                    android:id="@+id/et_standard_rate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="30"
+                    android:clickable="false"
+                    android:gravity="center"
+                    android:enabled="false"
+                    android:textColor="@color/pblue_bar_color"
+                    />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Text"
+                    android:textColor="@color/pblue_bar_color"
+                    android:text="%"/>
+            </LinearLayout>
+
+
+
+
+        </LinearLayout>
+
+
+
+</ScrollView>

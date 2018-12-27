@@ -2,6 +2,7 @@ package com.vitec.task.smartrule.view;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -27,7 +28,11 @@ import android.widget.Toast;
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.activity.ImageTestActivity2;
 import com.vitec.task.smartrule.bean.IconViewBean;
+import com.vitec.task.smartrule.bean.RulerCheckOptions;
+import com.vitec.task.smartrule.db.DataBaseParams;
+import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.fragment.MeasureFragment;
+import com.vitec.task.smartrule.interfaces.IEditPicControler;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
 
@@ -41,6 +46,12 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * 图纸编辑模块
+ * 1.可以添加图标
+ * 2.保存图纸
+ * 3.删除图标
+ */
 public class CommonEditPicView extends RelativeLayout implements View.OnClickListener {
 
     private ZoomMoveFrameLayout zoomMoveFrameLayout;
@@ -64,6 +75,7 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
     private int leverIndex = 0;//水平度图标序号
 
     private MeasureFragment fragment;
+    private IEditPicControler editPicControler;
     private List<Integer> addLink;//图标添加的顺序记录，删除图标用,添加的1代表垂直度，2代表水平度
 
     private Context context;
@@ -237,7 +249,7 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                 break;
 
             /**
-             * 保存图片
+             *TODO FR保存图片
              */
             case R.id.rl_save_pic:
                 if (mImageView != null) {
@@ -260,8 +272,10 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                     zoomMoveFrameLayout.transLate(deltaPoint.x * -1, deltaPoint.y * -1);
 //            合并图像
                     Bitmap newBitmap = saveBitmap();
+                    List<RulerCheckOptions> optionsList = editPicControler.getCheckOptions();
                     String path= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
-                    String imgFileName = DateFormatUtil.formatDate(new Date(), "yyyyMMddHHmmSS")+".jpg";
+//                    String imgFileName = DateFormatUtil.formatDate(new Date(), "yyyyMMddHHmmSS")+".jpg";
+                    String imgFileName = optionsList.get(0).getCreateTime()+".jpg";
 
                     File imgFile = new File(path, imgFileName);
                     if (!imgFile.getParentFile().exists()) {
@@ -278,6 +292,14 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                     try {
                         FileOutputStream fos = new FileOutputStream(imgFile);
                         newBitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+                        //将图片地址更新到数据库
+                        ContentValues values = new ContentValues();
+                        values.put(DataBaseParams.measure_option_img_path, imgFile.getPath());
+                        values.put(DataBaseParams.measure_option_img_time,DateFormatUtil.transForMilliSecond(new Date()));
+
+                        for (RulerCheckOptions options : optionsList) {
+                            OperateDbUtil.updateOptionsDataToSqlite(getContext(), DataBaseParams.measure_option_table_name, values, new String[]{String.valueOf(options.getId())});
+                        }
                         fos.flush();
                         fos.close();
                         Toast.makeText(context,"保存成功",Toast.LENGTH_SHORT).show();
@@ -365,8 +387,8 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                                         levelIconList.clear();
                                         mImageView = null;
                                         imgBitmap.recycle();
-                                        if (fragment != null) {
-                                            fragment.setTvAddmPicVisibale(1);
+                                        if (editPicControler != null) {
+                                            editPicControler.setTvAddmPicVisibale(1);
                                         }
 
                                         Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();

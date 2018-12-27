@@ -90,7 +90,7 @@ public class MeasureRecordFragment extends Fragment implements View.OnClickListe
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_measure, null);
+        view = inflater.inflate(R.layout.fragment_measure_other, null);
         EventBus.getDefault().register(this);
         initView();
         initData();
@@ -109,7 +109,7 @@ public class MeasureRecordFragment extends Fragment implements View.OnClickListe
         spinnerFloorHeight = view.findViewById(R.id.spinner_floor_height);
         llFloorHeight = view.findViewById(R.id.ll_floor_height);
         imgAdd = view.findViewById(R.id.img_add);
-        imgAdd.setVisibility(View.GONE);
+//        imgAdd.setVisibility(View.GONE);
 
     }
 
@@ -385,7 +385,7 @@ public class MeasureRecordFragment extends Fragment implements View.OnClickListe
 //            holder.etData.setText(checkOptionsDataList.get(i).getData());
 
             holder.tvContent.setText(checkOptionsDataList.get(i).getData());
-            holder.tvTitleIndex.setText(i+1);
+            holder.tvTitleIndex.setText(i+1+"");
             if (checkOptions.getRulerOptions().getType() == 1 || checkOptions.getRulerOptions().getType() == 2) {
                 holder.etData.setEnabled(false);
             } else {

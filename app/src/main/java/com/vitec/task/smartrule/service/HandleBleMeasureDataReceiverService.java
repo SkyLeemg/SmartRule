@@ -4,11 +4,13 @@ import android.app.Notification;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -23,6 +25,7 @@ import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.bean.RulerCheckOptionsData;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
+import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.helper.TextToSpeechHelper;
 import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
@@ -37,6 +40,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -69,6 +73,12 @@ public class HandleBleMeasureDataReceiverService extends Service {
 
     private final static int DAEMON_SERVICE_ID = -5121;
     public static int check_id = 0;
+//    计算垂直度的计算结果，清除前的总数
+    private int vQualifiedNum = 0;
+    private int vRealNum = 0;
+    //    计算平整度的计算结果，清除前的总数
+    private int lQualifiedNum = 0;
+    private int lRealNum = 0;
 
 
     @Nullable
@@ -110,26 +120,49 @@ public class HandleBleMeasureDataReceiverService extends Service {
                         verticalOption = options;
                         List<OptionMeasure> optionMeasureList = OptionsMeasureUtils.getOptionMeasure(verticalOption.getRulerOptions().getMeasure());
                         verticalOptionMeasure = new OptionMeasure();
-                        if (optionMeasureList.size() > 0) {
+                        if (optionMeasureList.size() > 1) {
+                            int count = 0;
+                            for (int k = 0; k < optionMeasureList.size(); k++) {
+                                if (optionMeasureList.get(k).getData().equals(verticalOption.getFloorHeight())) {
+                                    verticalOptionMeasure = optionMeasureList.get(k);
+                                    count++;
+                                }
+                            }
+                        } else if (optionMeasureList.size() > 0) {
                             verticalOptionMeasure = optionMeasureList.get(0);
-                        } else {
-                            verticalOptionMeasure.setData("≤6");
-                            verticalOptionMeasure.setStandard(8);
-                            verticalOptionMeasure.setOperate(1);
-                            verticalOptionMeasure.setId(1);
                         }
+//                        if (optionMeasureList.size() > 0) {
+//                            verticalOptionMeasure = optionMeasureList.get(0);
+//                        } else {
+//                            verticalOptionMeasure.setData("≤6");
+//                            verticalOptionMeasure.setStandard(8);
+//                            verticalOptionMeasure.setOperate(1);
+//                            verticalOptionMeasure.setId(1);
+//                        }
                     } else if (options.getRulerOptions().getType() == 2) {//type---2代表的是表面平整度的管控要点
                         levelOption = options;
                         List<OptionMeasure> optionMeasureList = OptionsMeasureUtils.getOptionMeasure(levelOption.getRulerOptions().getMeasure());
                         levelOptionMeasure = new OptionMeasure();
-                        if (optionMeasureList.size() > 0) {
+                        if (optionMeasureList.size() > 1) {
+                            int count = 0;
+                            for (int k = 0; k < optionMeasureList.size(); k++) {
+                                if (optionMeasureList.get(k).getData().equals(levelOption.getFloorHeight())) {
+                                    levelOptionMeasure = optionMeasureList.get(k);
+                                    count++;
+                                }
+                            }
+                        } else if (optionMeasureList.size() > 0) {
                             levelOptionMeasure = optionMeasureList.get(0);
-                        } else {
-                            levelOptionMeasure.setData("≤6");
-                            levelOptionMeasure.setStandard(8);
-                            levelOptionMeasure.setOperate(1);
-                            levelOptionMeasure.setId(1);
                         }
+
+//                        if (optionMeasureList.size() > 0) {
+//                            levelOptionMeasure = optionMeasureList.get(0);
+//                        } else {
+//                            levelOptionMeasure.setData("≤6");
+//                            levelOptionMeasure.setStandard(8);
+//                            levelOptionMeasure.setOperate(1);
+//                            levelOptionMeasure.setId(1);
+//                        }
 
                     }
 
@@ -168,6 +201,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
     }
 
     public static void stopHandleService(Context context) {
+
         Intent serviceIntent = new Intent(context, HandleBleMeasureDataReceiverService.class);
         context.stopService(serviceIntent);
     }
@@ -192,8 +226,28 @@ public class HandleBleMeasureDataReceiverService extends Service {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             bleService = ((ConnectDeviceService.LocalBinder) iBinder).getService();
-            LogUtils.show("HandleBleMeasure---绑定成功，正在监听水平度的通知。。。");
-            bleService.enableTXNotification(ConnectDeviceService.LEVELNESS_SERVICE_UUID, ConnectDeviceService.LEVELNESS_TX_CHAR_UUID);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (bleService.LEVEL_DISCOVER_FLAG != 1) {
+                        bleService.enableTXNotification(ConnectDeviceService.LEVELNESS_SERVICE_UUID, ConnectDeviceService.LEVELNESS_TX_CHAR_UUID);
+                        LogUtils.show("BleDeviceReceiver---正在监听水平度服务");
+                    }
+
+                }
+            }, 1000);
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (bleService.VERTICAL_DISCOVER_FLAG != 1) {
+                        bleService.enableTXNotification(ConnectDeviceService.VERTICALITY_SERVICE_UUID, ConnectDeviceService.VERTICALITY_TX_CHAR_UUID);
+                        LogUtils.show("BleDeviceReceiver---正在监听垂直度服务");
+                    }
+
+
+                }
+            }, 3000);
         }
 
         @Override
@@ -215,6 +269,15 @@ public class HandleBleMeasureDataReceiverService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (verticalOptinsDataList.size() >0) {
+            completeResult(verticalOptinsDataList,verticalOption,verticalOptionMeasure);
+            uploadDataToServer(verticalOptinsDataList,verticalOption);
+        }
+        if (levelOptionsDataList.size() > 0) {
+            completeResult(levelOptionsDataList,levelOption,levelOptionMeasure);
+            uploadDataToServer(levelOptionsDataList,levelOption);
+        }
+
         LogUtils.show("HandleBleMeasureDataReceiverService----onDestroy----销毁了");
         unregisterBleRecevier();
         unbindBleService();
@@ -249,11 +312,14 @@ public class HandleBleMeasureDataReceiverService extends Service {
             case 1:
                 verticalOptinsDataList.clear();
                 LogUtils.show("uploadResponeCallBack-----垂直度数据清空了");
-
+                vQualifiedNum = verticalOption.getQualifiedNum();
+                vRealNum = verticalOption.getMeasuredNum();
                 break;
 
             case 2:
                 levelOptionsDataList.clear();
+                lQualifiedNum = levelOption.getQualifiedNum();
+                lRealNum = levelOption.getMeasuredNum();
                 LogUtils.show("uploadResponeCallBack-----平整度数据清空了");
                 break;
 
@@ -344,6 +410,31 @@ public class HandleBleMeasureDataReceiverService extends Service {
              * 发现服务
              */
             if (action.equals(BleParam.ACTION_GATT_SERVICES_DISCOVERED)) {
+                if (bleService != null) {
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (bleService.LEVEL_DISCOVER_FLAG != 1) {
+                                bleService.enableTXNotification(ConnectDeviceService.LEVELNESS_SERVICE_UUID, ConnectDeviceService.LEVELNESS_TX_CHAR_UUID);
+                                LogUtils.show("BleDeviceReceiver---正在监听水平度服务");
+                            }
+
+                        }
+                    }, 2000);
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (bleService.VERTICAL_DISCOVER_FLAG != 1) {
+                                bleService.enableTXNotification(ConnectDeviceService.VERTICALITY_SERVICE_UUID, ConnectDeviceService.VERTICALITY_TX_CHAR_UUID);
+                                LogUtils.show("BleDeviceReceiver---正在监听垂直度服务");
+                            }
+
+
+                        }
+                    }, 4000);
+
+                }
 //                发现一个服务
 //                bleCallBackResult.bleDiscoveredService();
             }
@@ -443,8 +534,8 @@ public class HandleBleMeasureDataReceiverService extends Service {
     private void completeResult(List<RulerCheckOptionsData> dataList,RulerCheckOptions checkOptions,OptionMeasure optionMeasure) {
         if (optionMeasure != null) {
 
-            int realNum = 0;
-            int qualifiedNum = 0;
+           int  realNum = 0;
+           int qualifiedNum = 0;
             float frealnum = 0.0f;
             float fq = 0.0f;
             for (int i=0; i<dataList.size();i++) {
@@ -477,14 +568,30 @@ public class HandleBleMeasureDataReceiverService extends Service {
                     Log.e("exceptions", "completeResult: 错误原因："+e.getMessage() );
                 }
             }
-            frealnum = realNum;
-            fq = qualifiedNum;
+//            要加上dataList集合被清除前的个数
+            if (checkOptions.getRulerOptions().getType() == 1) {
+                frealnum = vRealNum+realNum;
+                fq = vQualifiedNum + qualifiedNum;
+            }else if (checkOptions.getRulerOptions().getType() == 2) {
+                frealnum = lRealNum+realNum;
+                fq = lQualifiedNum + qualifiedNum;
+            }
             float qualifiedRate = (fq / frealnum);
-            LogUtils.show("completeResult: 查看计算出来的实测点数："+realNum+",合格点数："+qualifiedNum+",合格率："+qualifiedRate );
+            LogUtils.show("completeResult: 查看计算出来的实测点数："+ realNum +",合格点数："+ qualifiedNum +",合格率："+qualifiedRate );
             checkOptions.setFloorHeight(optionMeasure.getData());
-            checkOptions.setMeasuredNum(realNum);
-            checkOptions.setQualifiedNum(qualifiedNum);
+            checkOptions.setMeasuredNum((int) frealnum);
+            checkOptions.setQualifiedNum((int) fq);
             checkOptions.setQualifiedRate(Float.parseFloat(String.format("%.2f",qualifiedRate*100)));
+//            将数据更新到数据库
+            ContentValues values = new ContentValues();
+            values.put(DataBaseParams.measure_option_measured_points, checkOptions.getMeasuredNum());
+            values.put(DataBaseParams.measure_option_qualified_points,checkOptions.getQualifiedNum());
+            values.put(DataBaseParams.measure_option_percent_pass,checkOptions.getQualifiedRate());
+            values.put(DataBaseParams.measure_option_update_time,DateFormatUtil.transForMilliSecond(new Date()));
+            values.put(DataBaseParams.measure_option_floor_height, checkOptions.getFloorHeight());
+            String[] ids = new String[]{String.valueOf(checkOptions.getId())};
+            OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(),DataBaseParams.measure_option_table_name, values, ids);
+
         }
 
     }

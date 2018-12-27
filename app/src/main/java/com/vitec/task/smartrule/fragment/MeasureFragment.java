@@ -1,9 +1,12 @@
 package com.vitec.task.smartrule.fragment;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -33,6 +36,7 @@ import com.luck.picture.lib.PictureSelector;
 import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.entity.LocalMedia;
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.activity.WaitingMeasureActivity;
 import com.vitec.task.smartrule.adapter.DisplayMeasureDataAdapter;
 import com.vitec.task.smartrule.bean.event.HeightFloorMsgEvent;
 import com.vitec.task.smartrule.bean.OptionMeasure;
@@ -40,8 +44,11 @@ import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.bean.RulerCheckOptionsData;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
+import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.helper.TextToSpeechHelper;
 import com.vitec.task.smartrule.service.ConnectDeviceService;
+import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
+import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
 import com.vitec.task.smartrule.utils.BleParam;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.HeightUtils;
@@ -57,6 +64,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,15 +83,8 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
 
     private static final String TAG = "MeasureFragment";
     private View view;
-    private GridView gvMeasureData;
-    private TextView tvProjectName;//项目类型
-    private TextView tvMeasureItem;//管控要点
-    private TextView tvQualifiedStandard;
-    private EditText etStandardRate;
-    private EditText etStandartNum;
-    private EditText etRealMeasureNum;
-    private Spinner spinnerFloorHeight;
-    private ImageView imgAdd;
+    private TextView tvFinishMeasure;
+    private TextView tvPauseMeasure;
 
     /****编辑图片的布局****/
 //    private View layoutEditPic;
@@ -111,12 +112,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
     private int realNum = 0;//实测点数
     private int qualifiedNum = 0;//合格点数
     private float qualifiedRate = 0.0f;//合格率
-    private LinearLayout llFloorHeight;//选择层高的模块，当合格标准只有以项的时候需要隐藏这个模块
 
-
-
-    private RulerCheckOptionsData levelOptionDataMudel;//一个空的水平度数据的模板
-    private RulerCheckOptionsData verticalOptionDataMudel;//一个空的垂直度数据的模板
     private List<RulerCheckOptionsData> checkOptionsDataList;//蓝牙发过来的数据集合
     private List<RulerCheckOptionsData> uploadOptionsDataList;//待发送给服务器的数据集合
     private RulerCheckOptions levelCheckOption;//一个水平度测量的管控要点
@@ -125,6 +121,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
     private List<OptionMeasure> optionMeasures;//该管控要点可选的层高，还要测量数据标准都在这里
     private OptionMeasure optionMeasure;//上面是该管控要点所有的层高，这个是用户当前选择的层高
     private MeasureDataView verticalMeasureView;
+    private MeasureDataView levelMeausreView;
 
 
     @Nullable
@@ -138,27 +135,18 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
     }
 
     private void initView() {
-        gvMeasureData = view.findViewById(R.id.gv_measure_data);
-        tvProjectName = view.findViewById(R.id.tv_project_type);
-        tvMeasureItem = view.findViewById(R.id.tv_measure_item);
         mTextToSpeechHelper = new TextToSpeechHelper(getActivity(),"");
-        tvQualifiedStandard = view.findViewById(R.id.tv_qualified_flag);
-        etStandardRate = view.findViewById(R.id.et_standard_rate);
-        etStandartNum = view.findViewById(R.id.et_standard_num);
-        etRealMeasureNum = view.findViewById(R.id.et_real_measure_num);
-        spinnerFloorHeight = view.findViewById(R.id.spinner_floor_height);
-        llFloorHeight = view.findViewById(R.id.ll_floor_height);
-        imgAdd = view.findViewById(R.id.img_add);
         tvAddmPic = view.findViewById(R.id.tv_add_mpic);
 
 //        layoutEditPic = view.findViewById(R.id.layout_edit_pic);
         rlEditPic = view.findViewById(R.id.rl_edit_pic);
         llDisplayData = view.findViewById(R.id.ll_display_mdata);
+        tvFinishMeasure = view.findViewById(R.id.tv_finish_measure);
+        tvPauseMeasure = view.findViewById(R.id.tv_pause_measure);
 
         tvAddmPic.setOnClickListener(this);
-
-
-//        layoutEditPic.setVisibility(View.VISIBLE);
+        tvPauseMeasure.setOnClickListener(this);
+        tvFinishMeasure.setOnClickListener(this);
 
     }
 
@@ -290,10 +278,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
          * 接收在创建Fragment时发来的数据
          */
         bundle = getArguments();
-        levelOptionDataMudel = new RulerCheckOptionsData();
-        verticalOptionDataMudel = new RulerCheckOptionsData();
 //        获取用户在新建界面传来的层高
-//        int chooseIndex = bundle.getInt("floor_height");
 
         /**
          * checkOptions里面包含了项目信息、工程和管控要点的模板信息
@@ -306,15 +291,13 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
                     verticalCheckOption = accessOptions.get(k);
                     verticalMeasureView = new MeasureDataView(getActivity());
                     verticalMeasureView.initData(accessOptions.get(k));
-                    verticalOptionDataMudel.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
-                    verticalOptionDataMudel.setRulerCheckOptions(verticalCheckOption);
+                    llDisplayData.addView(verticalMeasureView);
                 } else if (accessOptions.get(k).getRulerOptions().getType() == 2) {
                     //2是水平度
                     levelCheckOption = accessOptions.get(k);
-                    MeasureDataView levelMeausreView = new MeasureDataView(getActivity());
+                    levelMeausreView = new MeasureDataView(getActivity());
                     levelMeausreView.initData(accessOptions.get(k));
-                    levelOptionDataMudel.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
-                    levelOptionDataMudel.setRulerCheckOptions(levelCheckOption);
+                    llDisplayData.addView(levelMeausreView);
                 }
             }
         }
@@ -324,103 +307,13 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
         optionMeasures = new ArrayList<>();
         final String measures = levelCheckOption.getRulerOptions().getMeasure();
         optionMeasures = OptionsMeasureUtils.getOptionMeasure(measures);
-        LogUtils.show("查看"+ levelCheckOption.getRulerOptions().getOptionsName()+"模块的optionMeasures："+optionMeasures.toString());
-
-        Log.e(TAG, "initData: 查看MeasureFragment收到的checkoptions:"+ levelCheckOption);
-        tvProjectName.setText(levelCheckOption.getRulerCheck().getProjectName()+":");
-        tvMeasureItem.setText("管控要点："+ levelCheckOption.getRulerOptions().getOptionsName());
-//        此id对应iot_ruler_check_options表的id
         check_option_id = levelCheckOption.getId();
         standard = levelCheckOption.getRulerOptions().getStandard();
-        tvQualifiedStandard.setText(standard);
 
-
-
-
-        /**
-         * 初始化保存蓝牙数据的集合对象
-         */
-        checkOptionsDataList = OperateDbUtil.queryMeasureDataFromSqlite(getActivity(), levelCheckOption);
-        currentDataNum = checkOptionsDataList.size();
-        if (checkOptionsDataList.size() == 0) {
-            for (int i = 0; i < 12; i++) {
-                RulerCheckOptionsData data = new RulerCheckOptionsData();
-                data.setRulerCheckOptions(levelCheckOption);
-                checkOptionsDataList.add(data);
-            }
-        } else {
-            completeResult();
-        }
-
-        updateCompleteResult();
         service_init();
-
-        /********************初始化ImgAdd按钮**********************/
-        if (levelCheckOption.getRulerOptions().getType() < 3) {
-          imgAdd.setVisibility(View.GONE);
-        } else {
-          imgAdd.setVisibility(View.VISIBLE);
-        }
-
-        /**
-         * 初始化接受数据的gridview
-         */
-        measureDataAdapter = new DisplayMeasureDataAdapter(getActivity(),checkOptionsDataList);
-        gvMeasureData.setAdapter(measureDataAdapter);
-        HeightUtils.setGridViewHeighBaseOnChildren(gvMeasureData,6);
-
-        /********************层高选择框部分开始**************************/
-
-        floodHeights = new ArrayList<>();
-        for (OptionMeasure measure : optionMeasures) {
-            floodHeights.add(measure.getData());
-        }
-//        初始化默认选择的层高及运算标准
-        optionMeasure = new OptionMeasure();
-        if (optionMeasures.size() > 0) {
-            optionMeasure = optionMeasures.get(0);
-        }else {
-            optionMeasure.setData("≤6");
-            optionMeasure.setStandard(8);
-            optionMeasure.setOperate(1);
-            optionMeasure.setId(1);
-        }
-        LogUtils.show("查看"+ levelCheckOption.getRulerOptions().getOptionsName()+"模块的floodHeights："+floodHeights.toString());
-        if (floodHeights.size() > 1) {
-            llFloorHeight.setVisibility(View.VISIBLE);
-            spinnerAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_dropdown_item, floodHeights);
-            spinnerFloorHeight.setAdapter(spinnerAdapter);
-        } else {
-            llFloorHeight.setVisibility(View.GONE);
-        }
-
-        spinnerFloorHeight.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.e(TAG, "onItemSelected: 查看当前选择的：" + i + ",内容：" + floodHeights.get(i) + ",查看当前选择的标准：" + optionMeasures.get(i));
-                floodHeight = floodHeights.get(i);
-                if (floodHeights.get(i).equals(optionMeasures.get(i).getData())) {
-                    optionMeasure = optionMeasures.get(i);
-                } else {
-                    for (OptionMeasure measure : optionMeasures) {
-                        if (floodHeights.get(i).equals(measure.getData())) {
-                            optionMeasure = measure;
-                        }
-                    }
-                }
-                EventBus.getDefault().post(new HeightFloorMsgEvent(levelCheckOption.getRulerOptions().getType(),optionMeasure));
-                completeResult();
-                Log.e(TAG, "onItemSelected: 查看最终参看值："+standartNum );
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-        /********************层高选择框部分结束**************************/
-
     }
+
+
 
     /**
      * 根据计算标准去计算实测数、合格数和合格率
@@ -461,46 +354,10 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
             levelCheckOption.setMeasuredNum(realNum);
             levelCheckOption.setQualifiedNum(qualifiedNum);
             levelCheckOption.setQualifiedRate(Float.parseFloat(String.format("%.2f",qualifiedRate*100)));
-            updateCompleteResult();
+//            updateCompleteResult();
         }
     }
 
-    private void updateCompleteResult() {
-        etRealMeasureNum.setText(realNum+"");
-        etStandartNum.setText(qualifiedNum+"");
-        if (qualifiedRate >=0) {
-            etStandardRate.setText(String.format("%.2f",qualifiedRate*100));
-        }else etStandardRate.setText("0.00");
-
-//        if (currentDataNum > 0 && checkOptionsDataList.size() > 0) {
-//            uploadOptionsDataList.add(checkOptionsDataList.get(currentDataNum - 1));
-//        }
-        updateMeasureDataToServer();
-    }
-
-    /******************************更新测量数据到服务器*************************/
-    private void updateMeasureDataToServer() {
-        /**
-         * 1.获取测量管控要点的server_id，
-         *   如果有值，代表之前有网络，按照有网的格式发送
-         *   如果无值，代表之前没有网络，按照没网的格式发送
-         */
-//        先打印出管控要点的对象查看一下
-//        LogUtils.show("updateMeasureDataToServer----查看测量管控要点的数据："+levelCheckOption);
-//        LogUtils.show("updateMeasureDataToServer----查看测量管控要点的uploadOptionsDataList数据："+uploadOptionsDataList.size()+",内容:"+uploadOptionsDataList);
-//        if (uploadOptionsDataList.size() > 5) {
-//            Intent intent = new Intent(getActivity(), PerformMeasureNetIntentService.class);
-//            List<RulerCheckOptions> list = new ArrayList<>();
-//            levelCheckOption.setUpdateTime(DateFormatUtil.transForMilliSecond(new Date()));
-//            list.add(levelCheckOption);
-//            intent.putExtra(PerformMeasureNetIntentService.GET_FLAG_KEY, PerformMeasureNetIntentService.FLAG_UPDATE_DATA);
-//            intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_OPTIONS_DATA_KEY, (Serializable) list);
-//            intent.putExtra(PerformMeasureNetIntentService.GET_UPDATE_DATA_KEY, (Serializable) uploadOptionsDataList);
-//            getActivity().startService(intent);
-//            uploadOptionsDataList.clear();
-//        }
-
-    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void netBussCallBack(String flag) {
@@ -614,17 +471,13 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
                             String text = new String(txValue, "UTF-8");
                             String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                             LogUtils.show("MeasureFragment--"+ levelCheckOption.getRulerOptions().getOptionsName()+" 收到蓝牙数据："+text);
-                            switch (levelCheckOption.getRulerOptions().getType()) {
-                                case 1:
-                                    if (uuid.equalsIgnoreCase(ConnectDeviceService.VERTICALITY_TX_CHAR_UUID.toString())) {
-                                        dealData(text);
-                                    }
-                                    break;
-                                case 2:
-                                    if (uuid.equalsIgnoreCase(ConnectDeviceService.LEVELNESS_TX_CHAR_UUID.toString())) {
-                                        dealData(text);
-                                    }
-                                    break;
+                            LogUtils.show("Fragment-----收到垂直度数据,进入数据处理之前："+text);
+                            if (uuid.equalsIgnoreCase(ConnectDeviceService.VERTICALITY_TX_CHAR_UUID.toString()) && verticalMeasureView != null) {
+                                LogUtils.show("Fragment----收到垂直度数据，进入判断后。");
+                                dealData(verticalMeasureView, text);
+                            }
+                            if (uuid.equalsIgnoreCase(ConnectDeviceService.LEVELNESS_TX_CHAR_UUID.toString()) && levelMeausreView != null) {
+                                dealData(levelMeausreView, text);
                             }
 
                         } catch (Exception e) {
@@ -642,93 +495,109 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
         }
     };
 
-    private void dealData(String text) {
-        if (currentDataNum < checkOptionsDataList.size()) {
-            Log.e(TAG, "run: 之前无数值，current:" + currentDataNum + ",dalist.size():" + checkOptionsDataList.size());
-            checkOptionsDataList.get(currentDataNum).setData(text.trim());
-            checkOptionsDataList.get(currentDataNum).setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
-            checkOptionsDataList.get(currentDataNum).setUpdateFlag(0);
-            uploadOptionsDataList.add(checkOptionsDataList.get(currentDataNum));
-
+    private void dealData(MeasureDataView measureDataView, String text) {
+        if (measureDataView.getRealDataCount() < measureDataView.getUsingCheckOptionsDataList().size()) {
+            measureDataView.getUsingCheckOptionsDataList().get(measureDataView.getRealDataCount()).setData(text.trim());
+            measureDataView.getUsingCheckOptionsDataList().get(measureDataView.getRealDataCount()).setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
+            measureDataView.getUsingCheckOptionsDataList().get(measureDataView.getRealDataCount()).setUpdateFlag(0);
+//            uploadOptionsDataList.add(checkOptionsDataList.get(currentDataNum));
         } else {
-            Log.e(TAG, "run: 之前有数值，current:" + currentDataNum + ",dalist.size():" + checkOptionsDataList.size());
             RulerCheckOptionsData data = new RulerCheckOptionsData();
             data.setData(text.trim());
             data.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
             data.setUpdateFlag(0);
-            data.setRulerCheckOptions(levelCheckOption);
-            checkOptionsDataList.add(data);
-            uploadOptionsDataList.add(data);
+            data.setRulerCheckOptions(measureDataView.getRulerCheckOptions());
+            data.setQualified(true);
+            measureDataView.getUsingCheckOptionsDataList().add(data);
+//            uploadOptionsDataList.add(data);
         }
-        currentDataNum++;
-        measureDataAdapter.notifyDataSetChanged();
-        HeightUtils.setGridViewHeighBaseOnChildren(gvMeasureData,6);
-        completeResult();
+        measureDataView.setRealDataCount(measureDataView.getRealDataCount() + 1);
+//        重新计算结果
+        measureDataView.completeResult();
+        measureDataView.getMeasureDataAdapter().notifyDataSetChanged();
+        HeightUtils.setGridViewHeighBaseOnChildren(measureDataView.getGvDisplayData(),6);
+//        HeightUtils.setGridViewHeighBaseOnChildren(gvMeasureData,6);
+//        completeResult();
     }
 
+    /**
+     * TODO 按钮点击事件
+     * @param view
+     */
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.tv_add_mpic:
-//
                 BottomDialog bottomDialog = new BottomDialog(getActivity(), R.style.BottomDialog);
                 bottomDialog.setFragment(MeasureFragment.this);
                 bottomDialog.show();
                 break;
+
+            case R.id.tv_finish_measure:
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("是否结束测量？");
+                builder.setMessage("代表测量完成，所有管控要点均不能再继续录入数据");
+                builder.setPositiveButton("结束", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+//                        mkLoader.setVisibility(View.VISIBLE);
+                        BleDataDbHelper dataDbHelper = new BleDataDbHelper(getActivity());
+
+                        RulerCheck rulerCheck = levelCheckOption.getRulerCheck();
+                            /**
+                             * 更新到本地
+                             */
+                            ContentValues values = new ContentValues();
+                            values.put(DataBaseParams.measure_is_finish, 1);
+                            String where = " id = ?";
+                            String[] whereValues = new String[]{String.valueOf(rulerCheck.getId())};
+                            int result = dataDbHelper.updateDataToSqlite(DataBaseParams.measure_table_name, values, where, whereValues);
+                            LogUtils.show("完成测量，更新数据是否成功："+levelCheckOption.getRulerCheck().getProjectName()+",更新状态："+result);
+//                            更新完成后，更新集合中的状态，接下来向服务器发起更新的时候会用到状态标志
+                            if (result > 0) {
+                                Toast.makeText(getActivity(),"测量已结束",Toast.LENGTH_SHORT).show();
+                                rulerCheck.setStatus(1);
+                                tvFinishMeasure.setText("测量完成");
+                                tvFinishMeasure.setClickable(false);
+                            }
+//                            requestStopMeasure(rulerCheckList.get(j).getServerId());
+//                        }
+                        dataDbHelper.close();
+                        List<RulerCheck> checkList = new ArrayList<>();
+                        checkList.add(rulerCheck);
+                        /**
+                         * 更新到服务器
+                         */
+                        Intent serviceIntent = new Intent(getActivity(), PerformMeasureNetIntentService.class);
+                        serviceIntent.putExtra(PerformMeasureNetIntentService.GET_FLAG_KEY, PerformMeasureNetIntentService.FLAG_FINISH_MEASURE);
+                        serviceIntent.putExtra(PerformMeasureNetIntentService.GET_FINISH_MEASURE_KEY, (Serializable) checkList);
+                        getActivity().startService(serviceIntent);
+
+//                        如果处理数据的服务还在运行，则停止服务
+                        boolean isAlive = ServiceUtils.isServiceRunning(getActivity(), "com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService");
+                        if (isAlive) {
+                            HandleBleMeasureDataReceiverService.stopHandleService(getActivity());
+                        }
+//                        更新列表
+//                        getUnFinishServerCheckData();
+//                        updateAdapterData();
+
+
+                    }
+                });
+                builder.setNegativeButton("继续测量", null);
+                builder.show();
+                break;
+
+            case R.id.tv_pause_measure:
+                boolean isAlive = ServiceUtils.isServiceRunning(getActivity(), "com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService");
+                if (isAlive) {
+                    HandleBleMeasureDataReceiverService.stopHandleService(getActivity());
+                }
+                break;
         }
     }
-//
-//    class MeasureDataAdapter extends BaseAdapter {
-//
-//        @Override
-//        public int getCount() {
-//            return checkOptionsDataList.size();
-//        }
-//
-//        @Override
-//        public Object getItem(int i) {
-//            return checkOptionsDataList.get(i);
-//        }
-//
-//        @Override
-//        public long getItemId(int i) {
-//            return i;
-//        }
-//
-//        @Override
-//        public View getView(int i, View view, ViewGroup viewGroup) {
-//            LayoutInflater inflater = LayoutInflater.from(getActivity());
-//            ViewHolder holder;
-//            if (view == null) {
-//                view = inflater.inflate(R.layout.item_gridview_measure_data, null);
-//                holder = new ViewHolder();
-//                holder.etData = view.findViewById(R.id.et_measure_data);
-//                holder.tvContent = view.findViewById(R.id.tv_measure_content);
-//                holder.tvTitleIndex = view.findViewById(R.id.tv_title_index);
-//                view.setTag(holder);
-//
-//            } else {
-//                holder = (ViewHolder) view.getTag();
-//            }
-//
-//            holder.etData.setText(checkOptionsDataList.get(i).getData());
-//            holder.tvContent.setText(checkOptionsDataList.get(i).getData());
-//            holder.tvTitleIndex.setText(i+1);
-////
-//            if (levelCheckOption.getRulerOptions().getType() == 1 || levelCheckOption.getRulerOptions().getType() == 2) {
-//                holder.etData.setEnabled(false);
-//            } else {
-//                holder.etData.setEnabled(true);
-//            }
-//            return view;
-//        }
-//    }
-//
-//    class ViewHolder {
-//        EditText etData;
-//        TextView tvTitleIndex;
-//        TextView tvContent;
-//    }
 
 }
 

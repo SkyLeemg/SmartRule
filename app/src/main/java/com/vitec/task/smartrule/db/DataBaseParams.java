@@ -81,6 +81,8 @@ public class DataBaseParams {
     public static final String measure_option_percent_pass = "percent_pass";
     public static final String measure_option_create_time = "create_time";
     public static final String measure_option_update_time = "update_time";
+    public static final String measure_option_img_path = "img_path";
+    public static final String measure_option_img_time = "img_time";
 
 
     /**

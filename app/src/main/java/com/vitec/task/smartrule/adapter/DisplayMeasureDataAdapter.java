@@ -1,6 +1,7 @@
 package com.vitec.task.smartrule.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,10 +57,14 @@ public class DisplayMeasureDataAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) view.getTag();
         }
-
         holder.etData.setText(checkOptionsDataList.get(i).getData());
         holder.tvContent.setText(checkOptionsDataList.get(i).getData());
-        holder.tvTitleIndex.setText(i+1);
+        holder.tvTitleIndex.setText(i+1+"");
+        if (checkOptionsDataList.get(i).isQualified()) {
+            holder.tvContent.setTextColor(Color.rgb(51,51,51));
+        }else {
+            holder.tvContent.setTextColor(Color.RED);
+        }
 //
         if (checkOptionsDataList.get(i).getRulerCheckOptions().getRulerOptions().getType() == 1 || checkOptionsDataList.get(i).getRulerCheckOptions().getRulerOptions().getType() == 2) {
             holder.etData.setEnabled(false);

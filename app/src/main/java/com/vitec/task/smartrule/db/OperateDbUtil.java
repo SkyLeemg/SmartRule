@@ -442,4 +442,12 @@ public class OperateDbUtil {
         dataDbHelper.close();
         return result;
     }
+
+    public static int updateOptionsDataToSqlite(Context context,String tablename,ContentValues values,String[] id) {
+        BleDataDbHelper dataDbHelper = new BleDataDbHelper(context);
+        int result = dataDbHelper.updateDataToSqlite(tablename, values, " id =? ", id);
+//        LogUtils.show("updateOptionsDataToSqlite----查看更新返回值："+result+",更新的值："+values);
+        dataDbHelper.close();
+        return result;
+    }
 }
