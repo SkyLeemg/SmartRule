@@ -150,6 +150,7 @@ public class OperateDbUtil {
         values.put(DataBaseParams.measure_option_qualified_points, rulerCheckOption.getQualifiedNum());
         values.put(DataBaseParams.measure_option_percent_pass,rulerCheckOption.getQualifiedRate());
         values.put(DataBaseParams.options_create_time, rulerCheckOption.getCreateTime());
+
         boolean isSuccess = bleDataDbHelper.insertDevToSqlite(DataBaseParams.measure_option_table_name, values);
 
             if (isSuccess) {

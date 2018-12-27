@@ -18,6 +18,8 @@ public class RulerCheckOptions implements Serializable{
     private int createTime;
     private int updateTime;
     private int upload_flag;
+    private String imgPath;
+    private int imgUpdateTime;
 
     public int getId() {
         return id;
@@ -104,7 +106,24 @@ public class RulerCheckOptions implements Serializable{
     }
 
     public void setUpload_flag(int upload_flag) {
+
         this.upload_flag = upload_flag;
+    }
+
+    public String getImgPath() {
+        return imgPath;
+    }
+
+    public void setImgPath(String imgPath) {
+        this.imgPath = imgPath;
+    }
+
+    public int getImgUpdateTime() {
+        return imgUpdateTime;
+    }
+
+    public void setImgUpdateTime(int imgUpdateTime) {
+        this.imgUpdateTime = imgUpdateTime;
     }
 
     @Override

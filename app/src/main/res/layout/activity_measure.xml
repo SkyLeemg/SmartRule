@@ -12,12 +12,18 @@
         android:id="@+id/rl_content"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
-        android:layout_below="@+id/bottom_navigation_bar_container"
+        android:layout_below="@+id/tablayout_meausre"
         android:orientation="vertical">
         <!--app:layout_constraintTop_toBottomOf="@+id/base"
         android:layout_marginBottom="?attr/actionBarSize"-->
 
     </LinearLayout>
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpage_measure"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tablayout_meausre"
+        ></android.support.v4.view.ViewPager>
 
     <com.tuyenmonkey.mkloader.MKLoader
         android:id="@+id/loading"
@@ -35,7 +41,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/base"
-
+        android:visibility="gone"
         ></com.ashokvarma.bottomnavigation.BottomNavigationBar>
+
+    <!--可以设置background。app:tabIndicatorColor是设置指示器的背景颜色，
+    app:tabIndicatorHeight设置指示器的高度，
+    app:tabSelectedTextColor是选中时文本的颜色，
+    app:tabTextColor是普通状态的文本颜色，
+    app:tabMode是是否可滑动，
+    有两个fixed和scrollable,fixed是固定的，
+    scrollable是类似于今日头条那种可以滑动的。-->
+    <android.support.design.widget.TabLayout
+        android:id="@+id/tablayout_meausre"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_below="@+id/base"
+        android:background="@color/white"
+        app:tabIndicatorColor="@color/color_word"
+        app:tabIndicatorHeight="4dp"
+        app:tabTextColor="@color/color_unselect_bar"
+        app:tabSelectedTextColor="@color/title_color"
+        ></android.support.design.widget.TabLayout>
 
 </RelativeLayout>

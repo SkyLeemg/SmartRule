@@ -64,6 +64,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -301,7 +302,28 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
                 }
             }
         }
-
+        /** 如果数据库中已经存有一个图纸，则显示到界面中 **/
+        if (verticalCheckOption.getImgPath() != null && !verticalCheckOption.getImgPath().equals("")) {
+            File imgFile = new File(verticalCheckOption.getImgPath());
+            if (imgFile.exists()) {
+                //        将编辑图纸的页面添加到rlEditPic中
+                if (commonEditPicView == null) {
+                    commonEditPicView = new CommonEditPicView(getActivity());
+                    rlEditPic.addView(commonEditPicView);
+                } else {
+                    commonEditPicView.setVisibility(View.VISIBLE);
+                }
+                commonEditPicView.setFragment(MeasureFragment.this);
+                tvAddmPic.setVisibility(View.GONE);
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        commonEditPicView.setmImageView(getActivity(),verticalCheckOption.getImgPath());
+                    }
+                }, 100);
+            }
+        }
 
 //        初始化optionMeasures
         optionMeasures = new ArrayList<>();
