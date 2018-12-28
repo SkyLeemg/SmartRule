@@ -1,187 +1,119 @@
 package com.vitec.task.smartrule.activity;
 
-import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v7.widget.Toolbar;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.ashokvarma.bottomnavigation.BottomNavigationBar;
-import com.google.zxing.activity.CaptureActivity;
-import com.tuyenmonkey.mkloader.MKLoader;
 import com.vitec.task.smartrule.R;
-import com.vitec.task.smartrule.aliyun.DeviceBean;
-import com.vitec.task.smartrule.bean.BleMessage;
-import com.vitec.task.smartrule.fragment.FragmentControllerImpl;
-import com.vitec.task.smartrule.interfaces.IFragmentController;
-import com.vitec.task.smartrule.interfaces.ISettable;
-import com.vitec.task.smartrule.utils.BleParam;
-import com.vitec.task.smartrule.utils.ParameterKey;
+import com.vitec.task.smartrule.fragment.HomePageFragment;
+import com.vitec.task.smartrule.fragment.UserCenterFragment;
+import com.vitec.task.smartrule.utils.LogUtils;
 
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends BaseFragmentActivity implements ISettable,View.OnClickListener {
+public class MainActivity extends FragmentActivity implements View.OnClickListener{
 
-    private static final String TAG = "MainActivity";
-    private BottomNavigationBar bottomNavigationBar;
-    private IFragmentController controller;
-    public TextView tvToolBarTitle;
-    public ImageView imgMenu;
-    public ImageView imgOtherIcon;
-    private MKLoader mkLoader;
-    private RelativeLayout llToolBar;
-
-    private static final int REQUEST_CODE = 0x01;
-    //打开扫描界面请求码
-    //扫描成功返回码
-    private int RESULT_OK = 0xA1;
+    private LinearLayout llHome;
+    private LinearLayout llMe;
+    private TextView tvHome;
+    private TextView tvMe;
+    private ImageView imgHome;
+    private ImageView imgMe;
+    private FrameLayout rlContent;
+    private List<Fragment> fragmentList;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_device);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.activity_main);
         initView();
-        requestLocationPermissions();
+        initData();
+    }
+
+    private void initData() {
+        fragmentList = new ArrayList<>();
+        fragmentList.add(new HomePageFragment());
+        fragmentList.add(new UserCenterFragment());
+        llMe.setOnClickListener(this);
+        llHome.setOnClickListener(this);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        for (int i=0;i<fragmentList.size();i++) {
+            transaction.add(R.id.rl_main_content, fragmentList.get(i));
+        }
+        transaction.hide(fragmentList.get(1));
+        transaction.show(fragmentList.get(0));
+        transaction.commit();
+
     }
 
     private void initView() {
-        initToolBarView();
-        bottomNavigationBar = findViewById(R.id.bottom_navigation_bar_container);
-        controller = new FragmentControllerImpl(this, bottomNavigationBar,this);
-        controller.initBottomNav();
-        controller.addBottomNav();
-        mkLoader = findViewById(R.id.loading);
+        llHome = findViewById(R.id.ll_home);
+        llMe = findViewById(R.id.ll_me);
+        tvHome = findViewById(R.id.tv_home);
+        tvMe = findViewById(R.id.tv_me);
+        imgHome = findViewById(R.id.img_home);
+        imgMe = findViewById(R.id.img_me);
+        rlContent = findViewById(R.id.rl_main_content);
 
     }
-
-    public void initToolBarView() {
-        View layout = getLayoutInflater().inflate(R.layout.base_toolbar, null);
-        tvToolBarTitle = findViewById(R.id.tv_toolbar_title);
-        imgMenu = findViewById(R.id.img_menu_toolbar);
-        imgOtherIcon = findViewById(R.id.img_icon_toolbar);
-
-        llToolBar = findViewById(R.id.ll_toolbar);
-    }
-
-    @Override
-    public void setTitle(String title) {
-        tvToolBarTitle.setText(title);
-    }
-
-    @Override
-    public void setMenuVisible(int flag) {
-        imgMenu.setVisibility(flag);
-    }
-
-    @Override
-    public void setMenuResouce(int resouce) {
-        imgMenu.setImageResource(resouce);
-    }
-
-    @Override
-    public void setIconVisible(int flag) {
-        imgOtherIcon.setVisibility(flag);
-        imgOtherIcon.setOnClickListener(this);
-    }
-
-    @Override
-    public void setIconResouce(int resouce) {
-        imgOtherIcon.setImageResource(resouce);
-    }
-
-    @Override
-    public ISettable getSettable() {
-        return this;
-    }
-
-    @Override
-    public void setToolBarVisible(int flag) {
-//        toolbar.setVisibility(flag);
-        llToolBar.setVisibility(flag);
-        if (flag == View.GONE) {
-            llToolBar.setBackgroundResource(R.color.transparent_color);
-        } else {
-            llToolBar.setBackgroundResource(R.color.pblue_bar_color);
-        }
-    }
-
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.img_icon_toolbar:
-                //打开二维码扫描界面
-                Intent arIntent = new Intent(this, CaptureActivity.class);
-                startActivityForResult(arIntent,REQUEST_CODE);
+            /**
+             * 点击首页
+             */
+            case R.id.ll_home:
+                LogUtils.show("点击了首页-----"+fragmentList.get(0).isHidden());
+                if (fragmentList.get(0).isHidden()) {
+                    FragmentManager fm = getSupportFragmentManager();
+                    FragmentTransaction ft = fm.beginTransaction();
+                    fm.executePendingTransactions();
+                    ft.hide(fragmentList.get(1));
+                    Fragment fragment = fragmentList.get(0);
+                    ft.show(fragment);
+                    ft.commit();
+                    tvHome.setTextColor(Color.rgb(53,129,251));
+                    imgHome.setImageResource(R.mipmap.ico_home_sel_3x);
+                    tvMe.setTextColor(Color.rgb(162,162,162));
+                    imgMe.setImageResource(R.mipmap.ico_me_n_3x);
+                }
+
                 break;
-        }
-    }
+            /**
+             * 点击我的个人中心
+             */
+            case R.id.ll_me:
+                LogUtils.show("点击了个人中心-----"+fragmentList.get(1).isHidden());
+                if (fragmentList.get(1).isHidden()) {
+                    FragmentManager fm = getSupportFragmentManager();
+                    FragmentTransaction ft = fm.beginTransaction();
+                    fm.executePendingTransactions();
+                    ft.hide(fragmentList.get(0));
+                    Fragment fragment = fragmentList.get(1);
+                    ft.show(fragment);
+                    ft.commit();
+                    tvMe.setTextColor(Color.rgb(53,129,251));
+                    imgMe.setImageResource(R.mipmap.ico_me_s_3x);
+                    tvHome.setTextColor(Color.rgb(162,162,162));
+                    imgHome.setImageResource(R.mipmap.ico_home_not_3x);
 
-    /**
-     * 蓝牙服务返回的数据
-     * @param
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void connectBussCallBack(BleMessage message) {
-//        mLoadingDialog.dismiss();
-        if (message.getAction().equals(BleParam.ACTION_GATT_CONNECTED)) {
-            Log.e(TAG, "connectBussCallBack: 主界面收到连接成功的提示" );
-            Toast.makeText(this, "连接成功",Toast.LENGTH_SHORT).show();
-        }
-
-        if (message.getAction().equals(BleParam.ACTION_GATT_DISCONNECTED)) {
-            Toast.makeText(this, "连接断开",Toast.LENGTH_SHORT).show();
-        }
-
-    }
-
-    /**
-     * {
-     "productKey":"a1UNvLhFILp",
-     "deviceName":"testS",
-     "deviceSecret":"AO3zGlGP6ivc0JHHyY5Si5mS40UpGcco",
-     "bleMac":"FC:04:35:B7:9A:D8"
-     }
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK) {
-            mkLoader.setVisibility(View.VISIBLE);
-            Bundle bundle = data.getExtras();
-            String scanResult = bundle.getString(CaptureActivity.INTENT_EXTRA_KEY_QR_SCAN);
-//            tvMsg.setText(scanResult);
-            try {
-                JSONObject json = new JSONObject(scanResult);
-                String productKey = json.optString(ParameterKey.product_key);
-                String deviceName = json.optString(ParameterKey.device_name);
-                String deviceSecret = json.optString(ParameterKey.device_secret);
-                String bleMac = json.optString(ParameterKey.ble_mac);
-                DeviceBean deviceBean = new DeviceBean(productKey, deviceName, deviceSecret);
-//                mConnect.setDeviceMsg(deviceBean);
-//                mConnect.connect(getApplicationContext(),this);
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-                mkLoader.setVisibility(View.GONE);
-                Toast.makeText(getApplicationContext(),"错误的二维码",Toast.LENGTH_SHORT).show();
-            }
-
-            Log.e(TAG, "onActivityResult: 查看扫码返回值："+scanResult );
+                }
+                break;
         }
     }
 }

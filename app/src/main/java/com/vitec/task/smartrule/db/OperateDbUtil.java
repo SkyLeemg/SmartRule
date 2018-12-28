@@ -419,9 +419,14 @@ public class OperateDbUtil {
         User user = new User();
         Set<String> keySet = SharePreferenceUtils.getKeySet();
         Map<String, String> valueMap = SharePreferenceUtils.getData(context, keySet, SharePreferenceUtils.user_table);
-        user.setUserID(Integer.parseInt(valueMap.get(SharePreferenceUtils.user_id)));
+        if (valueMap.get(SharePreferenceUtils.user_id).equals("")) {
+            user.setUserID(0);
+        } else {
+            user.setUserID(Integer.parseInt(valueMap.get(SharePreferenceUtils.user_id)));
+        }
+
         String wid = valueMap.get(SharePreferenceUtils.user_wid);
-        if (wid == null || wid.equals("null")) {
+        if (wid == null || wid.equals("null") || wid.equals("")) {
             user.setWid("0");
         } else {
             user.setWid(wid);

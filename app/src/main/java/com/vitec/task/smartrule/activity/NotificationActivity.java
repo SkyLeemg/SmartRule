@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
+import com.vitec.task.smartrule.activity.unuse.TestActivity;
+
 public class NotificationActivity extends Activity {
 
     @Override

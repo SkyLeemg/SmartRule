@@ -49,7 +49,7 @@
         <!--<activity android:name=".activity.DeviceActivity">-->
             <!---->
         <!--</activity>-->
-        <activity android:name=".activity.MainActivity"/>
+        <activity android:name=".activity.unuse.UnuseMainActivity"/>
         <activity android:name=".activity.ChooseMeasureMsgActivity"/>
 
         <activity android:name=".activity.DealDeviceDataActivity"/>
@@ -71,9 +71,10 @@
         <activity android:name=".activity.MeasureRecordActivity"/>
         <activity android:name=".activity.MeasureRecordManagerAcitivty"/>
         <activity android:name=".activity.MeasureFileActivity"/>
-        <activity android:name=".activity.ImageTestActivity2">
+        <activity android:name=".activity.unuse.ImageTestActivity2">
 
         </activity>
+        <activity android:name=".activity.MainActivity"/>
 
         <!--注册微信回调 WXEntryActivity -->
         <activity
@@ -90,7 +91,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar"></activity>
 
 
-        <activity android:name=".activity.TestActivity">
+        <activity android:name=".activity.unuse.TestActivity">
 
             <!--<intent-filter>-->
                 <!--<category android:name="android.intent.category.DEFAULT" />-->

@@ -14,10 +14,11 @@
         android:layout_marginRight="3dp"
         android:layout_marginLeft="3dp"
         >
+
         <ImageView
             android:id="@+id/img_item_dev_pic"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:src="@mipmap/rule"
             />
         <TextView
@@ -26,22 +27,24 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="1号设备"
-            android:textColor="@color/white_bar_word_color"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:background="@color/blue_tv_color"
+            android:textColor="@color/color_text"
+
+            android:paddingBottom="5dp"
+            android:textSize="14sp"
             android:layout_gravity="center"
             />
+
     </LinearLayout>
     <TextView
         android:id="@+id/tv_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="编辑"
-        android:textColor="@color/blue_tv_color"
-        android:paddingTop="10dp"
+        android:textColor="@color/color_word"
+        android:paddingTop="1dp"
         android:paddingBottom="10dp"
         android:gravity="center"
+        android:textSize="13sp"
         />
 
 

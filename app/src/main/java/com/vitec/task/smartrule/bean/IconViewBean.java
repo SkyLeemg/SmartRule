@@ -1,6 +1,5 @@
 package com.vitec.task.smartrule.bean;
 
-import com.vitec.task.smartrule.activity.ImageTestActivity;
 import com.vitec.task.smartrule.view.IconImageView;
 
 public class IconViewBean {

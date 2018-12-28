@@ -1,7 +1,6 @@
 package com.vitec.task.smartrule.view;
 
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -26,8 +25,6 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.vitec.task.smartrule.R;
-import com.vitec.task.smartrule.activity.ImageTestActivity2;
-import com.vitec.task.smartrule.bean.IconViewBean;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.OperateDbUtil;
@@ -40,10 +37,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -81,9 +76,10 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
     private Context context;
 
 
-    public CommonEditPicView(Context context) {
+    public CommonEditPicView(Context context,IEditPicControler editPicControler) {
         super(context);
         this.context = context;
+        this.editPicControler = editPicControler;
         initView(context);
     }
 
@@ -272,10 +268,18 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                     zoomMoveFrameLayout.transLate(deltaPoint.x * -1, deltaPoint.y * -1);
 //            合并图像
                     Bitmap newBitmap = saveBitmap();
-                    List<RulerCheckOptions> optionsList = editPicControler.getCheckOptions();
-                    String path= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
+                    String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
+                    String imgFileName;
+                    List<RulerCheckOptions> optionsList = new ArrayList<>();
+                    if (editPicControler != null) {
+                         optionsList = editPicControler.getCheckOptions();
+
+                        imgFileName = optionsList.get(0).getCreateTime()+".jpg";
+                    } else {
+                        imgFileName =DateFormatUtil.formatDate(new Date(), "yyyyMMddHHmmSS")+".jpg";
+                    }
 //                    String imgFileName = DateFormatUtil.formatDate(new Date(), "yyyyMMddHHmmSS")+".jpg";
-                    String imgFileName = optionsList.get(0).getCreateTime()+".jpg";
+//                    String imgFileName = optionsList.get(0).getCreateTime()+".jpg";
 
                     File imgFile = new File(path, imgFileName);
                     if (!imgFile.getParentFile().exists()) {

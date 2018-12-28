@@ -46,4 +46,14 @@
     <color name="color_word_green">#37b877</color>
     <color name="color_word_blue">#2479fb</color>
 
+    <!--首页的颜色-->
+    <color name="color_gray_home">#a2a2a2</color>
+    <color name="color_black_title">#000a1a</color>
+    <color name="color_blue_home_item_bg">#eff5fd</color>
+    <color name="color_blue_home_item_bg_click">#DEEBFD</color>
+
+    <!--设备管理界面的颜色-->
+    <color name="color_black_dev_title">#1a1a1a</color>
+    <color name="color_black_666">#666</color>
+
 </resources>

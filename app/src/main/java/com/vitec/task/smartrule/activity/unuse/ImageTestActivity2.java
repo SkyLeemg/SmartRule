@@ -1,7 +1,6 @@
-package com.vitec.task.smartrule.activity;
+package com.vitec.task.smartrule.activity.unuse;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -11,30 +10,19 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.IconViewBean;
-import com.vitec.task.smartrule.bean.ViewLayout;
-import com.vitec.task.smartrule.interfaces.ViewTouchCallBack;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
-import com.vitec.task.smartrule.utils.ScreenSizeUtil;
 import com.vitec.task.smartrule.view.BottomDialog;
 import com.vitec.task.smartrule.view.IconImageView;
-import com.vitec.task.smartrule.view.MyImageView;
 import com.vitec.task.smartrule.view.ZoomMoveFrameLayout;
-import com.vitec.task.smartrule.view.large_img.LargeImageView;
 
 import java.io.File;
 import java.io.FileNotFoundException;

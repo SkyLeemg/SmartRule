@@ -1,4 +1,4 @@
-package com.vitec.task.smartrule.activity;
+package com.vitec.task.smartrule.activity.unuse;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.google.zxing.activity.CaptureActivity;
 import com.tuyenmonkey.mkloader.MKLoader;
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.activity.BaseActivity;
 import com.vitec.task.smartrule.adapter.BleDeviceAdapter;
 import com.vitec.task.smartrule.aliyun.DeviceBean;
 import com.vitec.task.smartrule.aliyun.impl.AliYunConnectImpl;

@@ -1,4 +1,4 @@
-package com.vitec.task.smartrule.activity;
+package com.vitec.task.smartrule.activity.unuse;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.activity.BaseActivity;
 import com.vitec.task.smartrule.bean.MeasureTable;
 import com.vitec.task.smartrule.bean.MeasureTableRow;
 import com.vitec.task.smartrule.helper.WeChatHelper;

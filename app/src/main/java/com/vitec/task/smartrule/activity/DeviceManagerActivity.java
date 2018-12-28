@@ -23,6 +23,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,9 +51,9 @@ import java.util.List;
 public class DeviceManagerActivity extends BaseActivity implements View.OnClickListener,IDialogCommunicableWithDevice,IDevManager{
 
     private static final String TAG = "DeviceManagerActivity";
-    private LinearLayout llAddDev;
-    private TextView tvNoRuleDev;
-    private TextView tvNoLaserDev;
+    private RelativeLayout llAddDev;
+//    private TextView tvNoRuleDev;
+//    private TextView tvNoLaserDev;
     private GridView gvRule;
     private GridView gvLaser;
     private List<BleDevice> rules;
@@ -88,8 +89,8 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
         imgMenu.setOnClickListener(this);
 
         llAddDev = findViewById(R.id.ll_add_dev);
-        tvNoLaserDev = findViewById(R.id.tv_no_laser_dev);
-        tvNoRuleDev = findViewById(R.id.tv_no_rule_dev);
+//        tvNoLaserDev = findViewById(R.id.tv_no_laser_dev);
+//        tvNoRuleDev = findViewById(R.id.tv_no_rule_dev);
         gvRule = findViewById(R.id.gv_rule);
         gvLaser = findViewById(R.id.gv_laser);
 
@@ -112,9 +113,9 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
         getRuleDevicefromDB();
         ruleDevAdapter = new DisplayBleDeviceAdapter(this ,rules,this);
         gvRule.setAdapter(ruleDevAdapter);
-        if (rules.size() != 0) {
-            tvNoRuleDev.setVisibility(View.GONE);
-        }
+//        if (rules.size() != 0) {
+//            tvNoRuleDev.setVisibility(View.GONE);
+//        }
 
         gvLaser.setVisibility(View.GONE);
         setListViewHeighBaseOnChildren(gvRule);
@@ -263,10 +264,7 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
                 break;
             case R.id.img_menu_toolbar:
                 Log.e(TAG, "onClick: 点击了首页按钮" );
-                Intent intent = new Intent(DeviceManagerActivity.this, MainHomeActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                DeviceManagerActivity.this.finish();
+                onBackPressed();
                 break;
         }
     }
@@ -358,7 +356,7 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
 //                getRuleDevicefromDB();
                 Log.e(TAG, "onReceive: 查看Rulers集合："+rules.size()+",内容："+rules.toString() );
                 gvRule.setVisibility(View.VISIBLE);
-                tvNoRuleDev.setVisibility(View.GONE);
+//                tvNoRuleDev.setVisibility(View.GONE);
                 ruleDevAdapter.setDevs(rules);
                 ruleDevAdapter.notifyDataSetChanged();
                 setListViewHeighBaseOnChildren(gvRule);
@@ -378,7 +376,7 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
 
             }
 
-//            //*********************//
+//            //*********************//n
 //            /**
 //             * 发现服务
 //             */

@@ -1,21 +1,16 @@
-package com.vitec.task.smartrule.activity;
+package com.vitec.task.smartrule.activity.unuse;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -24,15 +19,11 @@ import com.vitec.task.smartrule.bean.IconViewBean;
 import com.vitec.task.smartrule.bean.ViewLayout;
 import com.vitec.task.smartrule.interfaces.ViewTouchCallBack;
 import com.vitec.task.smartrule.utils.LogUtils;
-import com.vitec.task.smartrule.utils.ScreenSizeUtil;
 import com.vitec.task.smartrule.view.IconImageView;
-import com.vitec.task.smartrule.view.MyLargeImageView;
 import com.vitec.task.smartrule.view.large_img.LargeImageView;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 

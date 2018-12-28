@@ -21,22 +21,9 @@ public class SplashActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.activity_sms_login);
+        setContentView(R.layout.activity_splash);
         initDb();
-        final User user = OperateDbUtil.getUser(getApplicationContext());
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                String wxID = user.getWid();
-                boolean wxResult = wxID != null && !wxID.equals("") && !wxID.equals("0") && !wxID.equals("null");
-                if (user.getUserID() > 0 || wxResult) {
-                    startActivity(new Intent(SplashActivity.this, MainHomeActivity.class));
-                } else {
-                    startActivity(new Intent(SplashActivity.this,LoginActivity.class));
-                }
-            }
-        }, 1000);
+
     }
 
     private void initDb() {
@@ -46,6 +33,23 @@ public class SplashActivity extends Activity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        final User user = OperateDbUtil.getUser(getApplicationContext());
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                String wxID = user.getWid();
+                boolean wxResult = wxID != null && !wxID.equals("") && !wxID.equals("0") && !wxID.equals("null");
+                if (user.getUserID() > 0 || wxResult) {
+                    startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                    SplashActivity.this.finish();
+                } else {
+                    startActivity(new Intent(SplashActivity.this,LoginActivity.class));
+                    SplashActivity.this.finish();
+                }
+            }
+        }, 1000);
 
     }
 }

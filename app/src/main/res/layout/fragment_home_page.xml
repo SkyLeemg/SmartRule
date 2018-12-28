@@ -2,124 +2,225 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical">
-
-
-    <TextView
-        android:id="@+id/tv_msg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/word_color"
-        android:text="当请扫码连接设备"
-        android:layout_gravity="center_horizontal"
-        android:textSize="25sp"
-        android:layout_margin="10dp"
-        />
-    <LinearLayout
+    android:background="@color/background"
+    >
+    <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:background="@mipmap/img_home_3x"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="首页"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="17sp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_main_home_menu"
         android:layout_margin="15dp"
-        android:layout_below="@+id/tv_msg"
+        android:layout_centerInParent="true"
 
         >
         <TextView
-            android:id="@+id/tv_stat"
+            android:id="@+id/tv_head"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18dp"
-            android:text="当前连接设备信息："
-            android:textColor="@color/pblue_bar_color"
+            android:text="实测实量"
+            android:textColor="@color/color_black_title"
             android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="16dp"
             />
-        <TextView
-            android:id="@+id/tv_dev_name"
-            android:layout_width="wrap_content"
+        <!--菜单第一行：新建测量和测量记录-->
+        <LinearLayout
+            android:id="@+id/ll_first_row"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18dp"
-            android:text="蓝牙：Vitecbeacon"
-            android:textColor="@color/pblue_bar_color"
-            android:textStyle="bold"
-            />
-        <TextView
-            android:id="@+id/tv_dev_uuid"
-            android:layout_width="wrap_content"
+            android:orientation="horizontal"
+            android:layout_below="@+id/tv_head"
+            android:layout_marginTop="14dp"
+            >
+            <!--新建测量-->
+            <LinearLayout
+                android:id="@+id/ll_create_measure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/selector_main_home_item_click"
+                android:layout_weight="1"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                >
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/ico_creat_3x"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="新建测量"
+                    android:textColor="@color/title_color"
+                    android:textSize="15sp"
+                    android:layout_marginTop="2dp"
+                    />
+            </LinearLayout>
+            <!--测量记录-->
+            <LinearLayout
+                android:id="@+id/ll_meausre_record"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/selector_main_home_item_click"
+                android:layout_weight="1"
+
+                android:layout_marginRight="15dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                >
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/ico_record_3x"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="测量记录"
+                    android:textColor="@color/title_color"
+                    android:textSize="15sp"
+                    android:layout_marginTop="2dp"
+                    />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!--菜单第二行：等待测量和测量文件-->
+        <LinearLayout
+            android:id="@+id/ll_sencond_row"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="15dp"
-            android:text="UUID：FDA50693-A4E2-4FB1-AFCF-C6EB07647825"
-            android:textColor="@color/pblue_bar_color"
-            />
+            android:orientation="horizontal"
+            android:layout_below="@+id/ll_first_row"
+            android:layout_marginTop="12dp"
+            >
+            <!--等待测量-->
+            <LinearLayout
+                android:id="@+id/ll_waiting_measure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/selector_main_home_item_click"
+                android:layout_weight="1"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                >
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/ico_wait_3x"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="等待测量"
+                    android:textColor="@color/title_color"
+                    android:textSize="15sp"
+                    android:layout_marginTop="2dp"
+                    />
+            </LinearLayout>
+            <!--测量文件-->
+            <LinearLayout
+                android:id="@+id/ll_measure_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/selector_main_home_item_click"
+                android:layout_weight="1"
+                android:layout_marginRight="15dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                >
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/ico_file_3x"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="测量文件"
+                    android:textColor="@color/title_color"
+                    android:textSize="15sp"
+                    android:layout_marginTop="2dp"
+                    />
+            </LinearLayout>
+        </LinearLayout>
 
-
+        <!--菜单第三行：设备管理和项目管理-->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
-            android:orientation="horizontal">
-            <TextView
-                android:id="@+id/tv_dev_rssi"
+            android:orientation="horizontal"
+            android:layout_below="@+id/ll_sencond_row"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp"
+            >
+            <!--设备管理-->
+            <LinearLayout
+                android:id="@+id/ll_dev_manager"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="15dp"
-                android:text="RSSI：-31"
-                android:textColor="@color/pblue_bar_color"
+                android:background="@drawable/selector_main_home_item_click"
+                android:layout_weight="1"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                >
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/ico_equipment_3x"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="设备管理"
+                    android:textColor="@color/title_color"
+                    android:textSize="15sp"
+                    android:layout_marginTop="2dp"
+                    />
+            </LinearLayout>
 
-                />
-            <TextView
-                android:id="@+id/tv_dev_pw"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="15dp"
-                android:layout_marginLeft="30dp"
-                android:textColor="@color/pblue_bar_color"
-                android:text="MPower:：-65"
-                />
+                android:layout_weight="1"
+                android:layout_marginRight="15dp"
+                android:orientation="vertical"
+                android:gravity="center"
+
+                >
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="测量文件"
+                    android:textColor="@color/white"
+                    android:textSize="15sp"
+                    android:layout_marginTop="2dp"
+                    />
+            </LinearLayout>
         </LinearLayout>
-        <TextView
-            android:id="@+id/tv_dev_mac"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="15dp"
-            android:text="MAC:AKSDKKKFJDJJJ"
-            android:textColor="@color/pblue_bar_color"
-            />
+
+    </RelativeLayout>
 
 
-    </LinearLayout>
 
-    <com.tuyenmonkey.mkloader.MKLoader
-        android:id="@+id/loading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        app:mk_type="FishSpinner"
-        app:mk_color="#aaa"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        />
-
-    <Button
-        android:id="@+id/btn_enter_measure"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="进入测量"
-        android:background="@drawable/btn_back"
-        android:textColor="@color/white_bar_word_color"
-        android:textSize="20sp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="30dp"
-        android:layout_marginBottom="50dp"
-
-        />
-
-
-    <!--<ListView-->
-        <!--android:id="@+id/lv_ble_device"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:background="@color/content_bg_color"-->
-        <!--&gt;-->
-    <!--</ListView>-->
 </RelativeLayout>

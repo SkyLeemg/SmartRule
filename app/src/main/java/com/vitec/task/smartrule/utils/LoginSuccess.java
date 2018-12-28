@@ -9,8 +9,6 @@ import android.widget.Toast;
 
 import com.tuyenmonkey.mkloader.MKLoader;
 import com.vitec.task.smartrule.activity.DeviceManagerActivity;
-import com.vitec.task.smartrule.activity.LoginActivity;
-import com.vitec.task.smartrule.activity.MainActivity;
 import com.vitec.task.smartrule.bean.User;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.UserDbHelper;

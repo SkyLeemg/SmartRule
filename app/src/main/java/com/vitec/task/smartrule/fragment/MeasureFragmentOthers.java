@@ -42,6 +42,7 @@ import com.vitec.task.smartrule.bean.event.HeightFloorMsgEvent;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.helper.TextToSpeechHelper;
+import com.vitec.task.smartrule.interfaces.IEditPicControler;
 import com.vitec.task.smartrule.service.ConnectDeviceService;
 import com.vitec.task.smartrule.utils.BleParam;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
@@ -70,7 +71,7 @@ import static com.vitec.task.smartrule.utils.BleParam.UART_PROFILE_DISCONNECTED;
  * 真正测量的fragment。一个管控要点为一个fragment
  * 多个管控要点重复new MeasureFragment
  */
-public class MeasureFragmentOthers extends Fragment implements View.OnClickListener {
+public class MeasureFragmentOthers extends Fragment implements View.OnClickListener ,IEditPicControler{
 
     private static final String TAG = "MeasureFragment";
     private View view;
@@ -220,6 +221,13 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
         }
     };
 
+    @Override
+    public List<RulerCheckOptions> getCheckOptions() {
+        List<RulerCheckOptions> list = new ArrayList<>();
+        list.add(checkOptions);
+        return list;
+    }
+
     public void setTvAddmPicVisibale(int flag) {
         if (flag == 1) {
             tvAddmPic.setVisibility(View.VISIBLE);
@@ -251,7 +259,7 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
 
                             //        将编辑图纸的页面添加到rlEditPic中
                             if (commonEditPicView == null) {
-                                commonEditPicView = new CommonEditPicView(getActivity());
+                                commonEditPicView = new CommonEditPicView(getActivity(),this);
 
                                 rlEditPic.addView(commonEditPicView);
                             } else {

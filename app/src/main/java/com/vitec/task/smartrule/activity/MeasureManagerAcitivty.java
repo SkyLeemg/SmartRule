@@ -74,7 +74,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
         initData();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+
     private void initData() {
         /**
          * 下面的每一个MeasureBean的数据，就是每一个Fragment页面上需要显示的数据
@@ -141,6 +141,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
 //        controller.initBottomNav();
         HandleBleMeasureDataReceiverService.startHandleService(getApplicationContext(),checkOptionsList);
 //        controller.addBottomNav();
+        initFragmentData();
     }
 
 

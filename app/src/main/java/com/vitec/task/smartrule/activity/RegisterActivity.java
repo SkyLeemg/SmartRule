@@ -10,17 +10,16 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.tuyenmonkey.mkloader.MKLoader;
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.activity.unuse.UnuseMainActivity;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.UserDbHelper;
 import com.vitec.task.smartrule.net.NetConstant;
 import com.vitec.task.smartrule.utils.OkHttpUtils;
 import com.vitec.task.smartrule.wxapi.bean.ResultInfo;
-import com.vitec.task.smartrule.wxapi.bean.UserInfo;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -266,7 +265,7 @@ public class RegisterActivity extends BaseActivity implements OnClickListener{
                                                 @Override
                                                 public void run() {
                                                     mkLoader.setVisibility(View.GONE);
-                                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                                    Intent intent = new Intent(getApplicationContext(), UnuseMainActivity.class);
                                                     startActivity(intent);
                                                     RegisterActivity.this.finish();
                                                 }

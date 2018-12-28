@@ -46,6 +46,7 @@ import com.vitec.task.smartrule.bean.RulerCheckOptionsData;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.helper.TextToSpeechHelper;
+import com.vitec.task.smartrule.interfaces.IEditPicControler;
 import com.vitec.task.smartrule.service.ConnectDeviceService;
 import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
 import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
@@ -80,7 +81,7 @@ import static com.vitec.task.smartrule.utils.BleParam.UART_PROFILE_DISCONNECTED;
  * 真正测量的fragment。一个管控要点为一个fragment
  * 多个管控要点重复new MeasureFragment
  */
-public class MeasureFragment extends Fragment implements View.OnClickListener {
+public class MeasureFragment extends Fragment implements View.OnClickListener,IEditPicControler {
 
     private static final String TAG = "MeasureFragment";
     private View view;
@@ -123,6 +124,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
     private OptionMeasure optionMeasure;//上面是该管控要点所有的层高，这个是用户当前选择的层高
     private MeasureDataView verticalMeasureView;
     private MeasureDataView levelMeausreView;
+    private List<RulerCheckOptions> accessOptions;
 
 
     @Nullable
@@ -215,6 +217,12 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
         }
     };
 
+    @Override
+    public List<RulerCheckOptions> getCheckOptions() {
+
+        return accessOptions;
+    }
+
     public void setTvAddmPicVisibale(int flag) {
         if (flag == 1) {
             tvAddmPic.setVisibility(View.VISIBLE);
@@ -246,7 +254,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
 
                             //        将编辑图纸的页面添加到rlEditPic中
                             if (commonEditPicView == null) {
-                                commonEditPicView = new CommonEditPicView(getActivity());
+                                commonEditPicView = new CommonEditPicView(getActivity(),this);
 
                                 rlEditPic.addView(commonEditPicView);
                             } else {
@@ -284,7 +292,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
         /**
          * checkOptions里面包含了项目信息、工程和管控要点的模板信息
          */
-        List<RulerCheckOptions> accessOptions = (List<RulerCheckOptions>) bundle.getSerializable("checkoptions");
+        accessOptions = (List<RulerCheckOptions>) bundle.getSerializable("checkoptions");
         if (accessOptions.size() > 0) {
             for (int k = 0; k < accessOptions.size(); k++) {
                 //1是垂直度
@@ -308,7 +316,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
             if (imgFile.exists()) {
                 //        将编辑图纸的页面添加到rlEditPic中
                 if (commonEditPicView == null) {
-                    commonEditPicView = new CommonEditPicView(getActivity());
+                    commonEditPicView = new CommonEditPicView(getActivity(),this);
                     rlEditPic.addView(commonEditPicView);
                 } else {
                     commonEditPicView.setVisibility(View.VISIBLE);

@@ -9,15 +9,24 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.activity.ChooseMeasureMsgActivity;
+import com.vitec.task.smartrule.activity.DeviceManagerActivity;
+import com.vitec.task.smartrule.activity.MeasureFileActivity;
+import com.vitec.task.smartrule.activity.MeasureRecordActivity;
+import com.vitec.task.smartrule.activity.WaitingMeasureActivity;
 
 
 public class HomePageFragment extends Fragment implements View.OnClickListener {
     private static final String TAG = "首页";
     private View view;
-    private android.widget.Button btnEnterMeasure;
+    private LinearLayout llCreateMeasure;
+    private LinearLayout llMeasureRecord;
+    private LinearLayout llWaitingMeasure;
+    private LinearLayout llMeasureFile;
+    private LinearLayout llDevManager;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -36,17 +45,46 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     }
 
     private void initView() {
-        btnEnterMeasure = view.findViewById(R.id.btn_enter_measure);
+        llCreateMeasure = view.findViewById(R.id.ll_create_measure);
+        llMeasureRecord = view.findViewById(R.id.ll_meausre_record);
+        llWaitingMeasure = view.findViewById(R.id.ll_waiting_measure);
+        llMeasureFile = view.findViewById(R.id.ll_measure_file);
+        llDevManager = view.findViewById(R.id.ll_dev_manager);
 
-        btnEnterMeasure.setOnClickListener(this);
+        llCreateMeasure.setOnClickListener(this);
+        llMeasureRecord.setOnClickListener(this);
+        llWaitingMeasure.setOnClickListener(this);
+        llMeasureFile.setOnClickListener(this);
+        llDevManager.setOnClickListener(this);
+
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.btn_enter_measure:
-                Intent intent = new Intent(getActivity(), ChooseMeasureMsgActivity.class);
-                startActivity(intent);
+            /**新建测量**/
+           case  R.id.ll_create_measure:
+               startActivity(new Intent(getActivity(),ChooseMeasureMsgActivity.class));
+            break;
+
+            /**测量记录**/
+            case R.id.ll_meausre_record:
+                startActivity(new Intent(getActivity(), MeasureRecordActivity.class));
+                break;
+
+            /**等待测量**/
+            case R.id.ll_waiting_measure:
+                startActivity(new Intent(getActivity(), WaitingMeasureActivity.class));
+                break;
+
+            /**测量文件**/
+            case R.id.ll_measure_file:
+                startActivity(new Intent(getActivity(), MeasureFileActivity.class));
+                break;
+
+            /**设备管理**/
+            case R.id.ll_dev_manager:
+                startActivity(new Intent(getActivity(), DeviceManagerActivity.class));
                 break;
         }
     }

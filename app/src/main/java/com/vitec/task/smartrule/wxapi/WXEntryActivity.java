@@ -1,30 +1,18 @@
 package com.vitec.task.smartrule.wxapi;
 
 import android.app.Activity;
-import android.content.ContentValues;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
-import com.google.gson.JsonObject;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
-import com.vitec.task.smartrule.activity.LoginActivity;
-import com.vitec.task.smartrule.activity.MainActivity;
-import com.vitec.task.smartrule.activity.RegisterActivity;
-import com.vitec.task.smartrule.bean.User;
 import com.vitec.task.smartrule.bean.WxResultMessage;
-import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.UserDbHelper;
-import com.vitec.task.smartrule.net.NetConstant;
-import com.vitec.task.smartrule.utils.JsonUtils;
-import com.vitec.task.smartrule.utils.LoginSuccess;
 import com.vitec.task.smartrule.utils.OkHttpUtils;
 import com.vitec.task.smartrule.wxapi.bean.ResultInfo;
 import com.vitec.task.smartrule.wxapi.bean.UserInfo;
@@ -32,9 +20,6 @@ import com.vitec.task.smartrule.wxapi.bean.UserInfo;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -91,7 +76,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
                     String code = sendResp.code;
                     getAccess_token(code);
                     showLog("正在获取用户信息");
-//                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+//                    startActivity(new Intent(getApplicationContext(), UnuseMainActivity.class));
                 }
                 break;
             case BaseResp.ErrCode.ERR_USER_CANCEL:

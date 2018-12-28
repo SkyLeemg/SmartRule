@@ -48,22 +48,22 @@ public class BleDeviceAdapter extends BaseAdapter {
             view = inflater.inflate(R.layout.item_beacon_adapter, null);
             holder = new ViewHolder();
             holder.tvbeaconName = (TextView) view.findViewById(R.id.tv_beacon_name);
-            holder.tvbeaconUUID = (TextView) view.findViewById(R.id.tv_beacon_uuid);
-//            holder.tvbeaconMajor = (TextView) view.findViewById(R.id.tv_beacon_major);
-//            holder.tvbeaconMinor = (TextView) view.findViewById(R.id.tv_beacon_minor);
-            holder.tvbeaconRssi = (TextView) view.findViewById(R.id.tv_beacon_rssi);
-            holder.tvbeaconPw = (TextView) view.findViewById(R.id.tv_beacon_pw);
+//            holder.tvbeaconUUID = (TextView) view.findViewById(R.id.tv_beacon_uuid);
+////            holder.tvbeaconMajor = (TextView) view.findViewById(R.id.tv_beacon_major);
+////            holder.tvbeaconMinor = (TextView) view.findViewById(R.id.tv_beacon_minor);
+//            holder.tvbeaconRssi = (TextView) view.findViewById(R.id.tv_beacon_rssi);
+//            holder.tvbeaconPw = (TextView) view.findViewById(R.id.tv_beacon_pw);
             holder.tvbeaconMac = (TextView) view.findViewById(R.id.tv_beacon_mac);
             view.setTag(holder);
         } else {
             holder = (ViewHolder) view.getTag();
         }
         holder.tvbeaconName.setText("Name："+beacons.get(i).getBluetoothName());
-        holder.tvbeaconUUID.setText("UUID："+beacons.get(i).getId1());
-//        holder.tvbeaconMajor.setText("Major："+beacons.get(i).getId2());
-//        holder.tvbeaconMinor.setText("Minor：" + beacons.get(i).getId3());
-        holder.tvbeaconRssi.setText("Rssi：" + beacons.get(i).getRssi());
-        holder.tvbeaconPw.setText("Power：" + beacons.get(i).getTxPower());
+//        holder.tvbeaconUUID.setText("UUID："+beacons.get(i).getId1());
+////        holder.tvbeaconMajor.setText("Major："+beacons.get(i).getId2());
+////        holder.tvbeaconMinor.setText("Minor：" + beacons.get(i).getId3());
+//        holder.tvbeaconRssi.setText("Rssi：" + beacons.get(i).getRssi());
+//        holder.tvbeaconPw.setText("Power：" + beacons.get(i).getTxPower());
         holder.tvbeaconMac.setText("Mac："+beacons.get(i).getBluetoothAddress());
         return view;
     }
@@ -78,11 +78,11 @@ public class BleDeviceAdapter extends BaseAdapter {
 
     class ViewHolder {
         TextView tvbeaconName;
-        TextView tvbeaconUUID;
-//        TextView tvbeaconMajor;
-//        TextView tvbeaconMinor;
-        TextView tvbeaconRssi;
-        TextView tvbeaconPw;
+//        TextView tvbeaconUUID;
+////        TextView tvbeaconMajor;
+////        TextView tvbeaconMinor;
+//        TextView tvbeaconRssi;
+//        TextView tvbeaconPw;
         TextView tvbeaconMac;
     }
 }

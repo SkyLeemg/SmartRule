@@ -88,8 +88,8 @@ public class DeviceManagerFragment extends Fragment implements View.OnClickListe
 
     private void initView() {
         llAddDev = view.findViewById(R.id.ll_add_dev);
-        tvNoLaserDev = view.findViewById(R.id.tv_no_laser_dev);
-        tvNoRuleDev = view.findViewById(R.id.tv_no_rule_dev);
+//        tvNoLaserDev = view.findViewById(R.id.tv_no_laser_dev);
+//        tvNoRuleDev = view.findViewById(R.id.tv_no_rule_dev);
         gvRule = view.findViewById(R.id.gv_rule);
         gvLaser = view.findViewById(R.id.gv_laser);
 
