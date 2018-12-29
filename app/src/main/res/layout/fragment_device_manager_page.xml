@@ -48,38 +48,39 @@
                     android:textColor="@color/color_black_dev_title"
                     />
 
-                <RelativeLayout
-                    android:id="@+id/ll_add_dev"
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:layout_margin="10dp"
-                    android:layout_marginEnd="16dp"
-                    android:gravity="center"
-                    android:layout_below="@+id/gv_rule"
-                    android:background="@color/color_measure_data_gv_title_bg"
-                   >
+                <!--<RelativeLayout-->
+                    <!--android:id="@+id/ll_add_dev"-->
+                    <!--android:layout_width="70dp"-->
+                    <!--android:layout_height="70dp"-->
+                    <!--android:layout_margin="10dp"-->
+                    <!--android:layout_marginEnd="16dp"-->
+                    <!--android:gravity="center"-->
+                    <!--android:layout_below="@+id/gv_rule"-->
+                    <!--android:background="@color/color_measure_data_gv_title_bg"-->
+                   <!--&gt;-->
 
-                    <View
-                        android:layout_width="2dp"
-                        android:layout_height="26dp"
-                        android:background="@color/color_unselect_bar"
-                        android:layout_centerInParent="true"
-                        />
-                    <View
-                        android:layout_width="26dp"
-                        android:layout_height="2dp"
-                        android:background="@color/color_unselect_bar"
-                        android:layout_centerInParent="true"
-                        />
+                    <!--<View-->
+                        <!--android:layout_width="2dp"-->
+                        <!--android:layout_height="26dp"-->
+                        <!--android:background="@color/color_unselect_bar"-->
+                        <!--android:layout_centerInParent="true"-->
+                        <!--/>-->
+                    <!--<View-->
+                        <!--android:layout_width="26dp"-->
+                        <!--android:layout_height="2dp"-->
+                        <!--android:background="@color/color_unselect_bar"-->
+                        <!--android:layout_centerInParent="true"-->
+                        <!--/>-->
 
-                </RelativeLayout>
+                <!--</RelativeLayout>-->
                 <GridView
                     android:id="@+id/gv_rule"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
                     android:numColumns="4"
-                    android:layout_below="@+id/tv_dev_name"></GridView>
+                    android:layout_below="@+id/tv_dev_name"
+                    android:layout_marginBottom="10dp"></GridView>
 
             </RelativeLayout>
 
@@ -111,38 +112,39 @@
                     android:textColor="@color/color_black_dev_title"
                     />
 
-                <RelativeLayout
-                    android:id="@+id/ll_add_dev1"
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:layout_margin="10dp"
-                    android:layout_marginEnd="16dp"
-                    android:gravity="center"
-                    android:layout_below="@+id/gv_laser"
-                    android:background="@color/color_measure_data_gv_title_bg"
-                    >
+                <!--<RelativeLayout-->
+                    <!--android:id="@+id/ll_add_dev1"-->
+                    <!--android:layout_width="70dp"-->
+                    <!--android:layout_height="70dp"-->
+                    <!--android:layout_margin="10dp"-->
+                    <!--android:layout_marginEnd="16dp"-->
+                    <!--android:gravity="center"-->
+                    <!--android:layout_below="@+id/gv_laser"-->
+                    <!--android:background="@color/color_measure_data_gv_title_bg"-->
+                    <!--&gt;-->
 
-                    <View
-                        android:layout_width="2dp"
-                        android:layout_height="26dp"
-                        android:background="@color/color_unselect_bar"
-                        android:layout_centerInParent="true"
-                        />
-                    <View
-                        android:layout_width="26dp"
-                        android:layout_height="2dp"
-                        android:background="@color/color_unselect_bar"
-                        android:layout_centerInParent="true"
-                        />
+                    <!--<View-->
+                        <!--android:layout_width="2dp"-->
+                        <!--android:layout_height="26dp"-->
+                        <!--android:background="@color/color_unselect_bar"-->
+                        <!--android:layout_centerInParent="true"-->
+                        <!--/>-->
+                    <!--<View-->
+                        <!--android:layout_width="26dp"-->
+                        <!--android:layout_height="2dp"-->
+                        <!--android:background="@color/color_unselect_bar"-->
+                        <!--android:layout_centerInParent="true"-->
+                        <!--/>-->
 
-                </RelativeLayout>
+                <!--</RelativeLayout>-->
                 <GridView
                     android:id="@+id/gv_laser"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
                     android:numColumns="4"
-                    android:layout_below="@+id/tv_dev_name1"></GridView>
+                    android:layout_below="@+id/tv_dev_name1"
+                    android:layout_marginBottom="10dp"></GridView>
 
             </RelativeLayout>
         </LinearLayout>

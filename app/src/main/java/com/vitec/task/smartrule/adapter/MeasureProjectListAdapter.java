@@ -1,5 +1,6 @@
 package com.vitec.task.smartrule.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
@@ -8,13 +9,17 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.RulerCheck;
+import com.vitec.task.smartrule.interfaces.IClickable;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +31,15 @@ public class MeasureProjectListAdapter extends BaseAdapter {
     private boolean isShowCheckBox = false;//是否显示checkbox控件
     private boolean isAllChecked = false;//是否全选
     private OnChecked checked;
+    private int[] bgColors = {Color.rgb(53,129,251), Color.rgb(250,92,92),
+            Color.rgb(254,207,27),Color.rgb(55,184,119)};
+//    记录所有Item的click事件
+    private List<IClickable> clickListenerList = new ArrayList<>();
+    //    如果有被点击的item弹出来了未收回去则记录编号，否则将标记未小于0
+    private int lastClickIndx = -1;
+
+    private List<View.OnClickListener> clickList = new ArrayList<>();
+    private View lastView = null;
 
     public MeasureProjectListAdapter(Context context, List<RulerCheck> rulerCheckList,int current_id) {
         this.context = context;
@@ -48,9 +62,10 @@ public class MeasureProjectListAdapter extends BaseAdapter {
         return i;
     }
 
+//    @SuppressLint("ResourceAsColor")
     @Override
     public View getView(final int i, View view, ViewGroup viewGroup) {
-        ViewHolder holder;
+        final ViewHolder holder;
         if (view == null) {
             LayoutInflater inflater = LayoutInflater.from(context);
             view = inflater.inflate(R.layout.item_list_view_wait_measure, null);
@@ -61,14 +76,35 @@ public class MeasureProjectListAdapter extends BaseAdapter {
             holder.tvProjectName = view.findViewById(R.id.tv_item_project_name);
             holder.tvProjectStatus = view.findViewById(R.id.tv_item_check_status);
             holder.cbItem = view.findViewById(R.id.cb_item);
+            holder.llMenu = view.findViewById(R.id.ll_menu);
+            holder.tvIconWord = view.findViewById(R.id.tv_icon_word);
+            holder.rlIconBg = view.findViewById(R.id.rl_icon);
 
             view.setTag(holder);
         } else {
             holder = (ViewHolder) view.getTag();
         }
-        holder.tvProjectName.setText("项目名称："+rulerCheckList.get(i).getProjectName());
+        String projectName = rulerCheckList.get(i).getProjectName();
+        if (projectName.equals("")) {
+            projectName = "未命名";
+        }
+        holder.tvProjectName.setText(projectName);
         holder.tvCheckPosition.setText("检查位置："+rulerCheckList.get(i).getCheckFloor());
         holder.tvCheckPerson.setText("检查人："+rulerCheckList.get(i).getUser().getUserName());
+        holder.llMenu.setVisibility(View.GONE);
+//        设置图标的头文字
+        holder.tvIconWord.setText(projectName.substring(0, 1));
+//        设置图标的背景颜色
+
+        int colorIndex = Math.abs(projectName.hashCode() % 4);
+        LogUtils.show("查看颜色编号：" + colorIndex);
+        if (colorIndex < bgColors.length) {
+            holder.rlIconBg.setBackgroundColor(bgColors[colorIndex]);
+        } else {
+            holder.rlIconBg.setBackgroundColor(Color.rgb(53,129,251));
+        }
+
+
 //        LogUtils.show("获取到的createtime时间戳："+rulerCheckList.get(i).getCreateTime());
         String startTime = DateFormatUtil.stampToDateString(rulerCheckList.get(i).getCreateTime());
 //        判断是否显示checkbox控件
@@ -109,13 +145,68 @@ public class MeasureProjectListAdapter extends BaseAdapter {
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (checked != null) {
                     checked.onCheckedChanged(i,b);
-
                 }
             }
         });
 
 
+        final IClickable clickListener = new IClickable() {
+            @Override
+            public void onClickable() {
+                LogUtils.show("clickListener-----进入点击事件:"+i);
+                if (holder.llMenu.getVisibility() != View.VISIBLE) {
+                    holder.llMenu.setVisibility(View.VISIBLE);
+                    LogUtils.show("clickListener------item，显示了："+i);
+                    lastClickIndx = i;
+                } else {
+                    holder.llMenu.setVisibility(View.GONE);
+                    LogUtils.show("onClickable------item，隐藏了："+i);
+                    lastClickIndx = -1;
+                }
+            }
+        };
+        clickListenerList.add(clickListener);
+//        View.OnClickListener onClickListener = new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                LogUtils.show("onClickListener---查看上一个编号："+lastClickIndx);
+//                if (lastClickIndx >= 0 && lastClickIndx != i) {
+//                    LogUtils.show("onClickListener----隐藏上一个view");
+////                    clickList.get(lastClickIndx).onClick(lastView);
+//                }
+//                if (holder.llMenu.getVisibility()!=View.VISIBLE) {
+//                    holder.llMenu.setVisibility(View.VISIBLE);
+//                    LogUtils.show("clickListener------item，显示了：" + i);
+//                    lastClickIndx = i;
+//                } else {
+//                    holder.llMenu.setVisibility(View.GONE);
+//                    LogUtils.show("clickListener------item，隐藏了：" + i);
+//                    lastClickIndx = -1;
+//                }
+//
+//
+//            }
+//        };
+//        view.setOnClickListener(onClickListener);
+//        clickList.add(onClickListener);
+
         return view;
+    }
+
+    public List<IClickable> getClickListenerList() {
+        return clickListenerList;
+    }
+
+    public void setClickListenerList(List<IClickable> clickListenerList) {
+        this.clickListenerList = clickListenerList;
+    }
+
+    public int getLastClickIndx() {
+        return lastClickIndx;
+    }
+
+    public void setLastClickIndx(int lastClickIndx) {
+        this.lastClickIndx = lastClickIndx;
     }
 
     public OnChecked getChecked() {
@@ -168,7 +259,10 @@ public class MeasureProjectListAdapter extends BaseAdapter {
         TextView tvCheckPerson;
         TextView tvCheckTime;
         TextView tvProjectStatus;
+        TextView tvIconWord;
         CheckBox cbItem;
+        LinearLayout llMenu;
+        RelativeLayout rlIconBg;
 
     }
 

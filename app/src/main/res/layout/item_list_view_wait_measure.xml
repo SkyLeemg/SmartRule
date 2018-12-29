@@ -3,13 +3,50 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_centerVertical="true"
-    android:padding="20dp"
+
+    android:background="@color/white"
     >
+
+    <TextView
+        android:id="@+id/tv_item_check_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="正在测量...."
+        android:layout_marginTop="18dp"
+        android:textColor="@color/color_word"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="15dp"
+        />
+
+    <RelativeLayout
+        android:id="@+id/rl_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@color/color_word"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="10dp"
+
+        >
+        <TextView
+            android:id="@+id/tv_icon_word"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="东"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_centerInParent="true"
+            android:textSize="16sp"
+            />
+    </RelativeLayout>
     <LinearLayout
+        android:id="@+id/ll_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_toRightOf="@+id/rl_icon"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        >
         <CheckBox
             android:id="@+id/cb_item"
             android:layout_width="wrap_content"
@@ -28,7 +65,9 @@
                 android:id="@+id/tv_item_project_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="项目名称：P21"
+                android:text="P21"
+                android:textSize="16sp"
+                android:textColor="@color/title_color"
                 android:layout_marginTop="8dp"
                 />
             <TextView
@@ -36,45 +75,159 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="检查位置：1东2层"
-                android:layout_marginTop="8dp"
+                android:textSize="14sp"
+                android:textColor="@color/color_unselect_bar"
+                android:layout_marginTop="4dp"
                 />
             <TextView
                 android:id="@+id/tv_item_check_person"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="检查人：张三"
-                android:layout_marginTop="8dp"
+                android:textSize="14sp"
+                android:textColor="@color/color_unselect_bar"
+                android:layout_marginTop="4dp"
                 />
             <TextView
                 android:id="@+id/tv_item_check_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
-                android:text="检查时间：2018.09.19 10:22-2018.09.20 14:21"
-                android:layout_marginTop="8dp"
-                />
-
-            <TextView
-                android:id="@+id/tv_item_check_status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="正在测量...."
-                android:layout_marginTop="8dp"
-                android:textColor="@color/laser_color"
+                android:text="检查时间：2018.09.19 10:22-09.20 14:21"
+                android:textColor="@color/color_unselect_bar"
+                android:layout_marginTop="4dp"
                 />
 
         </LinearLayout>
 
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@+id/ll_content"
+        android:layout_marginTop="10dp"
+        >
+        <LinearLayout
+            android:id="@+id/ll_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/background"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                />
+            <!--点击选择菜单-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_margin="5dp"
+                >
+                <!--编辑信息-->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_weight="1"
+                    >
+                    <ImageView
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:src="@mipmap/ico_edit_3x"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="编辑信息"
+                        android:textColor="@color/title_color"
+                        android:layout_marginLeft="3dp"
+                        android:textSize="15sp"
+                        />
+                </LinearLayout>
+                <View
+                    android:layout_width="0.5dp"
+                    android:layout_height="18dp"
+                    android:background="@color/title_color"
+                    />
+                <!--开始测量-->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_weight="1"
+                    >
+                    <ImageView
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:src="@mipmap/ico_start_3x"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="开始测量"
+                        android:textColor="@color/title_color"
+                        android:layout_marginLeft="3dp"
+                        android:textSize="15sp"
+                        />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="0.5dp"
+                    android:layout_height="18dp"
+                    android:background="@color/title_color"
+
+                    />
+                <!--删除测量-->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_weight="1"
+                    >
+                    <ImageView
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:src="@mipmap/ico_bin_3x"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="删除测量"
+                        android:textColor="@color/color_pink_wait"
+                        android:layout_marginLeft="3dp"
+                        android:textSize="15sp"
+                        />
+                </LinearLayout>
+                
+
+            </LinearLayout>
+        </LinearLayout>
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@color/background"
+            android:layout_marginTop="5dp"
+            />
+    </LinearLayout>
+
     
 
 
-    <ImageView
-        android:layout_width="30dp"
-        android:layout_height="wrap_content"
-        android:src="@mipmap/icon_right"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        />
+    <!--<ImageView-->
+        <!--android:layout_width="30dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:src="@mipmap/icon_right"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!--android:layout_centerVertical="true"-->
+        <!--/>-->
 
 </RelativeLayout>

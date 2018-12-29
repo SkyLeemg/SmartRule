@@ -8,6 +8,7 @@
     >
 
     <LinearLayout
+        android:id="@+id/ll_display_dev"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -33,19 +34,45 @@
             android:textSize="14sp"
             android:layout_gravity="center"
             />
+        <TextView
+            android:id="@+id/tv_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="编辑"
+            android:textColor="@color/color_word"
+            android:paddingTop="1dp"
+            android:paddingBottom="10dp"
+            android:gravity="center"
+            android:textSize="13sp"
+            />
 
     </LinearLayout>
-    <TextView
-        android:id="@+id/tv_edit"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="编辑"
-        android:textColor="@color/color_word"
-        android:paddingTop="1dp"
-        android:paddingBottom="10dp"
+    <RelativeLayout
+        android:id="@+id/ll_add_dev"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_margin="10dp"
+        android:layout_marginEnd="16dp"
         android:gravity="center"
-        android:textSize="13sp"
-        />
+        android:layout_below="@+id/gv_rule"
+        android:background="@color/color_measure_data_gv_title_bg"
+        >
+
+        <View
+            android:layout_width="2dp"
+            android:layout_height="26dp"
+            android:background="@color/color_unselect_bar"
+            android:layout_centerInParent="true"
+            />
+        <View
+            android:layout_width="26dp"
+            android:layout_height="2dp"
+            android:background="@color/color_unselect_bar"
+            android:layout_centerInParent="true"
+            />
+
+    </RelativeLayout>
+
 
 
 

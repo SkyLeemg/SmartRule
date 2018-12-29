@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
@@ -29,6 +30,7 @@ import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
 import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
 import com.vitec.task.smartrule.utils.HeightUtils;
 import com.vitec.task.smartrule.utils.LogUtils;
+import com.vitec.task.smartrule.utils.ScreenSizeUtil;
 import com.vitec.task.smartrule.utils.ServiceUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -87,12 +89,24 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
         lvWaitingMeasureList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                mkLoader.setVisibility(View.VISIBLE);
-                Intent serviceIntent = new Intent(WaitingMeasureActivity.this, PerformMeasureNetIntentService.class);
-                serviceIntent.putExtra(PerformMeasureNetIntentService.GET_FLAG_KEY, PerformMeasureNetIntentService.FLAG_GET_MEASURE_DATA);
-                serviceIntent.putExtra(PerformMeasureNetIntentService.GET_DATA_KEY, rulerCheckList.get(i));
-                startService(serviceIntent);
-                chooseIndex = i;
+
+                LogUtils.show("lvWaitingMeasureList----点击了Item");
+                if (measureProjectListAdapter.getLastClickIndx() >= 0 && measureProjectListAdapter.getLastClickIndx() != i) {
+
+                    measureProjectListAdapter.getClickListenerList().get(measureProjectListAdapter.getLastClickIndx()).onClickable();
+                }
+                measureProjectListAdapter.getClickListenerList().get(i).onClickable();
+                measureProjectListAdapter.notifyDataSetChanged();
+
+                /***进入测量部分**/
+//                mkLoader.setVisibility(View.VISIBLE);
+//                Intent serviceIntent = new Intent(WaitingMeasureActivity.this, PerformMeasureNetIntentService.class);
+//                serviceIntent.putExtra(PerformMeasureNetIntentService.GET_FLAG_KEY, PerformMeasureNetIntentService.FLAG_GET_MEASURE_DATA);
+//                serviceIntent.putExtra(PerformMeasureNetIntentService.GET_DATA_KEY, rulerCheckList.get(i));
+//                startService(serviceIntent);
+//                chooseIndex = i;
+
+
 //                Intent intent = new Intent(WaitingMeasureActivity.this, MeasureManagerAcitivty.class);
 //                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //                intent.putExtra("projectMsg", rulerCheckList.get(i));
@@ -110,7 +124,7 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
         serviceIntent.putExtra(PerformMeasureNetIntentService.GET_FLAG_KEY, PerformMeasureNetIntentService.FLAG_QUERY_MEASURE_RECORD);
         serviceIntent.putExtra(PerformMeasureNetIntentService.GET_DATA_KEY, 0);
         serviceIntent.putExtra(NetConstant.current_Page, currentPage);
-        serviceIntent.putExtra(NetConstant.page_size, 2);
+        serviceIntent.putExtra(NetConstant.page_size, 8);
         startService(serviceIntent);
     }
 
@@ -144,7 +158,13 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
         measureProjectListAdapter.setRulerCheckList(rulerCheckList);
         measureProjectListAdapter.setCurrent_id(current_id);
         measureProjectListAdapter.notifyDataSetChanged();
-        HeightUtils.setListViewHeighBaseOnChildren(lvWaitingMeasureList);
+        int height = HeightUtils.setListViewHeighBaseOnChildren(lvWaitingMeasureList);
+        height = height + (50 * ScreenSizeUtil.getScreenWidth(getApplicationContext()) / 320);
+        ViewGroup.LayoutParams params = lvWaitingMeasureList.getLayoutParams();
+//        params.height = totalHeight + (gridView.getMeasuredHeight() * (listAdapter.getCount() - 1));
+        params.height = height;
+        lvWaitingMeasureList.setLayoutParams(params);
+
     }
 
     /**
@@ -233,9 +253,10 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
 
         initWidget();
         setTvTitle("等待测量");
-        imgIcon.setImageResource(R.mipmap.icon_back);
-        imgIcon.setVisibility(View.VISIBLE);
-        imgIcon.setOnClickListener(this);
+//        imgIcon.setImageResource(R.mipmap.icon_back);
+//        imgIcon.setVisibility(View.VISIBLE);
+//        imgIcon.setOnClickListener(this);
+        imgMenu.setOnClickListener(this);
 
         tvLastPage = findViewById(R.id.tv_last_page);
         tvNextPage = findViewById(R.id.tv_next_page);
@@ -256,8 +277,9 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.img_icon_toolbar:
-                this.finish();
+            case R.id.img_menu_toolbar:
+
+                onBackPressed();
                 break;
 
             case R.id.btn_finish:

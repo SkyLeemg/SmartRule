@@ -51,7 +51,7 @@ import java.util.List;
 public class DeviceManagerActivity extends BaseActivity implements View.OnClickListener,IDialogCommunicableWithDevice,IDevManager{
 
     private static final String TAG = "DeviceManagerActivity";
-    private RelativeLayout llAddDev;
+//    private RelativeLayout llAddDev;
 //    private TextView tvNoRuleDev;
 //    private TextView tvNoLaserDev;
     private GridView gvRule;
@@ -88,13 +88,13 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
         imgMenu.setVisibility(View.VISIBLE);
         imgMenu.setOnClickListener(this);
 
-        llAddDev = findViewById(R.id.ll_add_dev);
+//        llAddDev = findViewById(R.id.ll_add_dev);
 //        tvNoLaserDev = findViewById(R.id.tv_no_laser_dev);
 //        tvNoRuleDev = findViewById(R.id.tv_no_rule_dev);
         gvRule = findViewById(R.id.gv_rule);
         gvLaser = findViewById(R.id.gv_laser);
 
-        llAddDev.setOnClickListener(this);
+//        llAddDev.setOnClickListener(this);
         mTextToSpeechHelper = new TextToSpeechHelper(getApplicationContext(),"");
     }
 
@@ -113,24 +113,32 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
         getRuleDevicefromDB();
         ruleDevAdapter = new DisplayBleDeviceAdapter(this ,rules,this);
         gvRule.setAdapter(ruleDevAdapter);
+
+        List<BleDevice> laserList = new ArrayList<>();
+        DisplayBleDeviceAdapter laserAdapter = new DisplayBleDeviceAdapter(this, laserList, this);
+        gvLaser.setAdapter(laserAdapter);
 //        if (rules.size() != 0) {
 //            tvNoRuleDev.setVisibility(View.GONE);
 //        }
 
-        gvLaser.setVisibility(View.GONE);
         setListViewHeighBaseOnChildren(gvRule);
 
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(UARTStatusChangeReceiver, makeGattUpdateIntentFilter());
         gvRule.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                current_connected_device_id = i;
-                if (ConnectDeviceService.current_connecting_mac_address.equals(rules.get(i).getBleMac())) {
-                    Toast.makeText(getApplicationContext(), "蓝牙已连接", Toast.LENGTH_SHORT).show();
+                if (i < rules.size()) {
+                    current_connected_device_id = i;
+                    if (ConnectDeviceService.current_connecting_mac_address.equals(rules.get(i).getBleMac())) {
+                        Toast.makeText(getApplicationContext(), "蓝牙已连接", Toast.LENGTH_SHORT).show();
+                    } else {
+                        mLoadingDialog = new LoadingDialog(DeviceManagerActivity.this, "正在连接");
+                        mLoadingDialog.show();
+                        serviceConnecteHelper = new ServiceConnecteHelper(getApplicationContext(), rules.get(i).getBleMac());
+                    }
                 } else {
-                    mLoadingDialog = new LoadingDialog(DeviceManagerActivity.this, "正在连接");
-                    mLoadingDialog.show();
-                    serviceConnecteHelper = new ServiceConnecteHelper(getApplicationContext(),rules.get(i).getBleMac());
+                    mDialog = new ConnectDialog(DeviceManagerActivity.this,DeviceManagerActivity.this);
+                    mDialog.show();
                 }
 
             }
@@ -257,11 +265,11 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.ll_add_dev:
-                Log.e(TAG, "onClick: 点击了添加设备按钮" );
-                mDialog = new ConnectDialog(this,this);
-                mDialog.show();
-                break;
+//            case R.id.ll_add_dev:
+//                Log.e(TAG, "onClick: 点击了添加设备按钮" );
+//                mDialog = new ConnectDialog(this,this);
+//                mDialog.show();
+//                break;
             case R.id.img_menu_toolbar:
                 Log.e(TAG, "onClick: 点击了首页按钮" );
                 onBackPressed();

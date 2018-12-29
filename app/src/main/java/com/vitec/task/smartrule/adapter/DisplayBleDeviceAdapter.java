@@ -13,6 +13,7 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,12 +49,17 @@ public class DisplayBleDeviceAdapter extends BaseAdapter{
 
     @Override
     public int getCount() {
-        return devs.size();
+        return devs.size()+1;
     }
 
     @Override
     public Object getItem(int i) {
-        return devs.get(i);
+        if (i < devs.size()) {
+            return devs.get(i);
+        } else {
+            return i;
+        }
+
     }
 
     @Override
@@ -71,11 +77,20 @@ public class DisplayBleDeviceAdapter extends BaseAdapter{
             holder.imgDev = view.findViewById(R.id.img_item_dev_pic);
             holder.tvDevName = view.findViewById(R.id.tv_item_dev_name);
             holder.tvEditor = view.findViewById(R.id.tv_edit);
+            holder.llDisplayDev = view.findViewById(R.id.ll_display_dev);
+            holder.rlAddDev = view.findViewById(R.id.ll_add_dev);
             view.setTag(holder);
 
         } else {
             holder = (ViewHolder) view.getTag();
         }
+        if (i == devs.size()) {
+            holder.rlAddDev.setVisibility(View.VISIBLE);
+            holder.llDisplayDev.setVisibility(View.GONE);
+            return view;
+        }
+        holder.llDisplayDev.setVisibility(View.VISIBLE);
+        holder.rlAddDev.setVisibility(View.GONE);
         holder.imgDev.setImageResource(devs.get(i).getImgResouce());
         if (devs.get(i).getBleAlias() != null && !devs.get(i).getBleAlias().equals("")) {
             holder.tvDevName.setText(devs.get(i).getBleAlias());
@@ -170,6 +185,8 @@ public class DisplayBleDeviceAdapter extends BaseAdapter{
         TextView tvDevName;
         TextView tvEditor;
         ImageView imgDev;
+        LinearLayout llDisplayDev;
+        RelativeLayout rlAddDev;
 
     }
 }
