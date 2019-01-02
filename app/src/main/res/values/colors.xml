@@ -56,8 +56,10 @@
     <color name="color_black_dev_title">#1a1a1a</color>
     <color name="color_black_666">#666</color>
 
+    <!--等待测量界面-->
     <color name="color_pink_wait">#fa5c5c</color>
     <color name="color_yellow_bg">#fecf1b</color>
     <color name="color_green_bg">#37B877</color>
+    <color name="color_yellow_word">#eaa000</color>
 
 </resources>

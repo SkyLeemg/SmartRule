@@ -1,34 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:padding="10dp"
     >
 
     <CheckBox
         android:id="@+id/cb_item"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="10dp"
         />
 
     <ImageView
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:src="@mipmap/icon_excel"
-
-        />
-
-    <TextView
-        android:id="@+id/tv_item_file_name"
+        android:id="@+id/img_excel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="20189393993华人你数据.xls"
-        android:layout_marginLeft="8dp"
+        android:src="@mipmap/excel_3x"
+        android:layout_toRightOf="@+id/cb_item"
+        android:layout_marginLeft="12dp"
+        android:layout_centerVertical="true"
+        />
+
+    <LinearLayout
+        android:id="@+id/ll_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_toRightOf="@+id/img_excel"
+        android:layout_marginLeft="16dp"
+        android:layout_centerVertical="true"
+        >
+        <TextView
+            android:id="@+id/tv_item_file_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="20189393993华人你数据.xls"
+
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/title_color"
+            android:layout_toRightOf="@+id/img_excel"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2018-02-19 22:02"
+            android:layout_toRightOf="@+id/img_excel"
+            android:textColor="@color/color_unselect_bar"
+            android:textSize="12sp"
+            />
+    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/color_gv_border"
+        android:layout_below="@+id/ll_content"
+        android:layout_marginTop="18dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         />
 
 
 
-</LinearLayout>
+
+
+</RelativeLayout>

@@ -180,6 +180,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
 
             if (measureDataAdapter != null) {
                 measureDataAdapter.notifyDataSetChanged();
+
             }
         }
     }

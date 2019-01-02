@@ -78,12 +78,12 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
     private GridView gvMeasureData;
     private TextView tvProjectName;//项目类型
     private TextView tvMeasureItem;//管控要点
-    private TextView tvQualifiedStandard;
-    private EditText etStandardRate;
-    private EditText etStandartNum;
-    private EditText etRealMeasureNum;
-    private Spinner spinnerFloorHeight;
-    private ImageView imgAdd;
+//    private TextView tvQualifiedStandard;
+//    private EditText etStandardRate;
+//    private EditText etStandartNum;
+//    private EditText etRealMeasureNum;
+//    private Spinner spinnerFloorHeight;
+//    private ImageView imgAdd;
 
     /****编辑图片的布局****/
     private View layoutEditPic;
@@ -132,17 +132,17 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
     }
 
     private void initView() {
-        gvMeasureData = view.findViewById(R.id.gv_measure_data);
+//        gvMeasureData = view.findViewById(R.id.gv_measure_data);
         tvProjectName = view.findViewById(R.id.tv_project_type);
-        tvMeasureItem = view.findViewById(R.id.tv_measure_item);
+//        tvMeasureItem = view.findViewById(R.id.tv_measure_item);
         mTextToSpeechHelper = new TextToSpeechHelper(getActivity(),"");
-        tvQualifiedStandard = view.findViewById(R.id.tv_qualified_flag);
-        etStandardRate = view.findViewById(R.id.et_standard_rate);
-        etStandartNum = view.findViewById(R.id.et_standard_num);
-        etRealMeasureNum = view.findViewById(R.id.et_real_measure_num);
-        spinnerFloorHeight = view.findViewById(R.id.spinner_floor_height);
-        llFloorHeight = view.findViewById(R.id.ll_floor_height);
-        imgAdd = view.findViewById(R.id.img_add);
+//        tvQualifiedStandard = view.findViewById(R.id.tv_qualified_flag);
+//        etStandardRate = view.findViewById(R.id.et_standard_rate);
+//        etStandartNum = view.findViewById(R.id.et_standard_num);
+//        etRealMeasureNum = view.findViewById(R.id.et_real_measure_num);
+//        spinnerFloorHeight = view.findViewById(R.id.spinner_floor_height);
+//        llFloorHeight = view.findViewById(R.id.ll_floor_height);
+//        imgAdd = view.findViewById(R.id.img_add);
         tvAddmPic = view.findViewById(R.id.tv_add_mpic);
 
 //        layoutEditPic = view.findViewById(R.id.layout_edit_pic);
@@ -311,7 +311,7 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
 //        此id对应iot_ruler_check_options表的id
         check_option_id = checkOptions.getId();
         standard = checkOptions.getRulerOptions().getStandard();
-        tvQualifiedStandard.setText(standard);
+//        tvQualifiedStandard.setText(standard);
 
 
 
@@ -335,11 +335,11 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
         service_init();
 
         /********************初始化ImgAdd按钮**********************/
-        if (checkOptions.getRulerOptions().getType() < 3) {
-          imgAdd.setVisibility(View.GONE);
-        } else {
-          imgAdd.setVisibility(View.VISIBLE);
-        }
+//        if (checkOptions.getRulerOptions().getType() < 3) {
+//          imgAdd.setVisibility(View.GONE);
+//        } else {
+//          imgAdd.setVisibility(View.VISIBLE);
+//        }
 
         /**
          * 初始化接受数据的gridview
@@ -350,53 +350,53 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
 
         /********************层高选择框部分开始**************************/
 
-        floodHeights = new ArrayList<>();
-        for (OptionMeasure measure : optionMeasures) {
-            floodHeights.add(measure.getData());
-        }
-//        初始化默认选择的层高及运算标准
-        optionMeasure = new OptionMeasure();
-        if (optionMeasures.size() > 0) {
-            optionMeasure = optionMeasures.get(0);
-        }else {
-            optionMeasure.setData("≤6");
-            optionMeasure.setStandard(8);
-            optionMeasure.setOperate(1);
-            optionMeasure.setId(1);
-        }
-        LogUtils.show("查看"+checkOptions.getRulerOptions().getOptionsName()+"模块的floodHeights："+floodHeights.toString());
-        if (floodHeights.size() > 1) {
-            llFloorHeight.setVisibility(View.VISIBLE);
-            spinnerAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_dropdown_item, floodHeights);
-            spinnerFloorHeight.setAdapter(spinnerAdapter);
-        } else {
-            llFloorHeight.setVisibility(View.GONE);
-        }
-
-        spinnerFloorHeight.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.e(TAG, "onItemSelected: 查看当前选择的：" + i + ",内容：" + floodHeights.get(i) + ",查看当前选择的标准：" + optionMeasures.get(i));
-                floodHeight = floodHeights.get(i);
-                if (floodHeights.get(i).equals(optionMeasures.get(i).getData())) {
-                    optionMeasure = optionMeasures.get(i);
-                } else {
-                    for (OptionMeasure measure : optionMeasures) {
-                        if (floodHeights.get(i).equals(measure.getData())) {
-                            optionMeasure = measure;
-                        }
-                    }
-                }
-                EventBus.getDefault().post(new HeightFloorMsgEvent(checkOptions.getRulerOptions().getType(),optionMeasure));
-                completeResult();
-                Log.e(TAG, "onItemSelected: 查看最终参看值："+standartNum );
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
+//        floodHeights = new ArrayList<>();
+//        for (OptionMeasure measure : optionMeasures) {
+//            floodHeights.add(measure.getData());
+//        }
+////        初始化默认选择的层高及运算标准
+//        optionMeasure = new OptionMeasure();
+//        if (optionMeasures.size() > 0) {
+//            optionMeasure = optionMeasures.get(0);
+//        }else {
+//            optionMeasure.setData("≤6");
+//            optionMeasure.setStandard(8);
+//            optionMeasure.setOperate(1);
+//            optionMeasure.setId(1);
+//        }
+//        LogUtils.show("查看"+checkOptions.getRulerOptions().getOptionsName()+"模块的floodHeights："+floodHeights.toString());
+//        if (floodHeights.size() > 1) {
+//            llFloorHeight.setVisibility(View.VISIBLE);
+//            spinnerAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_dropdown_item, floodHeights);
+////            spinnerFloorHeight.setAdapter(spinnerAdapter);
+//        } else {
+//            llFloorHeight.setVisibility(View.GONE);
+//        }
+//
+//        spinnerFloorHeight.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+//            @Override
+//            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+//                Log.e(TAG, "onItemSelected: 查看当前选择的：" + i + ",内容：" + floodHeights.get(i) + ",查看当前选择的标准：" + optionMeasures.get(i));
+//                floodHeight = floodHeights.get(i);
+//                if (floodHeights.get(i).equals(optionMeasures.get(i).getData())) {
+//                    optionMeasure = optionMeasures.get(i);
+//                } else {
+//                    for (OptionMeasure measure : optionMeasures) {
+//                        if (floodHeights.get(i).equals(measure.getData())) {
+//                            optionMeasure = measure;
+//                        }
+//                    }
+//                }
+//                EventBus.getDefault().post(new HeightFloorMsgEvent(checkOptions.getRulerOptions().getType(),optionMeasure));
+//                completeResult();
+//                Log.e(TAG, "onItemSelected: 查看最终参看值："+standartNum );
+//            }
+//
+//            @Override
+//            public void onNothingSelected(AdapterView<?> adapterView) {
+//
+//            }
+//        });
         /********************层高选择框部分结束**************************/
 
     }
@@ -445,15 +445,15 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
     }
 
     private void updateCompleteResult() {
-        etRealMeasureNum.setText(realNum+"");
-        etStandartNum.setText(qualifiedNum+"");
-        if (qualifiedRate >=0) {
-            etStandardRate.setText(String.format("%.2f",qualifiedRate*100));
-        }else etStandardRate.setText("0.00");
-
-//        if (currentDataNum > 0 && checkOptionsDataList.size() > 0) {
-//            uploadOptionsDataList.add(checkOptionsDataList.get(currentDataNum - 1));
-//        }
+//        etRealMeasureNum.setText(realNum+"");
+//        etStandartNum.setText(qualifiedNum+"");
+//        if (qualifiedRate >=0) {
+//            etStandardRate.setText(String.format("%.2f",qualifiedRate*100));
+//        }else etStandardRate.setText("0.00");
+//
+////        if (currentDataNum > 0 && checkOptionsDataList.size() > 0) {
+////            uploadOptionsDataList.add(checkOptionsDataList.get(currentDataNum - 1));
+////        }
         updateMeasureDataToServer();
     }
 

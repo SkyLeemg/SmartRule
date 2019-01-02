@@ -3,103 +3,181 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/background"
 
     >
-    <include
-        android:id="@+id/include"
-        layout="@layout/base_toolbar"/>
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/ll_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#ffffff"
+        >
+
+        <!--android:layout_height="?attr/actionBarSize"-->
+
+        <!--<RelativeLayout-->
+        <!--android:id="@+id/ll_toolbar"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:background="@color/pblue_bar_color"-->
+        <!--android:layout_height="?attr/actionBarSize">-->
+
+        <ImageView
+            android:id="@+id/img_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="15dp"
+            android:paddingRight="12dp"
+            android:paddingTop="10dp"
+            android:layout_alignParentLeft="true"
+            android:paddingBottom="10dp"
+            android:layout_centerVertical="true"
+            android:src="@mipmap/icon_back"/>
+
+        <TextView
+            android:id="@+id/tv_toolbar_title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="测量记录"
+            android:textColor="@color/title_color"
+            android:layout_centerInParent="true"
+            android:textStyle="bold"
+            android:textSize="17sp"/>
+
+        <TextView
+            android:id="@+id/tv_choose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:layout_alignParentRight="true"
+            android:text="选择"
+            android:textColor="@color/color_word"
+            android:layout_centerVertical="true"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:src="@mipmap/icon_scan_qr"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0.3dp"
+            android:background="@color/viewfinder_mask"
+            android:layout_alignParentBottom="true"
+            />
+
+    </RelativeLayout>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/include"
+        android:layout_below="@+id/ll_toolbar"
         android:layout_above="@+id/rl_selectable"
         >
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-
             >
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
-                >
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="项目名称："
-                    style="@style/Text"
-                    />
-                <Spinner
-                    android:id="@+id/spinner_project_name"
+                android:orientation="vertical"
+                android:background="@color/white">
+                <!--选择部分-->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Base.Widget.AppCompat.DropDownItem.Spinner"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:background="@drawable/shape_gv_measure_data_stroke_content"
                     >
-                </Spinner>
-            </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="项目名称"
+                        style="@style/DropWord"
+                        android:layout_margin="10dp"
+                        />
+                    <Spinner
+                        android:id="@+id/spinner_project_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/Base.Widget.AppCompat.DropDownItem.Spinner"
+                        android:layout_gravity="center_vertical"
+                        >
+                    </Spinner>
+                </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
-                >
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="工程类型："
-                    style="@style/Text"
-                    />
-                <Spinner
-                    android:id="@+id/spinner_engineer"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Base.Widget.AppCompat.DropDownItem.Spinner"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:background="@drawable/shape_gv_measure_data_stroke_content"
                     >
-                </Spinner>
-            </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="工程类型"
+                        style="@style/DropWord"
+                        android:layout_margin="10dp"
+                        />
+                    <Spinner
+                        android:id="@+id/spinner_engineer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/Base.Widget.AppCompat.DropDownItem.Spinner"
+                        android:layout_gravity="center_vertical"
+                        >
+                    </Spinner>
+                </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
-                >
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="检查位置："
-                    style="@style/Text"
-                    />
-                <Spinner
-                    android:id="@+id/spinner_check_position"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Base.Widget.AppCompat.DropDownItem.Spinner"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/shape_gv_measure_data_stroke_content"
                     >
-                </Spinner>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="检查位置"
+                        style="@style/DropWord"
+                        android:layout_margin="10dp"
+                        />
+                    <Spinner
+                        android:id="@+id/spinner_check_position"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/Base.Widget.AppCompat.DropDownItem.Spinner"
+                        android:layout_gravity="center_vertical"
+                        >
+                    </Spinner>
+                </LinearLayout>
             </LinearLayout>
 
+            <!--内容-->
             <ListView
                 android:id="@+id/lv_finish_measure_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:divider="#00000000"
                 >  </ListView>
 
+            <!--页数统计-->
             <TextView
                 android:id="@+id/tv_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="总数：80"
+                android:text="总数：0"
                 android:layout_gravity="center"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="5dp"

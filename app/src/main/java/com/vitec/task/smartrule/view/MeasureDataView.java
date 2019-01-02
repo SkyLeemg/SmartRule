@@ -147,7 +147,7 @@ public class MeasureDataView extends RelativeLayout {
 
         measureDataAdapter = new DisplayMeasureDataAdapter(context, usingCheckOptionsDataList);
         gvDisplayData.setAdapter(measureDataAdapter);
-        HeightUtils.setGridViewHeighBaseOnChildren(gvDisplayData,7);
+        HeightUtils.setGridViewHeighBaseOnChildren(gvDisplayData,6);
 
     }
 
@@ -206,6 +206,7 @@ public class MeasureDataView extends RelativeLayout {
         if (qualifiedRate >=0) {
             tvQualifiedRate.setText(String.format("%.2f",qualifiedRate*100));
         }else tvQualifiedRate.setText("0.00");
+        HeightUtils.setGridViewHeighBaseOnChildren(gvDisplayData,6);
     }
 
     /**以下是需要跟调用此View者需要交互的数据变量**/

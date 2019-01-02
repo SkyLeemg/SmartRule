@@ -1,5 +1,6 @@
 package com.vitec.task.smartrule.activity;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -52,7 +54,7 @@ import java.util.Set;
 /**
  * 测量记录
  */
-public class MeasureRecordActivity extends BaseActivity implements View.OnClickListener {
+public class MeasureRecordActivity extends Activity implements View.OnClickListener {
 
     //    下拉框
     private Spinner spinnerProjectName;
@@ -63,6 +65,8 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
     private MKLoader mkLoader;
     private TextView tvTotal;
     private TextView tvLastPage, tvNextPage, tvCurrentPage;
+    private TextView tvChoose;
+    private ImageView imgBack;
 
     //    底部栏
     private RelativeLayout rlSelectable;
@@ -193,15 +197,10 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
 
 
     private void initView() {
-        initWidget();
-        setTvTitle("测量记录");
-        imgIcon.setImageResource(R.mipmap.choose);
-        imgIcon.setVisibility(View.VISIBLE);
-        imgIcon.setOnClickListener(this);
-
-        imgMenu.setImageResource(R.mipmap.icon_back);
-        imgMenu.setVisibility(View.VISIBLE);
-        imgMenu.setOnClickListener(this);
+        tvChoose = findViewById(R.id.tv_choose);
+        imgBack = findViewById(R.id.img_back);
+        imgBack.setOnClickListener(this);
+        tvChoose.setOnClickListener(this);
 
         spinnerCheckPosition = findViewById(R.id.spinner_check_position);
         spinnerProjectName = findViewById(R.id.spinner_project_name);
@@ -229,6 +228,14 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
         tvNextPage.setOnClickListener(this);
         btnExport.setOnClickListener(this);
         btnDel.setOnClickListener(this);
+
+        /**
+         * 下拉框的偏移
+         */
+        spinnerProjectName.setDropDownVerticalOffset(100);
+        spinnerCheckPosition.setDropDownVerticalOffset(100);
+        spinnerEngineer.setDropDownVerticalOffset(100);
+
     }
 
     /**
@@ -289,6 +296,7 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
         lvRecordList.setAdapter(projectListAdapter);
         HeightUtils.setListViewHeighBaseOnChildren(lvRecordList);
         mkLoader.setVisibility(View.GONE);
+//        projectListAdapter.setShowCheckBox(true);
 
 
         lvRecordList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -488,18 +496,18 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
             /**
              * 选择按钮
              */
-            case R.id.img_icon_toolbar:
+            case R.id.tv_choose:
                 if (chooseBtnStatus == 0) {
                     projectListAdapter.setShowCheckBox(true);
                     projectListAdapter.notifyDataSetChanged();
-                    imgIcon.setImageResource(R.mipmap.cancel);
+                    tvChoose.setText("取消");
                     chooseBtnStatus = 1;
                     rlSelectable.setVisibility(View.VISIBLE);
                 } else if (chooseBtnStatus == 1) {
                     projectListAdapter.setShowCheckBox(false);
                     projectListAdapter.setAllChecked(false);
                     projectListAdapter.notifyDataSetChanged();
-                    imgIcon.setImageResource(R.mipmap.choose);
+                    tvChoose.setText("选择");
                     chooseBtnStatus = 0;
                     rlSelectable.setVisibility(View.GONE);
 
@@ -509,9 +517,8 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
             /**
              * 返回按钮
              */
-            case R.id.img_menu_toolbar:
-
-                MeasureRecordActivity.this.finish();
+            case R.id.img_back:
+                onBackPressed();
                 break;
             /**
              * 上一页

@@ -67,7 +67,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
 
     private void initView() {
         initToolBarView();
-        bottomNavigationBar = findViewById(R.id.bottom_navigation_bar_container);
+//        bottomNavigationBar = findViewById(R.id.bottom_navigation_bar_container);
 //        mkLoader = findViewById(R.id.loading);
         tabLayout = findViewById(R.id.tablayout_meausre);
         viewPager = findViewById(R.id.viewpage_measure);

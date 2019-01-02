@@ -10,6 +10,8 @@
         android:layout_marginLeft="10dp"
         android:layout_centerVertical="true"
         android:text="查看"
+        android:textSize="14sp"
+        android:padding="5dp"
         />
 
 </RelativeLayout>

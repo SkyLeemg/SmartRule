@@ -4,7 +4,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -12,14 +15,18 @@ import android.widget.TextView;
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.tuyenmonkey.mkloader.MKLoader;
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.adapter.MeasureFragmentPagerAdapter;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.bean.RulerOptions;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.OperateDbUtil;
+import com.vitec.task.smartrule.fragment.MeasureFragment;
 import com.vitec.task.smartrule.fragment.MeasureFragmentControllerImpl;
+import com.vitec.task.smartrule.fragment.MeasureFragmentOthers;
 import com.vitec.task.smartrule.fragment.MeasureFragmentRecordControllerImpl;
+import com.vitec.task.smartrule.fragment.MeasureRecordFragment;
 import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
 import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
 
@@ -43,6 +50,10 @@ public class MeasureRecordManagerAcitivty extends BaseFragmentActivity {
     private RulerCheckOptions rulerCheckOption;//
     private BleDataDbHelper bleDataDbHelper;//数据库查询helper
 
+    private List<android.support.v4.app.Fragment> fragments;
+    private List<String> tags;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,7 +64,9 @@ public class MeasureRecordManagerAcitivty extends BaseFragmentActivity {
 
     private void initView() {
         initToolBarView();
-        bottomNavigationBar = findViewById(R.id.bottom_navigation_bar_container);
+        tabLayout = findViewById(R.id.tablayout_meausre);
+        viewPager = findViewById(R.id.viewpage_measure);
+//        bottomNavigationBar = findViewById(R.id.bottom_navigation_bar_container);
         mkLoader = findViewById(R.id.loading);
         initData();
     }
@@ -74,50 +87,9 @@ public class MeasureRecordManagerAcitivty extends BaseFragmentActivity {
          * 先查找Iot_ruler_check_options表格有没有同样checkid的，如果有则，不创建直接用之前的
          */
         queryData();
-//        if (!queryData()) {
-//            /**
-//             * 1.根据engineer_id查找该ID对应的Options
-//             * 2.遍历返回的rulerOptions集合，创建rulerCheckOptions对象，填充对应的信息
-//             * 3.将集合中的每个rulerCheckOptions对象添加到数据库，返回id更新到对应的对象中
-//             */
-//            Log.e(TAG, "initData: 查找之前查看rulerCheck对象：" + rulerCheck.toString());
-////            String where = " where " + DataBaseParams.options_engin_id + " = " + rulerCheck.getEngineer().getServerID();
-////            Log.e(TAG, "initData: 查看where语句：" + where);
-//            List<RulerOptions> optionsList = rulerCheck.getEngineer().getOptionsList();
-//            Log.e(TAG, "initData: 打印根据ID搜出来RulerOptions模板:" + optionsList.size() + ",内容：" + optionsList.toString());
-//            for (RulerOptions rulerOption : optionsList) {
-//                RulerCheckOptions rulerCheckOption = new RulerCheckOptions();
-//                rulerCheckOption.setCreateTime((int) System.currentTimeMillis());
-//                rulerCheckOption.setRulerCheck(rulerCheck);
-//                rulerCheckOption.setRulerOptions(rulerOption);
-//                rulerCheckOption.setUpload_flag(0);
-//                int id = OperateDbUtil.addMeasureOptionsDataToSqlite(getApplicationContext(), rulerCheckOption);
-//                rulerCheckOption.setId(id);
-//                checkOptionsList.add(rulerCheckOption);
-//                Log.e(TAG, "initData: 新增的RulerCheckOptions:" + rulerCheckOption.toString());
-//            }
-//            if (optionsList.size() == 0) {
-//                RulerCheckOptions rulerCheckOption = new RulerCheckOptions();
-//                rulerCheckOption.setCreateTime((int) System.currentTimeMillis());
-//                rulerCheckOption.setRulerCheck(rulerCheck);
-//
-//                checkOptionsList.add(rulerCheckOption);
-//            }
-//            startRequestServer();
-//
-//        } else {
-//            /**
-//             * 还有一种情况之前创建过，但是没有网络，所以未请求服务器，现在就要补交
-//             *  根据其upload_flag来进行判断，1-代表已经请求过，0-代表未请求过
-//             */
-////            for (int i=0;i<checkOptionsList.size();i++) {
-////
-////            }
-//        }
-        controller = new MeasureFragmentRecordControllerImpl(this,bottomNavigationBar,checkOptionsList);
-        controller.initBottomNav();
-//        HandleBleMeasureDataReceiverService.startHandleService(getApplicationContext(),checkOptionsList);
-//        controller.addBottomNav();
+//        controller = new MeasureFragmentRecordControllerImpl(this,bottomNavigationBar,checkOptionsList);
+//        controller.initBottomNav();
+        initFragmentData();
     }
 
 
@@ -130,8 +102,51 @@ public class MeasureRecordManagerAcitivty extends BaseFragmentActivity {
         intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_OPTIONS_DATA_KEY, (Serializable) checkOptionsList);
         intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_RULER_DATA_KEY, rulerCheck);
         startService(intent);
+    }
 
 
+    private void initFragmentData() {
+        fragments = new ArrayList<>();
+        tags = new ArrayList<>();
+        Log.e("sssd", "initFragmentData: 查看checkoptionsList:"+checkOptionsList.size()+",内容："+checkOptionsList.toString() );
+        List<RulerCheckOptions> optionsList = new ArrayList<>();
+        for (int i = 0; i< checkOptionsList.size(); i++) {
+
+            if (checkOptionsList.get(i).getRulerOptions().getType() == 1 || checkOptionsList.get(i).getRulerOptions().getType() == 2) {
+                optionsList.add(checkOptionsList.get(i));
+                if (optionsList.size() == 2) {
+                    MeasureRecordFragment fragment = new MeasureRecordFragment();
+                    Bundle bundle = new Bundle();
+//            此id对应iot_ruler_check_options表的id
+                    bundle.putInt(DataBaseParams.options_data_check_options_id, checkOptionsList.get(i).getId());
+//                    bundle.putInt("floor_height", chooseIndex);
+                    bundle.putSerializable("checkoptions", (Serializable) optionsList);
+                    fragment.setArguments(bundle);
+                    fragments.add(fragment);
+                    tags.add("垂直/水平度");
+                }
+                continue;
+            }
+            MeasureRecordFragment fragment = new MeasureRecordFragment();
+            RulerCheckOptions checkOptions = checkOptionsList.get(i);
+            List<RulerCheckOptions> otherOptionsList = new ArrayList<>();
+            Bundle bundle = new Bundle();
+//            此id对应iot_ruler_check_options表的id
+            otherOptionsList.add(checkOptions);
+            bundle.putInt(DataBaseParams.options_data_check_options_id, checkOptions.getId());
+            bundle.putSerializable("checkoptions", (Serializable) otherOptionsList);
+            fragment.setArguments(bundle);
+            fragments.add(fragment);
+            if (checkOptions.getRulerOptions()!=null)
+                tags.add(checkOptions.getRulerOptions().getOptionsName());
+        }
+        if (checkOptionsList.size() == 0) {
+            MeasureRecordFragment fragment = new MeasureRecordFragment();
+            fragments.add(fragment);
+        }
+        MeasureFragmentPagerAdapter fragmentPagerAdapter = new MeasureFragmentPagerAdapter(getSupportFragmentManager(), fragments, tags);
+        viewPager.setAdapter(fragmentPagerAdapter);
+        tabLayout.setupWithViewPager(viewPager);
     }
 
 
@@ -177,5 +192,11 @@ public class MeasureRecordManagerAcitivty extends BaseFragmentActivity {
         imgMenu = findViewById(R.id.img_menu_toolbar);
         imgOtherIcon = findViewById(R.id.img_icon_toolbar);
         llToolBar = findViewById(R.id.ll_toolbar);
+        imgMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
     }
 }

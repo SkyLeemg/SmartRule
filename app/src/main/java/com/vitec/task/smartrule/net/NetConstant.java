@@ -2,7 +2,8 @@ package com.vitec.task.smartrule.net;
 
 public class NetConstant {
 
-    public static final String baseUrl = "http://iot.vkforest.com";
+    public static final String baseUrl = "http://iot-test.vkforest.com";
+//    public static final String baseUrl = "http://iot.vkforest.com";
     /**
      * 获取手机验证码的接口
      */

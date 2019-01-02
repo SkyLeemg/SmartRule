@@ -54,4 +54,9 @@
         <item name="android:textSize">16sp</item>
     </style>
 
+    <style name="DropWord" >
+        <item name="android:textColor">@color/title_color</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
 </resources>
