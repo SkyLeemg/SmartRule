@@ -66,6 +66,8 @@ public class BottomSelectorDialog extends Dialog implements View.OnClickListener
         dialogWindow.setGravity( Gravity.BOTTOM);
         //获得窗体的属性
         WindowManager.LayoutParams lp = dialogWindow.getAttributes();
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
 //        lp.x = 0;
         lp.y = 20;
         //设置Dialog距离底部的距离

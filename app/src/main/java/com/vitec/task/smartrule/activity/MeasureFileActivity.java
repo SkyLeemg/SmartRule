@@ -4,9 +4,10 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -18,24 +19,26 @@ import com.vitec.task.smartrule.adapter.DisplayMeasureFileAdapter;
 import com.vitec.task.smartrule.adapter.MeasureProjectListAdapter;
 import com.vitec.task.smartrule.helper.ExportMeaureDataHelper;
 import com.vitec.task.smartrule.helper.WeChatHelper;
+import com.vitec.task.smartrule.interfaces.IClickable;
 import com.vitec.task.smartrule.utils.HeightUtils;
 import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.utils.ShareFileToQQ;
+import com.vitec.task.smartrule.view.ShareFileBottomDialog;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MeasureFileActivity extends BaseActivity implements View.OnClickListener{
+public class MeasureFileActivity extends BaseActivity implements View.OnClickListener,IClickable{
 
     private EditText tvKeyWord;
-    private Button btnSearch;
-    private Button btnShareFile;
-    private Button btnDelFile;
+//    private Button btnShareFile;
+    private TextView tvDelFile;
     private TextView tvhasChoose;
     private ListView lvDisplayFile;
     private RelativeLayout rlSelectable;
     private MKLoader mkLoader;
+    private TextView tvChoose;
 
     //顶部“选择”图标的标志状态，0-图标显示为选择，1-图标显示为取消
     private int chooseBtnStatus = 0;
@@ -62,18 +65,18 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
         if (!dir.exists() || !dir.isDirectory()) {
             dir.mkdir();
         }
-        File[] files = dir.listFiles();
-        if (files.length > 0) {
-            for (int i=0;i<files.length;i++) {
-                LogUtils.show("打印查看文件路径："+files[i].getPath());
-                LogUtils.show("打印查看当前文件："+i+",文件名："+files[i].getName());
+        File[] files =  dir.listFiles();
+        if (files != null && files.length > 0) {
+            for (int i = 0; i < files.length; i++) {
+                LogUtils.show("打印查看文件路径：" + files[i].getPath());
+                LogUtils.show("打印查看当前文件：" + i + ",文件名：" + files[i].getName());
                 if (files[i].getName().endsWith(".xls")) {
                     allFileList.add(files[i]);
                     displayFileList.add(files[i]);
                 }
             }
         }
-        measureFileAdapter = new DisplayMeasureFileAdapter(MeasureFileActivity.this, displayFileList);
+        measureFileAdapter = new DisplayMeasureFileAdapter(MeasureFileActivity.this, displayFileList,this);
         lvDisplayFile.setAdapter(measureFileAdapter);
         HeightUtils.setListViewHeighBaseOnChildren(lvDisplayFile);
         mkLoader.setVisibility(View.GONE);
@@ -94,28 +97,32 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
             }
         });
 
+        tvKeyWord.addTextChangedListener(textWatcher);
+
     }
 
     private void initView() {
         initWidget();
         setTitle("测量文件");
         setImgSource(R.mipmap.icon_back,R.mipmap.choose);
-        imgIcon.setVisibility(View.VISIBLE);
+//        imgIcon.setVisibility(View.VISIBLE);
         imgMenu.setVisibility(View.VISIBLE);
         imgMenu.setOnClickListener(this);
-        imgIcon.setOnClickListener(this);
+//        imgIcon.setOnClickListener(this);
         tvKeyWord = findViewById(R.id.et_keyword);
-        btnSearch = findViewById(R.id.btn_search);
+//        btnSearch = findViewById(R.id.btn_search);
         lvDisplayFile = findViewById(R.id.lv_display_file);
         rlSelectable = findViewById(R.id.rl_selectable);
-        btnShareFile = findViewById(R.id.btn_share_file);
-        btnDelFile = findViewById(R.id.btn_del_file);
+//        btnShareFile = findViewById(R.id.btn_share_file);
+        tvDelFile = findViewById(R.id.tv_del_file);
         tvhasChoose = findViewById(R.id.tv_has_choose);
         mkLoader = findViewById(R.id.mkloader);
+        tvChoose = findViewById(R.id.tv_choose);
 
         rlSelectable.setVisibility(View.GONE);
-        btnShareFile.setOnClickListener(this);
-        btnDelFile.setOnClickListener(this);
+//        btnShareFile.setOnClickListener(this);
+        tvDelFile.setOnClickListener(this);
+        tvChoose.setOnClickListener(this);
 
     }
 
@@ -131,16 +138,16 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
             /**
              * TODO 选择按钮
              */
-            case R.id.img_icon_toolbar:
+            case R.id.tv_choose:
                 if (chooseBtnStatus == 0) {
-                    imgIcon.setImageResource(R.mipmap.cancel);
+                    tvChoose.setText("取消");
                     chooseBtnStatus = 1;
                     rlSelectable.setVisibility(View.VISIBLE);
                     measureFileAdapter.setShowCheckBox(true);
                     measureFileAdapter.notifyDataSetChanged();
 
                 } else if (chooseBtnStatus == 1) {
-                    imgIcon.setImageResource(R.mipmap.choose);
+                    tvChoose.setText("选择");
                     chooseBtnStatus = 0;
                     rlSelectable.setVisibility(View.GONE);
                     chooseFileList.clear();
@@ -153,7 +160,7 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
             /**
              * TODO 删除按钮
              */
-            case R.id.btn_del_file:
+            case R.id.tv_del_file:
                 AlertDialog.Builder builder = new AlertDialog.Builder(MeasureFileActivity.this);
                 builder.setTitle("是否确定删除以下文件？");
                 StringBuffer delFileNames = new StringBuffer();
@@ -193,38 +200,94 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
                 builder.show();
                 break;
 
-            /**
-             * TODO 分享按钮
-             */
-            case R.id.btn_share_file:
-                ShareFileToQQ.sendFile(MeasureFileActivity.this, chooseFileList);
-                AlertDialog.Builder shareBuilder = new AlertDialog.Builder(MeasureFileActivity.this);
-                String[] items = {"分享给微信好友", "分享给QQ好友"};
-                shareBuilder.setTitle("请选择分享目标");
-                shareBuilder.setItems(items, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        switch (i) {
-                            /**
-                             * 分享给微信好友
-                             */
-                            case 0:
-                                WeChatHelper helper = new WeChatHelper(MeasureFileActivity.this);
-                                helper.regToWx();
-                                helper.shareFileToWx(chooseFileList);
-                                break;
-                            /**
-                             * 分享给QQ好友
-                             */
-                            case 1:
-                                ShareFileToQQ.sendFile(MeasureFileActivity.this,chooseFileList);
-//                                ShareFileToQQ.sendToQQ(MeasureFileActivity.this,chooseFileList.get(0).getPath());
-                                break;
-                        }
-                    }
-                });
-//                shareBuilder.show();
-                break;
+
         }
+    }
+
+    private TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            LogUtils.show("beforeTextChanged---之前：" + tvKeyWord.getText());
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            LogUtils.show("onTextChanged-----改变时：" + tvKeyWord.getText());
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            LogUtils.show("afterTextChanged-----改变后：" + tvKeyWord.getText());
+            displayFileList.clear();
+            if (!tvKeyWord.getText().toString().trim().equals("")) {
+                for (int i = 0; i < allFileList.size(); i++) {
+                    if (allFileList.get(i).getName().contains(tvKeyWord.getText().toString().trim())) {
+                        displayFileList.add(allFileList.get(i));
+                    }
+                }
+            } else {
+                displayFileList.addAll(allFileList);
+            }
+
+            measureFileAdapter.setFileList(displayFileList);
+            measureFileAdapter.notifyDataSetChanged();
+
+        }
+    };
+
+
+    /**
+     * 接受分享按钮响应
+     * @param position
+     */
+    @Override
+    public void onFirstClickable(int position) {
+        ShareFileBottomDialog shareFileBottomDialog = new ShareFileBottomDialog(MeasureFileActivity.this, R.style.BottomDialog, displayFileList.get(position));
+        shareFileBottomDialog.show();
+
+    }
+
+
+    /**
+     * 接收删除按钮响应
+     * @param position
+     */
+    @Override
+    public void onSencondClickable(final int position) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MeasureFileActivity.this);
+        builder.setTitle("是否删除以下文件?");
+        StringBuffer delFileNames = new StringBuffer();
+        delFileNames.append(displayFileList.get(position).getName());
+        builder.setMessage(delFileNames.toString());
+        builder.setPositiveButton("删除", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                boolean result = false;
+                result = displayFileList.get(position).delete();
+                if (result) {
+                    allFileList.remove(displayFileList.get(position));
+                    displayFileList.remove(position);
+                    measureFileAdapter.setFileList(displayFileList);
+                    measureFileAdapter.notifyDataSetChanged();
+                    AlertDialog.Builder tip = new AlertDialog.Builder(MeasureFileActivity.this);
+                    tip.setMessage("删除成功");
+                    tip.setNegativeButton("知道了", null);
+                    tip.show();
+                } else {
+                    AlertDialog.Builder tip = new AlertDialog.Builder(MeasureFileActivity.this);
+                    tip.setMessage("删除失败");
+                    tip.setNegativeButton("知道了", null);
+                    tip.show();
+                }
+            }
+        });
+
+        builder.setNegativeButton("取消", null);
+        builder.show();
+    }
+
+    @Override
+    public void onThirdClickable(int position) {
+
     }
 }

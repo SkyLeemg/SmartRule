@@ -1,4 +1,4 @@
-package com.vitec.task.smartrule.activity;
+package com.vitec.task.smartrule.activity.unuse;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +24,11 @@ import android.widget.Toast;
 
 import com.tuyenmonkey.mkloader.MKLoader;
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.activity.BaseActivity;
+import com.vitec.task.smartrule.activity.ChangePasswordActivity;
+import com.vitec.task.smartrule.activity.CheckUpdateActivity;
+import com.vitec.task.smartrule.activity.ContactOurActivity;
+import com.vitec.task.smartrule.activity.LoginActivity;
 import com.vitec.task.smartrule.bean.User;
 import com.vitec.task.smartrule.bean.WxResultMessage;
 import com.vitec.task.smartrule.db.DataBaseParams;
@@ -33,7 +37,6 @@ import com.vitec.task.smartrule.db.UserDbHelper;
 import com.vitec.task.smartrule.helper.WeChatHelper;
 import com.vitec.task.smartrule.net.NetConstant;
 import com.vitec.task.smartrule.utils.LogUtils;
-import com.vitec.task.smartrule.utils.LoginSuccess;
 import com.vitec.task.smartrule.utils.OkHttpUtils;
 import com.vitec.task.smartrule.utils.ScreenSizeUtil;
 

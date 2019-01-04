@@ -6,10 +6,13 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +21,7 @@ import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.User;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.UserDbHelper;
+import com.vitec.task.smartrule.helper.WeChatHelper;
 import com.vitec.task.smartrule.net.NetConstant;
 import com.vitec.task.smartrule.utils.Base64Utils;
 import com.vitec.task.smartrule.utils.LoginSuccess;
@@ -40,12 +44,16 @@ public class SmsLoginActivity extends BaseActivity implements View.OnClickListen
     private static final String TAG = "SmsLoginActivity";
     private Button btnGetMobileCode;
     private Button btnLogin;
-    private SuperEditText etMobileCode;
-    private SuperEditText etMobile;
+    private EditText etMobileCode;
+    private EditText etMobile;
     private TextView tvPwdLogin;
+    private TextView tvForgetPsw;
     private MKLoader mkLoader;
     private int countDown = 60;
     private UserDbHelper userDbHelper;
+    private TextView tvRegister;
+    private ImageView imgWechat;
+    private boolean canGetCode = true;//当前状态是否可以获取验证码
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -62,15 +70,110 @@ public class SmsLoginActivity extends BaseActivity implements View.OnClickListen
         etMobileCode = findViewById(R.id.et_login_mobile_code);
         tvPwdLogin = findViewById(R.id.tv_pwd_login);
         mkLoader = findViewById(R.id.mkloader);
+        tvRegister = findViewById(R.id.tv_register);
+        imgWechat = findViewById(R.id.img_wechat);
+        tvForgetPsw = findViewById(R.id.cb_remenber_pw);
 
         btnLogin.setOnClickListener(this);
         btnGetMobileCode.setOnClickListener(this);
         tvPwdLogin.setOnClickListener(this);
+        imgWechat.setOnClickListener(this);
+        tvRegister.setOnClickListener(this);
+        tvForgetPsw.setOnClickListener(this);
+
+        btnLogin.setClickable(false);
+        btnGetMobileCode.setClickable(false);
+        etMobile.addTextChangedListener(getCodeTextWatcher);
+        etMobileCode.addTextChangedListener(submitTextWatcher);
     }
+
+    /**
+     * 监听手机号码输入状态
+     */
+    private TextWatcher getCodeTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            if (canGetCode && etMobile.getText().length() == 11) {
+                btnGetMobileCode.setClickable(true);
+                btnGetMobileCode.setBackgroundResource(R.drawable.btn_nomal);
+            } else {
+                btnGetMobileCode.setClickable(false);
+                btnGetMobileCode.setBackgroundResource(R.drawable.shape_btn_gray_unclickable);
+            }
+
+            if (etMobileCode.getText().length() >= 4 && etMobile.getText().length() == 11) {
+                btnLogin.setClickable(true);
+                btnLogin.setBackgroundResource(R.drawable.selector_login_btn_click);
+            } else {
+                btnLogin.setClickable(false);
+                btnLogin.setBackgroundResource(R.drawable.shape_btn_blue_unclick);
+            }
+        }
+    };
+
+    /**
+     * 监听手机验证码输入状态。
+     */
+    private TextWatcher submitTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            if (etMobileCode.getText().length() >= 4 && etMobile.getText().length() == 11) {
+                btnLogin.setClickable(true);
+                btnLogin.setBackgroundResource(R.drawable.selector_login_btn_click);
+            } else {
+                btnLogin.setClickable(false);
+                btnLogin.setBackgroundResource(R.drawable.shape_btn_blue_unclick);
+            }
+        }
+    };
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            /**
+             * 微信登录
+             */
+            case R.id.img_wechat:
+                mkLoader.setVisibility(View.VISIBLE);
+                WeChatHelper  weChatHelper = new WeChatHelper(this);
+                weChatHelper.regToWx();
+                weChatHelper.sendLoginRequest();
+                break;
+
+            /**
+             * 注册
+             */
+            case R.id.tv_register:
+                Intent intent = new Intent(this, RegisterActivity.class);
+                startActivity(intent);
+//                this.finish();
+                break;
+
+            case R.id.cb_remenber_pw:
+                Intent forgetIntent = new Intent(this, ForgetPswActivity.class);
+                startActivity(forgetIntent);
+                break;
+
             /**
              * 获取验证码
              */
@@ -109,8 +212,9 @@ public class SmsLoginActivity extends BaseActivity implements View.OnClickListen
                                                 @Override
                                                 public void run() {
                                                     mkLoader.setVisibility(View.GONE);
+                                                    canGetCode = false;
                                                     btnGetMobileCode.setClickable(false);
-                                                    btnGetMobileCode.setBackgroundColor(Color.GRAY);
+                                                    btnGetMobileCode.setBackgroundResource(R.drawable.shape_btn_gray_unclickable);
                                                     final Handler handler = new Handler();
                                                     handler.postDelayed(new Runnable() {
                                                         @Override
@@ -122,6 +226,7 @@ public class SmsLoginActivity extends BaseActivity implements View.OnClickListen
                                                                 btnGetMobileCode.setText("重新获取");
                                                                 btnGetMobileCode.setClickable(true);
                                                                 btnGetMobileCode.setBackgroundResource(R.drawable.btn_nomal);
+                                                                canGetCode = true;
                                                             }
                                                             countDown--;
                                                         }

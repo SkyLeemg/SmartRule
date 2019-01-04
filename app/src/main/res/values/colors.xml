@@ -62,4 +62,13 @@
     <color name="color_green_bg">#37B877</color>
     <color name="color_yellow_word">#eaa000</color>
 
+    <!--登录界面-->
+    <color name="color_blue_btn">#89B7FF</color>
+    <color name="color_blue_btn2">#5E9CFF</color>
+
+    <!--个人中心-->
+    <color name="color_purple_bg">#6f7b98</color>
+    <color name="color_purple_bg_click">#798bb2</color>
+
+
 </resources>

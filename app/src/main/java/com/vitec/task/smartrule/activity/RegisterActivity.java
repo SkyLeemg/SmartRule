@@ -6,10 +6,13 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.tuyenmonkey.mkloader.MKLoader;
@@ -32,12 +35,12 @@ import scut.carson_ho.diy_view.SuperEditText;
 public class RegisterActivity extends BaseActivity implements OnClickListener{
 
     private static final String TAG = "RegisterActivity";
-    private SuperEditText etUserName;
-    private SuperEditText etPhone;
-    private SuperEditText etMobileCode;
-    private SuperEditText etPwd;
-    private SuperEditText etRepeatPwd;
-    private SuperEditText etName;
+    private EditText etUserName;
+    private EditText etPhone;
+    private EditText etMobileCode;
+    private EditText etPwd;
+    private EditText etRepeatPwd;
+    private EditText etName;
     private Button btnGetMobileCode;
     private Button btnRegister;
     private MKLoader mkLoader;
@@ -46,6 +49,8 @@ public class RegisterActivity extends BaseActivity implements OnClickListener{
     private String mobileCode;//从服务器获取的验证码
     private ResultInfo resultInfo;//微信登录界面传来的参数
     private UserDbHelper userDbHelper;
+
+    private boolean canGetCode = true;//当前状态是否可以获取验证码
 
 
     @Override
@@ -65,6 +70,10 @@ public class RegisterActivity extends BaseActivity implements OnClickListener{
     }
 
     private void initView() {
+        initWidget();
+        setTvTitle("注册");
+        imgMenu.setOnClickListener(this);
+
         etUserName = findViewById(R.id.et_rsg_username);
         etPhone = findViewById(R.id.et_rsg_phone);
         etMobileCode = findViewById(R.id.et_rsg_mibile_code);
@@ -77,11 +86,40 @@ public class RegisterActivity extends BaseActivity implements OnClickListener{
 
         btnRegister.setOnClickListener(this);
         btnGetMobileCode.setOnClickListener(this);
+        btnGetMobileCode.setClickable(false);
+        etPhone.addTextChangedListener(inputTextWatcher);
     }
+
+    private TextWatcher inputTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            if (canGetCode && etPhone.getText().toString().length() == 11) {
+                btnGetMobileCode.setClickable(true);
+                btnGetMobileCode.setBackgroundResource(R.drawable.btn_nomal);
+            } else {
+                btnGetMobileCode.setClickable(false);
+                btnGetMobileCode.setBackgroundResource(R.drawable.shape_btn_gray_unclickable);
+            }
+        }
+    };
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+
+            case R.id.img_menu_toolbar:
+                onBackPressed();
+                break;
             case R.id.btn_rsg_get_mibile_code://获取手机验证码
                 final  String phone = etPhone.getText().toString().trim();
                 mkLoader.setVisibility(View.VISIBLE);
@@ -118,7 +156,8 @@ public class RegisterActivity extends BaseActivity implements OnClickListener{
                                                 public void run() {
                                                     mkLoader.setVisibility(View.GONE);
                                                     btnGetMobileCode.setClickable(false);
-                                                    btnGetMobileCode.setBackgroundColor(Color.GRAY);
+                                                    btnGetMobileCode.setBackgroundResource(R.drawable.shape_btn_gray_unclickable);
+                                                    canGetCode = false;
                                                     final Handler handler = new Handler();
                                                     handler.postDelayed(new Runnable() {
                                                         @Override
@@ -130,6 +169,7 @@ public class RegisterActivity extends BaseActivity implements OnClickListener{
                                                                 btnGetMobileCode.setText("重新获取");
                                                                 btnGetMobileCode.setClickable(true);
                                                                 btnGetMobileCode.setBackgroundResource(R.drawable.btn_nomal);
+                                                                canGetCode = true;
                                                             }
                                                             countDown--;
                                                         }

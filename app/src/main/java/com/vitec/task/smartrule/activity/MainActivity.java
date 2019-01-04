@@ -1,5 +1,6 @@
 package com.vitec.task.smartrule.activity;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -18,12 +19,14 @@ import android.widget.TextView;
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.fragment.HomePageFragment;
 import com.vitec.task.smartrule.fragment.UserCenterFragment;
+import com.vitec.task.smartrule.service.intentservice.GetMudelIntentService;
+import com.vitec.task.smartrule.service.intentservice.ReplenishDataToServerIntentService;
 import com.vitec.task.smartrule.utils.LogUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends FragmentActivity implements View.OnClickListener{
+public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     private LinearLayout llHome;
     private LinearLayout llMe;
@@ -39,11 +42,15 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
+        requestLocationPermissions();
         initView();
         initData();
     }
 
     private void initData() {
+        Intent intent = new Intent(this, GetMudelIntentService.class);
+        startService(intent);
+
         fragmentList = new ArrayList<>();
         fragmentList.add(new HomePageFragment());
         fragmentList.add(new UserCenterFragment());
@@ -57,6 +64,13 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         transaction.hide(fragmentList.get(1));
         transaction.show(fragmentList.get(0));
         transaction.commit();
+
+
+        /**
+         * 补上传服务启动
+         */
+        Intent replenishIntent = new Intent(getApplicationContext(), ReplenishDataToServerIntentService.class);
+        startService(replenishIntent);
 
     }
 

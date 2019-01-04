@@ -57,6 +57,11 @@ dependencies {
     implementation 'no.nordicsemi.android:dfu:1.6.1'
 //    打开拍照/相册
     implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.2.3'
+//    左滑菜单
+    implementation 'com.github.mcxtzhang:SwipeDelMenuLayout:V1.3.0'
+//    圆形头像
+    implementation 'de.hdodenhof:circleimageview:2.2.0'
+
 
     //加载大图的框架
 //    implementation 'com.shizhefei:LargeImageView:1.1.0'

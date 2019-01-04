@@ -54,7 +54,7 @@ import java.util.Set;
 /**
  * 测量记录
  */
-public class MeasureRecordActivity extends Activity implements View.OnClickListener {
+public class MeasureRecordActivity extends BaseActivity implements View.OnClickListener {
 
     //    下拉框
     private Spinner spinnerProjectName;
@@ -112,6 +112,7 @@ public class MeasureRecordActivity extends Activity implements View.OnClickListe
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_measure_record);
+        requestLocationPermissions();
         EventBus.getDefault().register(this);
         initView();
     }
@@ -554,6 +555,7 @@ public class MeasureRecordActivity extends Activity implements View.OnClickListe
              * TODO 导出记录表按钮点击事件
              */
             case R.id.btn_export_record:
+
                 if (checkedRulerCheckList.size() > 0) {
                     dataResponeCount = 0;
                     final AlertDialog.Builder builder = new AlertDialog.Builder(MeasureRecordActivity.this);

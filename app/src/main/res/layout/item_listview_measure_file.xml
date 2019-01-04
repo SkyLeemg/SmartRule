@@ -1,70 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.mcxtzhang.swipemenulib.SwipeMenuLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipe_menu_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
     android:gravity="center_vertical"
     >
-
-    <CheckBox
-        android:id="@+id/cb_item"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_marginLeft="10dp"
-        />
-
-    <ImageView
-        android:id="@+id/img_excel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@mipmap/excel_3x"
-        android:layout_toRightOf="@+id/cb_item"
-        android:layout_marginLeft="12dp"
-        android:layout_centerVertical="true"
-        />
-
-    <LinearLayout
-        android:id="@+id/ll_content"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_toRightOf="@+id/img_excel"
-        android:layout_marginLeft="16dp"
-        android:layout_centerVertical="true"
-        >
-        <TextView
-            android:id="@+id/tv_item_file_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="20189393993华人你数据.xls"
-
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:textColor="@color/title_color"
-            android:layout_toRightOf="@+id/img_excel"
-            />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="2018-02-19 22:02"
-            android:layout_toRightOf="@+id/img_excel"
-            android:textColor="@color/color_unselect_bar"
-            android:textSize="12sp"
-            />
-    </LinearLayout>
-    <View
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:background="@color/color_gv_border"
-        android:layout_below="@+id/ll_content"
-        android:layout_marginTop="18dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        />
+        android:layout_height="wrap_content">
+
+        <CheckBox
+            android:id="@+id/cb_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            />
+
+        <ImageView
+            android:id="@+id/img_excel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/excel_3x"
+            android:layout_toRightOf="@+id/cb_item"
+            android:layout_marginLeft="12dp"
+            android:layout_centerVertical="true"
+            />
+
+        <LinearLayout
+            android:id="@+id/ll_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_toRightOf="@+id/img_excel"
+            android:layout_marginLeft="16dp"
+            android:layout_centerVertical="true"
+            >
+            <TextView
+                android:id="@+id/tv_item_file_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="20189393993华人你数据.xls"
+
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/title_color"
+                android:layout_toRightOf="@+id/img_excel"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2018-02-19 22:02"
+                android:layout_toRightOf="@+id/img_excel"
+                android:textColor="@color/color_unselect_bar"
+                android:textSize="12sp"
+                />
+        </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/color_gv_border"
+            android:layout_below="@+id/ll_content"
+            android:layout_marginTop="22dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            />
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/btn_share"
+        android:layout_width="60dp"
+        android:layout_height="match_parent"
+        android:background="@color/color_word"
+        android:text="分享"
+        android:textSize="14sp"
+        android:textColor="@android:color/white"/>
+
+    <Button
+        android:id="@+id/btn_delete"
+        android:layout_width="60dp"
+        android:layout_height="match_parent"
+        android:background="@color/color_pink_wait"
+        android:text="删除"
+        android:textSize="14sp"
+        android:textColor="@android:color/white"/>
 
 
 
 
 
-</RelativeLayout>
+</com.mcxtzhang.swipemenulib.SwipeMenuLayout>

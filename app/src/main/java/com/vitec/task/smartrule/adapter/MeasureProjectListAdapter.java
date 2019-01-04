@@ -1,8 +1,6 @@
 package com.vitec.task.smartrule.adapter;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,15 +13,11 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.vitec.task.smartrule.R;
-import com.vitec.task.smartrule.activity.MeasureManagerAcitivty;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.interfaces.IClickable;
-import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class MeasureProjectListAdapter extends BaseAdapter {
@@ -160,7 +154,7 @@ public class MeasureProjectListAdapter extends BaseAdapter {
             @Override
             public void onClick(View view) {
                 if (iClickable != null) {
-                    iClickable.onBeginClickable(i);
+                    iClickable.onFirstClickable(i);
                     clickIndex = -1;
                 }
 
@@ -169,14 +163,14 @@ public class MeasureProjectListAdapter extends BaseAdapter {
         holder.llEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                iClickable.onEditClickable(i);
+                iClickable.onSencondClickable(i);
             }
         });
 
         holder.llDel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                iClickable.onDeleteClickable(i);
+                iClickable.onThirdClickable(i);
             }
         });
 

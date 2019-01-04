@@ -9,17 +9,17 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!--<TextView-->
-                <!--android:id="@+id/tv_add_mpic"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_gravity="center_horizontal"-->
-                <!--android:text="添加图纸"-->
-                <!--android:textColor="@color/color_word"-->
-                <!--android:textStyle="bold"-->
-                <!--android:textSize="17sp"-->
-                <!--android:layout_marginTop="11dp"-->
-                <!--/>-->
+            <TextView
+                android:id="@+id/tv_add_mpic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="添加图纸"
+                android:textColor="@color/color_word"
+                android:textStyle="bold"
+                android:textSize="17sp"
+                android:layout_marginTop="11dp"
+                />
             <!--**************************图纸编辑部分*****************************-->
             <RelativeLayout
                 android:id="@+id/rl_edit_pic"

@@ -119,6 +119,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
     private List<RulerCheckOptionsData> uploadOptionsDataList;//待发送给服务器的数据集合
     private RulerCheckOptions levelCheckOption;//一个水平度测量的管控要点
     private RulerCheckOptions verticalCheckOption;//一个测量的管控要点
+    private RulerCheckOptions useCheckOption;//一个测量的管控要点
 
     private List<OptionMeasure> optionMeasures;//该管控要点可选的层高，还要测量数据标准都在这里
     private OptionMeasure optionMeasure;//上面是该管控要点所有的层高，这个是用户当前选择的层高
@@ -283,6 +284,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
          */
         checkOptionsDataList = new ArrayList<>();
         uploadOptionsDataList = new ArrayList<>();
+        useCheckOption = new RulerCheckOptions();
 
         /**
          * 接收在创建Fragment时发来的数据
@@ -299,6 +301,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                 //1是垂直度
                 if (accessOptions.get(k).getRulerOptions().getType() == 1) {
                     verticalCheckOption = accessOptions.get(k);
+                    useCheckOption = accessOptions.get(k);
                     verticalMeasureView = new MeasureDataView(getActivity());
                     verticalMeasureView.initData(accessOptions.get(k));
                     llDisplayData.addView(verticalMeasureView);
@@ -308,12 +311,13 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                     levelMeausreView = new MeasureDataView(getActivity());
                     levelMeausreView.initData(accessOptions.get(k));
                     llDisplayData.addView(levelMeausreView);
+                    useCheckOption = accessOptions.get(k);
                 }
             }
         }
         /** 如果数据库中已经存有一个图纸，则显示到界面中 **/
-        if (verticalCheckOption.getImgPath() != null && !verticalCheckOption.getImgPath().equals("")) {
-            File imgFile = new File(verticalCheckOption.getImgPath());
+        if (useCheckOption.getImgPath() != null && !useCheckOption.getImgPath().equals("")) {
+            File imgFile = new File(useCheckOption.getImgPath());
             if (imgFile.exists()) {
                 //        将编辑图纸的页面添加到rlEditPic中
                 if (commonEditPicView == null) {
@@ -328,7 +332,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        commonEditPicView.setmImageView(getActivity(),verticalCheckOption.getImgPath());
+                        commonEditPicView.setmImageView(getActivity(),useCheckOption.getImgPath());
                     }
                 }, 100);
             }
@@ -336,10 +340,10 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
 
 //        初始化optionMeasures
         optionMeasures = new ArrayList<>();
-        final String measures = levelCheckOption.getRulerOptions().getMeasure();
+        final String measures = useCheckOption.getRulerOptions().getMeasure();
         optionMeasures = OptionsMeasureUtils.getOptionMeasure(measures);
-        check_option_id = levelCheckOption.getId();
-        standard = levelCheckOption.getRulerOptions().getStandard();
+        check_option_id = useCheckOption.getId();
+        standard = useCheckOption.getRulerOptions().getStandard();
 
         service_init();
     }
@@ -395,20 +399,20 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
         LogUtils.show("netBussCallBack---查看创建好记录表后返回的标志:"+flag);
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(getActivity());
 //        先更新RulerCheck的server_id
-        String where = " where id = " + levelCheckOption.getRulerCheck().getId();
+        String where = " where id = " + useCheckOption.getRulerCheck().getId();
         List<RulerCheck> rulerCheckList = bleDataDbHelper.queryRulerCheckTableDataFromSqlite(where);
         if (rulerCheckList.size() > 0) {
             LogUtils.show("netBussCallBack====查看数据库查询出来的Rulercheck：" + rulerCheckList.get(0));
-            RulerCheck rulerCheck = levelCheckOption.getRulerCheck();
+            RulerCheck rulerCheck = useCheckOption.getRulerCheck();
             rulerCheck.setServerId(rulerCheckList.get(0).getServerId());
-            levelCheckOption.setRulerCheck(rulerCheck);
+            useCheckOption.setRulerCheck(rulerCheck);
         }
         bleDataDbHelper.close();
         //        再更新RulerCheckOption的Server_id
-        String optionWhere = " where id = " + levelCheckOption.getId();
-        List<RulerCheckOptions> rulerCheckOptionsList = OperateDbUtil.queryCheckOptionFromSqlite(getActivity(), levelCheckOption.getRulerCheck(), optionWhere);
+        String optionWhere = " where id = " + useCheckOption.getId();
+        List<RulerCheckOptions> rulerCheckOptionsList = OperateDbUtil.queryCheckOptionFromSqlite(getActivity(), useCheckOption.getRulerCheck(), optionWhere);
         if (rulerCheckOptionsList.size() > 0) {
-            levelCheckOption.setServerId(rulerCheckOptionsList.get(0).getServerId());
+            useCheckOption.setServerId(rulerCheckOptionsList.get(0).getServerId());
             LogUtils.show("netBussCallBack====查看数据库查询出来的RrulerCheckOptionsList：" + rulerCheckOptionsList.get(0));
         }
     }
@@ -418,22 +422,22 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
     @Override
     public void onStop() {
         super.onStop();
-        LogUtils.show("MeasureFragment--"+ levelCheckOption.getRulerOptions().getOptionsName()+"的stop方法调用了" );
+        LogUtils.show("MeasureFragment--"+ useCheckOption.getRulerOptions().getOptionsName()+"的stop方法调用了" );
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-       LogUtils.show("MeasureFragment--"+ levelCheckOption.getRulerOptions().getOptionsName()+"的onDestroyView调用了");
+       LogUtils.show("MeasureFragment--"+ useCheckOption.getRulerOptions().getOptionsName()+"的onDestroyView调用了");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        LogUtils.show("MeasureFragment--"+ levelCheckOption.getRulerOptions().getOptionsName()+"的onDestroy调用了");
+        LogUtils.show("MeasureFragment--"+ useCheckOption.getRulerOptions().getOptionsName()+"的onDestroy调用了");
 //        退出前将数据更新到数据库
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(getActivity());
-        bleDataDbHelper.updateMeasureOptonsToSqlite(levelCheckOption);
+        bleDataDbHelper.updateMeasureOptonsToSqlite(useCheckOption);
         getActivity().unbindService(mServiceConnection);
         mTextToSpeechHelper.stopSpeech();
         EventBus.getDefault().unregister(this);
@@ -501,7 +505,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                         try {
                             String text = new String(txValue, "UTF-8");
                             String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                            LogUtils.show("MeasureFragment--"+ levelCheckOption.getRulerOptions().getOptionsName()+" 收到蓝牙数据："+text);
+                            LogUtils.show("MeasureFragment--"+ useCheckOption.getRulerOptions().getOptionsName()+" 收到蓝牙数据："+text);
                             LogUtils.show("Fragment-----收到垂直度数据,进入数据处理之前："+text);
                             if (uuid.equalsIgnoreCase(ConnectDeviceService.VERTICALITY_TX_CHAR_UUID.toString()) && verticalMeasureView != null) {
                                 LogUtils.show("Fragment----收到垂直度数据，进入判断后。");
@@ -575,7 +579,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
 //                        mkLoader.setVisibility(View.VISIBLE);
                         BleDataDbHelper dataDbHelper = new BleDataDbHelper(getActivity());
 
-                        RulerCheck rulerCheck = levelCheckOption.getRulerCheck();
+                        RulerCheck rulerCheck = useCheckOption.getRulerCheck();
                             /**
                              * 更新到本地
                              */
@@ -584,7 +588,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                             String where = " id = ?";
                             String[] whereValues = new String[]{String.valueOf(rulerCheck.getId())};
                             int result = dataDbHelper.updateDataToSqlite(DataBaseParams.measure_table_name, values, where, whereValues);
-                            LogUtils.show("完成测量，更新数据是否成功："+levelCheckOption.getRulerCheck().getProjectName()+",更新状态："+result);
+                            LogUtils.show("完成测量，更新数据是否成功："+useCheckOption.getRulerCheck().getProjectName()+",更新状态："+result);
 //                            更新完成后，更新集合中的状态，接下来向服务器发起更新的时候会用到状态标志
                             if (result > 0) {
                                 Toast.makeText(getActivity(),"测量已结束",Toast.LENGTH_SHORT).show();

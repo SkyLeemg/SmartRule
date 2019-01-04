@@ -75,9 +75,9 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
 
     private static final String TAG = "MeasureFragment";
     private View view;
-    private GridView gvMeasureData;
-    private TextView tvProjectName;//项目类型
-    private TextView tvMeasureItem;//管控要点
+//    private GridView gvMeasureData;
+//    private TextView tvProjectName;//项目类型
+//    private TextView tvMeasureItem;//管控要点
 //    private TextView tvQualifiedStandard;
 //    private EditText etStandardRate;
 //    private EditText etStandartNum;
@@ -133,7 +133,7 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
 
     private void initView() {
 //        gvMeasureData = view.findViewById(R.id.gv_measure_data);
-        tvProjectName = view.findViewById(R.id.tv_project_type);
+//        tvProjectName = view.findViewById(R.id.tv_project_type);
 //        tvMeasureItem = view.findViewById(R.id.tv_measure_item);
         mTextToSpeechHelper = new TextToSpeechHelper(getActivity(),"");
 //        tvQualifiedStandard = view.findViewById(R.id.tv_qualified_flag);
@@ -149,7 +149,7 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
         rlEditPic = view.findViewById(R.id.rl_edit_pic);
         llDisplayData = view.findViewById(R.id.ll_display_mdata);
 
-        tvAddmPic.setOnClickListener(this);
+//        tvAddmPic.setOnClickListener(this);
 
 
 //        layoutEditPic.setVisibility(View.VISIBLE);
@@ -159,7 +159,7 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
     private void service_init() {
         Intent bindIntent = new Intent(getActivity(), ConnectDeviceService.class);
         getActivity().bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-        registerBleRecevier();
+//        registerBleRecevier();
         ServiceUtils.startConnectDeviceSerivce(getActivity());
     }
     private static IntentFilter makeGattUpdateIntentFilter() {
@@ -178,9 +178,9 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
         LogUtils.show("MeasureFragment--"+checkOptions.getRulerOptions().getOptionsName()+
                 "调用了onHiddenChanged方法："+hidden);
         if (hidden) {
-            unregisterBleRecevier();
+//            unregisterBleRecevier();
         } else {
-            registerBleRecevier();
+//            registerBleRecevier();
             checkOptionsDataList = OperateDbUtil.queryMeasureDataFromSqlite(getActivity(), checkOptions);
             if (measureDataAdapter != null) {
                 measureDataAdapter.notifyDataSetChanged();
@@ -189,13 +189,7 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
     }
 
 
-    public void registerBleRecevier() {
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(BleDeviceReceiver,makeGattUpdateIntentFilter());
-    }
 
-    public void unregisterBleRecevier() {
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(BleDeviceReceiver);
-    }
 
     private ServiceConnection mServiceConnection=new ServiceConnection() {
         @Override
@@ -229,13 +223,13 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
     }
 
     public void setTvAddmPicVisibale(int flag) {
-        if (flag == 1) {
-            tvAddmPic.setVisibility(View.VISIBLE);
-            commonEditPicView.setVisibility(View.GONE);
-        } else if (flag == 0) {
-            tvAddmPic.setVisibility(View.GONE);
-            commonEditPicView.setVisibility(View.VISIBLE);
-        }
+//        if (flag == 1) {
+//            tvAddmPic.setVisibility(View.VISIBLE);
+//            commonEditPicView.setVisibility(View.GONE);
+//        } else if (flag == 0) {
+//            tvAddmPic.setVisibility(View.GONE);
+//            commonEditPicView.setVisibility(View.VISIBLE);
+//        }
     }
 
     /**
@@ -266,7 +260,7 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
                                 commonEditPicView.setVisibility(View.VISIBLE);
                             }
 //                            commonEditPicView.setFragment(MeasureFragmentOthers.this);
-                            tvAddmPic.setVisibility(View.GONE);
+//                            tvAddmPic.setVisibility(View.GONE);
                             Handler handler = new Handler();
                             handler.postDelayed(new Runnable() {
                                 @Override
@@ -300,17 +294,17 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
         checkOptionsData.setCreateTime((int) System.currentTimeMillis());
         checkOptionsData.setRulerCheckOptions(checkOptions);
 //        初始化optionMeasures
-        optionMeasures = new ArrayList<>();
-        final String measures = checkOptions.getRulerOptions().getMeasure();
-        optionMeasures = OptionsMeasureUtils.getOptionMeasure(measures);
-        LogUtils.show("查看"+checkOptions.getRulerOptions().getOptionsName()+"模块的optionMeasures："+optionMeasures.toString());
-
-        Log.e(TAG, "initData: 查看MeasureFragment收到的checkoptions:"+ checkOptions);
-        tvProjectName.setText(checkOptions.getRulerCheck().getProjectName()+":");
-        tvMeasureItem.setText("管控要点："+ checkOptions.getRulerOptions().getOptionsName());
+//        optionMeasures = new ArrayList<>();
+//        final String measures = checkOptions.getRulerOptions().getMeasure();
+//        optionMeasures = OptionsMeasureUtils.getOptionMeasure(measures);
+//        LogUtils.show("查看"+checkOptions.getRulerOptions().getOptionsName()+"模块的optionMeasures："+optionMeasures.toString());
+//
+//        Log.e(TAG, "initData: 查看MeasureFragment收到的checkoptions:"+ checkOptions);
+//        tvProjectName.setText(checkOptions.getRulerCheck().getProjectName()+":");
+//        tvMeasureItem.setText("管控要点："+ checkOptions.getRulerOptions().getOptionsName());
 //        此id对应iot_ruler_check_options表的id
-        check_option_id = checkOptions.getId();
-        standard = checkOptions.getRulerOptions().getStandard();
+//        check_option_id = checkOptions.getId();
+//        standard = checkOptions.getRulerOptions().getStandard();
 //        tvQualifiedStandard.setText(standard);
 
 
@@ -344,59 +338,10 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
         /**
          * 初始化接受数据的gridview
          */
-        measureDataAdapter = new DisplayMeasureDataAdapter(getActivity(),checkOptionsDataList);
-        gvMeasureData.setAdapter(measureDataAdapter);
-        HeightUtils.setGridViewHeighBaseOnChildren(gvMeasureData,6);
+//        measureDataAdapter = new DisplayMeasureDataAdapter(getActivity(),checkOptionsDataList);
+////        gvMeasureData.setAdapter(measureDataAdapter);
+//        HeightUtils.setGridViewHeighBaseOnChildren(gvMeasureData,6);
 
-        /********************层高选择框部分开始**************************/
-
-//        floodHeights = new ArrayList<>();
-//        for (OptionMeasure measure : optionMeasures) {
-//            floodHeights.add(measure.getData());
-//        }
-////        初始化默认选择的层高及运算标准
-//        optionMeasure = new OptionMeasure();
-//        if (optionMeasures.size() > 0) {
-//            optionMeasure = optionMeasures.get(0);
-//        }else {
-//            optionMeasure.setData("≤6");
-//            optionMeasure.setStandard(8);
-//            optionMeasure.setOperate(1);
-//            optionMeasure.setId(1);
-//        }
-//        LogUtils.show("查看"+checkOptions.getRulerOptions().getOptionsName()+"模块的floodHeights："+floodHeights.toString());
-//        if (floodHeights.size() > 1) {
-//            llFloorHeight.setVisibility(View.VISIBLE);
-//            spinnerAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_dropdown_item, floodHeights);
-////            spinnerFloorHeight.setAdapter(spinnerAdapter);
-//        } else {
-//            llFloorHeight.setVisibility(View.GONE);
-//        }
-//
-//        spinnerFloorHeight.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//            @Override
-//            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-//                Log.e(TAG, "onItemSelected: 查看当前选择的：" + i + ",内容：" + floodHeights.get(i) + ",查看当前选择的标准：" + optionMeasures.get(i));
-//                floodHeight = floodHeights.get(i);
-//                if (floodHeights.get(i).equals(optionMeasures.get(i).getData())) {
-//                    optionMeasure = optionMeasures.get(i);
-//                } else {
-//                    for (OptionMeasure measure : optionMeasures) {
-//                        if (floodHeights.get(i).equals(measure.getData())) {
-//                            optionMeasure = measure;
-//                        }
-//                    }
-//                }
-//                EventBus.getDefault().post(new HeightFloorMsgEvent(checkOptions.getRulerOptions().getType(),optionMeasure));
-//                completeResult();
-//                Log.e(TAG, "onItemSelected: 查看最终参看值："+standartNum );
-//            }
-//
-//            @Override
-//            public void onNothingSelected(AdapterView<?> adapterView) {
-//
-//            }
-//        });
         /********************层高选择框部分结束**************************/
 
     }
@@ -530,96 +475,6 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
         EventBus.getDefault().unregister(this);
     }
 
-    private final BroadcastReceiver BleDeviceReceiver =new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            final Intent mIntent = intent;
-            //*********************//
-            /**
-             * 蓝牙连接成功
-             */
-            if (action.equals(BleParam.ACTION_GATT_CONNECTED)) {
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                        Log.e(TAG, "广播收到了UART_CONNECT_MSG");
-                        mTextToSpeechHelper.speakChinese("蓝牙连接成功");
-                        mState = UART_PROFILE_CONNECTED;
-                    }
-                });
-            }
-
-            //*********************//
-            /**
-             * 蓝牙连接断开
-             */
-            if (action.equals(BleParam.ACTION_GATT_DISCONNECTED)) {
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                        Log.e(TAG, "广播收到了UART_DISCONNECT_MSG");
-                        mState = UART_PROFILE_DISCONNECTED;
-                        mTextToSpeechHelper.speakChinese("蓝牙连接断开");
-//                        mService.connect();
-//                        mService.close();
-                        //setUiState();
-
-                    }
-                });
-            }
-
-
-            //*********************//
-            /**
-             * 发现服务
-             */
-            if (action.equals(BleParam.ACTION_GATT_SERVICES_DISCOVERED)) {
-//                发现一个服务
-                Log.e(TAG, "测量页面中。onReceive: 发现一个服务" );
-//                mService.enableTXNotification();
-            }
-            //*********************//
-            /**
-             * 收到蓝牙数据
-             */
-            if (action.equals(BleParam.ACTION_DATA_AVAILABLE)) {
-
-                final byte[] txValue = intent.getByteArrayExtra(BleParam.EXTRA_DATA);
-                final String uuid = intent.getStringExtra(BleParam.EXTRA_UUID);
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        try {
-                            String text = new String(txValue, "UTF-8");
-                            String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                            LogUtils.show("MeasureFragment--"+checkOptions.getRulerOptions().getOptionsName()+" 收到蓝牙数据："+text);
-                            switch (checkOptions.getRulerOptions().getType()) {
-                                case 1:
-                                    if (uuid.equalsIgnoreCase(ConnectDeviceService.VERTICALITY_TX_CHAR_UUID.toString())) {
-                                        dealData(text);
-                                    }
-                                    break;
-                                case 2:
-                                    if (uuid.equalsIgnoreCase(ConnectDeviceService.LEVELNESS_TX_CHAR_UUID.toString())) {
-                                        dealData(text);
-                                    }
-                                    break;
-                            }
-
-                        } catch (Exception e) {
-                            Log.e(TAG, e.toString());
-                        }
-                    }
-                });
-            }
-            //*********************//
-            if (action.equals(BleParam.DEVICE_DOES_NOT_SUPPORT_UART)){
-//                showMessage("Device doesn't support UART. Disconnecting");
-                Log.e(TAG, "onReceive: 设备不支持UART,");
-//                mService.disconnect();
-            }
-        }
-    };
 
     private void dealData(String text) {
         if (currentDataNum < checkOptionsDataList.size()) {
@@ -640,8 +495,8 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
             uploadOptionsDataList.add(data);
         }
         currentDataNum++;
-        measureDataAdapter.notifyDataSetChanged();
-        HeightUtils.setGridViewHeighBaseOnChildren(gvMeasureData,6);
+//        measureDataAdapter.notifyDataSetChanged();
+//        HeightUtils.setGridViewHeighBaseOnChildren(gvMeasureData,6);
         completeResult();
     }
 
@@ -656,58 +511,6 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
                 break;
         }
     }
-//
-//    class MeasureDataAdapter extends BaseAdapter {
-//
-//        @Override
-//        public int getCount() {
-//            return checkOptionsDataList.size();
-//        }
-//
-//        @Override
-//        public Object getItem(int i) {
-//            return checkOptionsDataList.get(i);
-//        }
-//
-//        @Override
-//        public long getItemId(int i) {
-//            return i;
-//        }
-//
-//        @Override
-//        public View getView(int i, View view, ViewGroup viewGroup) {
-//            LayoutInflater inflater = LayoutInflater.from(getActivity());
-//            ViewHolder holder;
-//            if (view == null) {
-//                view = inflater.inflate(R.layout.item_gridview_measure_data, null);
-//                holder = new ViewHolder();
-//                holder.etData = view.findViewById(R.id.et_measure_data);
-//                holder.tvContent = view.findViewById(R.id.tv_measure_content);
-//                holder.tvTitleIndex = view.findViewById(R.id.tv_title_index);
-//                view.setTag(holder);
-//
-//            } else {
-//                holder = (ViewHolder) view.getTag();
-//            }
-//
-//            holder.etData.setText(checkOptionsDataList.get(i).getData());
-//            holder.tvContent.setText(checkOptionsDataList.get(i).getData());
-//            holder.tvTitleIndex.setText(i+1);
-////
-//            if (checkOptions.getRulerOptions().getType() == 1 || checkOptions.getRulerOptions().getType() == 2) {
-//                holder.etData.setEnabled(false);
-//            } else {
-//                holder.etData.setEnabled(true);
-//            }
-//            return view;
-//        }
-//    }
-//
-//    class ViewHolder {
-//        EditText etData;
-//        TextView tvTitleIndex;
-//        TextView tvContent;
-//    }
 
 }
 

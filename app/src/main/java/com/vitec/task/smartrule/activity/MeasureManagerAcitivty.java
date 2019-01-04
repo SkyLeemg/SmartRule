@@ -32,6 +32,7 @@ import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
 import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
+import com.vitec.task.smartrule.utils.LogUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -126,22 +127,21 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
                 checkOptionsList.add(rulerCheckOption);
             }
             startRequestServer();
+            initFragmentData();
 
         } else {
+            initFragmentData();
             /**
              * 还有一种情况之前创建过，但是没有网络，所以未请求服务器，现在就要补交
              *  根据其upload_flag来进行判断，1-代表已经请求过，0-代表未请求过
              */
-//            for (int i=0;i<checkOptionsList.size();i++) {
-//
-//            }
         }
 
 //        controller = new MeasureFragmentControllerImpl(this,bottomNavigationBar,checkOptionsList);
 //        controller.initBottomNav();
         HandleBleMeasureDataReceiverService.startHandleService(getApplicationContext(),checkOptionsList);
 //        controller.addBottomNav();
-        initFragmentData();
+
     }
 
 
@@ -149,23 +149,12 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
     private void initFragmentData() {
         fragments = new ArrayList<>();
         tags = new ArrayList<>();
-        Log.e("sssd", "initFragmentData: 查看checkoptionsList:"+checkOptionsList.size()+",内容："+checkOptionsList.toString() );
+        LogUtils.show("initFragmentData-----进入了初始化fragment方法");
         List<RulerCheckOptions> optionsList = new ArrayList<>();
         for (int i = 0; i< checkOptionsList.size(); i++) {
 
             if (checkOptionsList.get(i).getRulerOptions().getType() == 1 || checkOptionsList.get(i).getRulerOptions().getType() == 2) {
                 optionsList.add(checkOptionsList.get(i));
-                if (optionsList.size() == 2) {
-                    MeasureFragment fragment = new MeasureFragment();
-                    Bundle bundle = new Bundle();
-//            此id对应iot_ruler_check_options表的id
-                    bundle.putInt(DataBaseParams.options_data_check_options_id, checkOptionsList.get(i).getId());
-//                    bundle.putInt("floor_height", chooseIndex);
-                    bundle.putSerializable("checkoptions", (Serializable) optionsList);
-                    fragment.setArguments(bundle);
-                    fragments.add(fragment);
-                    tags.add("垂直/水平度");
-                }
                 continue;
             }
             MeasureFragmentOthers fragment = new MeasureFragmentOthers();
@@ -179,10 +168,24 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
             if (checkOptions.getRulerOptions()!=null)
                 tags.add(checkOptions.getRulerOptions().getOptionsName());
         }
+        if (optionsList.size() > 0) {
+            MeasureFragment fragment = new MeasureFragment();
+            Bundle bundle = new Bundle();
+//            此id对应iot_ruler_check_options表的id
+            bundle.putInt(DataBaseParams.options_data_check_options_id, optionsList.get(0).getId());
+//                    bundle.putInt("floor_height", chooseIndex);
+            bundle.putSerializable("checkoptions", (Serializable) optionsList);
+            fragment.setArguments(bundle);
+            fragments.add(fragment);
+            tags.add("垂直/水平度");
+        }
+
+
         if (checkOptionsList.size() == 0) {
             MeasureFragment fragment = new MeasureFragment();
             fragments.add(fragment);
         }
+        LogUtils.show("-initFragmentData-----初始化完成-----共"+fragments.size()+"个界面");
         MeasureFragmentPagerAdapter fragmentPagerAdapter = new MeasureFragmentPagerAdapter(getSupportFragmentManager(), fragments, tags);
         viewPager.setAdapter(fragmentPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
@@ -198,8 +201,6 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
         intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_OPTIONS_DATA_KEY, (Serializable) checkOptionsList);
         intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_RULER_DATA_KEY, rulerCheck);
         startService(intent);
-
-
     }
 
 

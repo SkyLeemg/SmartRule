@@ -53,25 +53,19 @@ public class WeChatHelper {
     }
 
 
-    public void shareFileToWx(List<File> fileList) {
-
-        for (File file : fileList) {
-            //        发送请求
-            SendMessageToWX.Req req = new SendMessageToWX.Req();
-            WXFileObject fileObject = new WXFileObject();
-            fileObject.fileData = WeiXinUtil.inputStreamToByte(file.getPath());
-            fileObject.filePath = file.getPath();
+    public void shareFileToWx(File file) {
+        //        发送请求
+        SendMessageToWX.Req req = new SendMessageToWX.Req();
+        WXFileObject fileObject = new WXFileObject();
+        fileObject.fileData = WeiXinUtil.inputStreamToByte(file.getPath());
+        fileObject.filePath = file.getPath();
 //        使用媒体消息分享
-            WXMediaMessage mediaMessage = new WXMediaMessage(fileObject);
-            mediaMessage.title = file.getName();
-            req.message = mediaMessage;//        创建唯一标识
-            req.transaction = String.valueOf(System.currentTimeMillis());
-            req.scene = SendMessageToWX.Req.WXSceneSession;
-            iwxapi.sendReq(req);
-
-        }
-
-
+        WXMediaMessage mediaMessage = new WXMediaMessage(fileObject);
+        mediaMessage.title = file.getName();
+        req.message = mediaMessage;//        创建唯一标识
+        req.transaction = String.valueOf(System.currentTimeMillis());
+        req.scene = SendMessageToWX.Req.WXSceneSession;
+        iwxapi.sendReq(req);
 
     }
 }

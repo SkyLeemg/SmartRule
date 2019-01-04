@@ -444,6 +444,7 @@ public class PerformMeasureNetIntentService extends IntentService {
 
             @Override
             public void onFailure(Exception e) {
+                LogUtils.show("onFailure---测量数据请求失败："+e.getMessage());
 //                处理失败也要 通知界面
                 EventBus.getDefault().post(new MeasureDataMsgEvent(0));
 
@@ -594,6 +595,7 @@ public class PerformMeasureNetIntentService extends IntentService {
 
             @Override
             public void onFailure(Exception e) {
+                LogUtils.show("记录表请求失败-----"+e.getMessage());
                 MeasureRecordMsgEvent event = new MeasureRecordMsgEvent();
                 List<RulerCheck> checkList = new ArrayList<>();
                 event.setCheckList(checkList);

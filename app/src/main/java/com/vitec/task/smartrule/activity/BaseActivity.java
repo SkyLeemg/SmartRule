@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
@@ -42,7 +43,7 @@ import static com.aliyun.alink.linksdk.tools.ThreadTools.runOnUiThread;
 import static com.vitec.task.smartrule.utils.BleParam.UART_PROFILE_CONNECTED;
 import static com.vitec.task.smartrule.utils.BleParam.UART_PROFILE_DISCONNECTED;
 
-public class BaseActivity extends Activity  {
+public class BaseActivity extends FragmentActivity {
 
     public ImageView imgMenu;
     public TextView tvTitle;
@@ -188,6 +189,13 @@ public class BaseActivity extends Activity  {
         imgIcon = findViewById(R.id.img_icon_toolbar);
         imgMenu = findViewById(R.id.img_menu_toolbar);
         tvTitle = findViewById(R.id.tv_toolbar_title);
+
+        imgMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
 
 //        imgIcon.setOnClickListener(this);
     }

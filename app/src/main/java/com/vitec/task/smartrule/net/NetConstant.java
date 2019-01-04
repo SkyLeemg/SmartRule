@@ -11,6 +11,12 @@ public class NetConstant {
     public static final String mobile_param = "mobile";//需要请求的参数
 
     /**
+     * 验证手机验证码
+     */
+    public static final String validateMobileCodeUrl = "/api/user/validateMobileCode";
+
+
+    /**
      * 注册接口
      */
 

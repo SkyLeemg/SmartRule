@@ -414,7 +414,7 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
      * @param position
      */
     @Override
-    public void onBeginClickable(int position) {
+    public void onFirstClickable(int position) {
         mkLoader.setVisibility(View.VISIBLE);
         /**
          * 启动下载数据的后台服务
@@ -431,7 +431,7 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
      * @param position
      */
     @Override
-    public void onEditClickable(int position) {
+    public void onSencondClickable(int position) {
 
     }
 
@@ -441,7 +441,7 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
      * @param position
      */
     @Override
-    public void onDeleteClickable(final int position) {
+    public void onThirdClickable(final int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(WaitingMeasureActivity.this);
         builder.setTitle("提示");
         builder.setMessage("是否确定删除" + rulerCheckList.get(position).getProjectName() + "?");

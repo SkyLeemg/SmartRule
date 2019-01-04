@@ -24,9 +24,9 @@
     <application
         android:name=".aliyun.app.AliYunApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/instructions_logo_3x"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/instructions_logo_3x"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup,android:label"
@@ -63,18 +63,28 @@
         <activity android:name=".activity.DeviceManagerActivity">
 
         </activity>
-        <activity android:name=".activity.UserCenterActivity"/>
+        <activity android:name=".activity.unuse.UserCenterActivity"/>
+        <!--修改密码-->
         <activity android:name=".activity.ChangePasswordActivity"/>
+        <!--检查更新-->
         <activity android:name=".activity.CheckUpdateActivity"/>
+        <!--联系我们-->
         <activity android:name=".activity.ContactOurActivity"/>
+        <!--等待测量-->
         <activity android:name=".activity.WaitingMeasureActivity"/>
+        <!--测量记录管理界面-->
         <activity android:name=".activity.MeasureRecordActivity"/>
         <activity android:name=".activity.MeasureRecordManagerAcitivty"/>
+        <!--管理测量文件-->
         <activity android:name=".activity.MeasureFileActivity"/>
         <activity android:name=".activity.unuse.ImageTestActivity2">
-
         </activity>
+        <!--首页管理-->
         <activity android:name=".activity.MainActivity"/>
+        <!--忘记密码-->
+        <activity android:name=".activity.ForgetPswActivity"/>
+        <!--个人资料-->
+        <activity android:name=".activity.UserDatumActivity"/>
 
         <!--注册微信回调 WXEntryActivity -->
         <activity

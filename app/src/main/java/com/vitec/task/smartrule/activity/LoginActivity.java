@@ -2,9 +2,12 @@ package com.vitec.task.smartrule.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,8 +37,8 @@ import scut.carson_ho.diy_view.SuperEditText;
 public class LoginActivity extends BaseActivity implements View.OnClickListener {
     private static final String TAG = "LoginActivity";
     private Button btnLogin;
-    private SuperEditText etUser;
-    private SuperEditText etPwd;
+    private EditText etUser;
+    private EditText etPwd;
     private TextView tvSmsLogin;
     private TextView tvForgetPwd;
 
@@ -89,11 +92,41 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         btnLogin.setOnClickListener(this);
         imgWechat.setOnClickListener(this);
         tvRegister.setOnClickListener(this);
+
+        btnLogin.setClickable(false);
+        etPwd.addTextChangedListener(inputTextWatcher);
+        etUser.addTextChangedListener(inputTextWatcher);
+
     }
+
+    private TextWatcher inputTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            if (etUser.getText().toString().length() > 1 && etPwd.getText().toString().length() > 2) {
+                btnLogin.setClickable(true);
+                btnLogin.setBackgroundResource(R.drawable.selector_login_btn_click);
+            } else {
+                btnLogin.setClickable(false);
+                btnLogin.setBackgroundResource(R.drawable.shape_btn_blue_unclick);
+            }
+        }
+    };
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+
             case R.id.btn_login://登陆按钮
                 final String loginName = etUser.getText().toString().trim();
                 final String pwd = etPwd.getText().toString().trim();
@@ -176,7 +209,8 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
              * 忘记密码
              */
             case R.id.cb_remenber_pw:
-
+                Intent forgetIntent = new Intent(this, ForgetPswActivity.class);
+                startActivity(forgetIntent);
                 break;
         }
     }

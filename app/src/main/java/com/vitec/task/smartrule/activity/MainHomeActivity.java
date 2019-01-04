@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.activity.unuse.UserCenterActivity;
 import com.vitec.task.smartrule.bean.CheckUpdataMsg;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
