@@ -13,6 +13,7 @@ public class DataBaseParams {
     public static final String local_id = "local_id";
     public static final String check_options = "check_options";
     public static final String upload_flag = "upload_flag";
+    public static final String cid = "cid";
 
     /**
      * iot_ruler_ble_device的表名和列名
@@ -58,7 +59,9 @@ public class DataBaseParams {
      */
     public static final String measure_table_name = "iot_ruler_check";
     public static final String measure_id = "id";
-    public static final String measure_project_name = "project_name";
+    //    public static final String measure_project_name = "project_name";
+    public static final String measure_project_id = "project_id";
+    public static final String measure_unit_id = "unit_id";
     public static final String measure_check_floor = "check_floor";
     public static final String measure_engin_id = "engin_id";
     public static final String measure_user_id = "user_id";
@@ -83,6 +86,9 @@ public class DataBaseParams {
     public static final String measure_option_update_time = "update_time";
     public static final String measure_option_img_path = "img_path";
     public static final String measure_option_img_time = "img_time";
+    public static final String measure_option_server_img_url = "server_img_url";
+    public static final String measure_option_img_upload_flag = "img_upload_flag";
+    public static final String measure_option_img_number = "img_number";
 
 
     /**
@@ -92,6 +98,7 @@ public class DataBaseParams {
     public static final String options_data_id = "id";
     public static final String options_data_check_options_id = "check_options_id";//此id对应iot_ruler_check_options表的id
     public static final String options_data_content = "data";
+    public static final String options_data_number = "number";
     public static final String options_data_create_time = "create_time";
     public static final String options_data_update_flag = "update_flag";
 
@@ -101,17 +108,20 @@ public class DataBaseParams {
      */
     public static final String user_table_name = "iot_ruler_user";
     public static final String user_user_id= "user_id";
-    public static final String user_wid= "wid";
+    public static final String user_child_id = "server_cid";
+//    public static final String user_wid= "wid";
     public static final String user_data= "data";
-    public static final String user_login_name = "login_name";
+//    public static final String user_login_name = "login_name";
     public static final String user_user_name = "user_name";
     public static final String user_wx_unionid = "wx_unionid";
     public static final String user_password = "password";
     public static final String user_mobile = "mobile";
     public static final String user_token = "token";
     public static final String user_img_url = "img_url";
+    public static final String user_position = "position";//职位
     public static final String user_status = "status";//状态，1-正在登录使用，0-未登录
-    public static final String user_job = "job";
+//    public static final String user_job = "job";
+    public static final String user_local_img_path = "local_head_img_path";
 
 
     /**
@@ -124,6 +134,33 @@ public class DataBaseParams {
     public static final String user_wx_refresh_token = "wx_refresh_token";
     public static final String user_wx_openid = "wx_openid";
     public static final String user_wx_headImgUrl = "headImgUrl";
+
+
+    /**
+     * iot_ruler_check_project
+     */
+    public static final String check_project_table_name = "iot_ruler_check_project";
+    public static final String check_project_name = "project_name";
+    public static final String check_project_qrcode = "qrcode";
+
+    /**
+     * iot_ruler_unit_engineer
+     */
+    public static final String unit_engineer_table_name = "iot_ruler_unit_engineer";
+    public static final String unit_engineer_location = "location";
+    public static final String project_server_id = "project_server_id";
+
+    /**
+     * iot_ruler_project_user  项目组的用户表
+     */
+    public static final String project_user_table_name = "iot_ruler_project_user";
+
+    /**
+     * iot_company 公司资料
+     */
+    public static final String iot_company_table_name = "iot_company";
+    public static final String iot_company_content = "content";
+    public static final String iot_company_title = "title";
 
 
 

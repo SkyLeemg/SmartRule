@@ -39,7 +39,7 @@
             android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:textSize="13sp"
-            android:text="账户名"
+            android:text="手机号"
             android:textColor="@color/title_color"
             android:padding="10dp"
             />
@@ -48,12 +48,12 @@
             android:id="@+id/et_userid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="请输入账户名"
+            android:hint="请输入手机号码"
             android:textSize="14sp"
             android:background="#00000000"
             android:layout_marginRight="10dp"
             android:layout_marginLeft="10dp"
-            android:inputType="textPersonName"
+            android:inputType="phone"
             />
     </LinearLayout>
 

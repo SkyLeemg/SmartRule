@@ -8,11 +8,14 @@ import android.util.Log;
 
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
+import com.vitec.task.smartrule.bean.RulerCheckProject;
 import com.vitec.task.smartrule.bean.RulerEngineer;
 import com.vitec.task.smartrule.bean.RulerOptions;
+import com.vitec.task.smartrule.bean.RulerUnitEngineer;
 import com.vitec.task.smartrule.bean.User;
 import com.vitec.task.smartrule.utils.LogUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +28,12 @@ public class BleDataDbHelper {
 
     public BleDataDbHelper(Context context) {
         this.context = context;
+        CopyDbFileFromAsset  copyDbFileFromAsset = new CopyDbFileFromAsset(context);
+        try {
+            copyDbFileFromAsset.CopySqliteFileFromRawToDatabases(DataBaseParams.databaseName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         sqLiteDatabase = SQLiteDatabase.openDatabase("data/data/" +context.getPackageName() +
                 "/databases/"+DataBaseParams.databaseName, null, SQLiteDatabase.OPEN_READWRITE);
     }
@@ -123,7 +132,7 @@ public class BleDataDbHelper {
             do {
                 RulerCheck rulerCheck = new RulerCheck();
                 rulerCheck.setId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id)));
-                rulerCheck.setProjectName(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_project_name)));
+//                rulerCheck.setProjectName(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_project_name)));
                 rulerCheck.setCreateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_create_time)));
                 rulerCheck.setCreateDate(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_create_date)));
                 rulerCheck.setCheckFloor(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_check_floor)));
@@ -131,6 +140,27 @@ public class BleDataDbHelper {
                 rulerCheck.setServerId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
                 rulerCheck.setUpload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.upload_flag)));
                 rulerCheck.setStatus(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_is_finish)));
+//                获取项目组
+                String projectWhere = " where " + DataBaseParams.measure_id + "=" + cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_project_id)) +
+                        " or " + DataBaseParams.server_id + "=" + cursor.getInt(cursor.getColumnIndex(DataBaseParams.project_server_id));
+                List<RulerCheckProject> projectList = OperateDbUtil.queryProjectDataFromSqlite(context, projectWhere);
+                if (projectList.size() > 0) {
+                    rulerCheck.setProject(projectList.get(0));
+                } else {
+                    rulerCheck.setProject(new RulerCheckProject());
+                }
+
+//                获取单位工程
+                String unitWhere = " where " + DataBaseParams.measure_id + "=" + cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_unit_id));
+                List<RulerUnitEngineer> unitList = OperateDbUtil.queryUnitEngineerDataFromSqlite(context, unitWhere);
+                if (unitList.size() > 0) {
+                    rulerCheck.setUnitEngineer(unitList.get(0));
+                } else {
+                    RulerUnitEngineer engineer = new RulerUnitEngineer();
+                    engineer.setLocation("");
+                    rulerCheck.setUnitEngineer(engineer);
+                }
+
                 List<RulerEngineer> engineerList = queryEnginDataFromSqlite(" where " + DataBaseParams.server_id + " = " + cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_engin_id)));
                 if (engineerList.size() > 0) {
                     RulerEngineer engineer = engineerList.get(0);
@@ -143,6 +173,7 @@ public class BleDataDbHelper {
                 User user = OperateDbUtil.getUser(context);
                 rulerCheck.setUser(user);
                 checkList.add(rulerCheck);
+//                LogUtils.show("查看RulerCheck:"+rulerCheck);
             } while (cursor.moveToNext());
         }
 
@@ -179,7 +210,7 @@ public class BleDataDbHelper {
      */
     public int updateMeasureOptonsToSqlite(RulerCheckOptions rulerCheckOptions) {
         ContentValues values = new ContentValues();
-        values.put(DataBaseParams.measure_option_floor_height,rulerCheckOptions.getFloorHeight());
+        values.put(DataBaseParams.measure_option_floor_height,rulerCheckOptions.getFloorHeight().getId());
         values.put(DataBaseParams.measure_option_measured_points,rulerCheckOptions.getMeasuredNum());
         values.put(DataBaseParams.measure_option_qualified_points,rulerCheckOptions.getQualifiedNum());
         values.put(DataBaseParams.measure_option_percent_pass,rulerCheckOptions.getQualifiedRate());

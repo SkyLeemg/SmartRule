@@ -16,26 +16,24 @@ public class SharePreferenceUtils {
      * 存储用户数据的key
      */
     public static final String user_table = "iot_ruler_user";
-    public static final String user_login_name = "login_name";
     public static final String user_real_name = "real_name";
     public static final String user_pwd = "password";
     public static final String user_id = "user_id";
-    public static final String user_wid = "wid";
     public static final String user_wx_data = "data";
     public static final String user_mobile = "mobile";
     public static final String user_token = "token";
+    public static final String user_type = "user_type";//账号类型，1-手机号码，2-微信号，3两者都有
 
 
     public static Set<String> getKeySet() {
         Set<String> keySet = new HashSet<>();
-        keySet.add(SharePreferenceUtils.user_login_name);
         keySet.add(SharePreferenceUtils.user_real_name);
         keySet.add(user_pwd);
         keySet.add(user_id);
-        keySet.add(user_wid);
         keySet.add(user_wx_data);
         keySet.add(user_mobile);
         keySet.add(user_token);
+        keySet.add(user_type);
         return keySet;
     }
 

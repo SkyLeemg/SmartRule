@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 
+import com.vitec.task.smartrule.bean.MeasureData;
 import com.vitec.task.smartrule.bean.MeasureTable;
 import com.vitec.task.smartrule.bean.MeasureTableRow;
 import com.vitec.task.smartrule.bean.RulerCheck;
@@ -12,6 +13,7 @@ import com.vitec.task.smartrule.bean.RulerCheckOptionsData;
 import com.vitec.task.smartrule.bean.event.ExportMsgEvent;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.OperateDbUtil;
+import com.vitec.task.smartrule.helper.ExportMeaureDataHelperVersion2;
 import com.vitec.task.smartrule.interfaces.IAddExcelResultCallBack;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.helper.ExportMeaureDataHelper;
@@ -39,7 +41,7 @@ public class ExportDataToExcelIntentService extends IntentService {
         List<RulerCheck> exportRulerCheckList = (List<RulerCheck>) intent.getSerializableExtra(GET_DATA_KEY);
         String fileName = intent.getStringExtra(GET_FILE_NAME);
         List<MeasureTable> tableList = initExportDataFormat(exportRulerCheckList);
-        final ExportMeaureDataHelper exportMeaureData = new ExportMeaureDataHelper(getApplicationContext(), fileName);
+        final ExportMeaureDataHelperVersion2 exportMeaureData = new ExportMeaureDataHelperVersion2(getApplicationContext(), fileName);
         LogUtils.show("onHandleIntent---准备开始导出文件，总数："+tableList.size()+",内容："+tableList.toString());
         if (tableList.size() > 0) {
             for (int i=0;i<tableList.size();i++) {
@@ -53,7 +55,7 @@ public class ExportDataToExcelIntentService extends IntentService {
                     ExportMsgEvent exportMsgEvent = new ExportMsgEvent(true);
                     exportMsgEvent.setMsg(title);
                     EventBus.getDefault().post(exportMsgEvent);
-                    LogUtils.show("导出成功");
+                    LogUtils.show("导出成功:"+title);
                 }
 
                 @Override
@@ -62,7 +64,7 @@ public class ExportDataToExcelIntentService extends IntentService {
                     ExportMsgEvent exportMsgEvent = new ExportMsgEvent(false);
                     exportMsgEvent.setMsg(msg);
                     EventBus.getDefault().post(exportMsgEvent);
-                    LogUtils.show("导出失败");
+                    LogUtils.show("导出失败:"+msg);
                 }
             });
         }
@@ -83,10 +85,13 @@ public class ExportDataToExcelIntentService extends IntentService {
              */
             MeasureTable table = new MeasureTable();
             table.setEngineerName(rulerCheck.getEngineer().getEngineerName());
-            table.setProjectName(rulerCheck.getProjectName());
+            table.setProjectName(rulerCheck.getProject().getProjectName());
             table.setCheckPerson(rulerCheck.getUser().getUserName());
-            table.setCheckFloor(rulerCheck.getCheckFloor());
+            String checkPosition = rulerCheck.getCheckFloor();
+            table.setUnitEngineer(rulerCheck.getUnitEngineer().getLocation());
+            table.setCheckFloor(checkPosition);
             table.setCheckDate(DateFormatUtil.stampToDateString(rulerCheck.getCreateTime()));
+
             //rowList为该表格中所有的管控要点集合，一个MeasureTableRow代表一个管控要点
             List<MeasureTableRow> rowList = new ArrayList<>();
 //            从数据库中取出对应的管控要点数据
@@ -107,19 +112,29 @@ public class ExportDataToExcelIntentService extends IntentService {
                     row.setQualifiedNum(checkOptions.getQualifiedNum());
                     row.setOptionName(checkOptions.getRulerOptions().getOptionsName());
                     row.setCheckMethod(checkOptions.getRulerOptions().getMethods());
+                    if (checkOptions.getRulerOptions().getType() == 1) {
+                        table.setPicPath(checkOptions.getImgPath());
+                    }
+
 //                    设置表格中显示的管控要点序号，不是数据库的id
                     row.setId(j + 1);
 //                    从数据库中取出该管控要点对应的测量数据
                     List<RulerCheckOptionsData> optionsDataList = OperateDbUtil.queryMeasureDataFromSqlite(getApplicationContext(), checkOptions);
 //                    MeasureTableRow中的测量数据源
-                    List<String> datalist = new ArrayList<>();
+                    List<MeasureData> datalist = new ArrayList<>();
                     if (optionsDataList.size() > 0) {
                         for (int n = 0; n < optionsDataList.size(); n++) {
-                            datalist.add(optionsDataList.get(n).getData());
+                            MeasureData data = new MeasureData();
+                            data.setData(optionsDataList.get(n).getData());
+                            data.setId(n + 1);
+                            datalist.add(data);
                         }
                     } else {
                         for (int n = 0; n < 20; n++) {
-                            datalist.add("");
+                            MeasureData data = new MeasureData();
+                            data.setData("");
+                            data.setId(n + 1);
+                            datalist.add(data);
                         }
                     }
 //                    将测量数据集合添加到所属的管控要点中

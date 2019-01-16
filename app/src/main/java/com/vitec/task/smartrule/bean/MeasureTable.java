@@ -14,9 +14,12 @@ public class MeasureTable implements Serializable{
     private String engineerName;
     //    RulerCheck的部分数据
     private String projectName;
+    private String unitEngineer;
     private String checkFloor;
     private String checkPerson;
     private String checkDate;
+    private String picPath;
+
     //    表头对应的一行的数据内容
     private List<MeasureTableRow> rowList;
 
@@ -68,14 +71,33 @@ public class MeasureTable implements Serializable{
         this.rowList = rowList;
     }
 
+    public String getUnitEngineer() {
+        return unitEngineer;
+    }
+
+    public void setUnitEngineer(String unitEngineer) {
+        this.unitEngineer = unitEngineer;
+    }
+
+
+    public String getPicPath() {
+        return picPath;
+    }
+
+    public void setPicPath(String picPath) {
+        this.picPath = picPath;
+    }
+
     @Override
     public String toString() {
         return "MeasureTable{" +
                 "engineerName='" + engineerName + '\'' +
                 ", projectName='" + projectName + '\'' +
+                ", unitEngineer='" + unitEngineer + '\'' +
                 ", checkFloor='" + checkFloor + '\'' +
                 ", checkPerson='" + checkPerson + '\'' +
                 ", checkDate='" + checkDate + '\'' +
+                ", picPath='" + picPath + '\'' +
                 ", rowList=" + rowList +
                 '}';
     }

@@ -122,14 +122,14 @@
                 android:layout_height="0.5dp"
                 android:background="@color/color_gv_border"/>
 
-            <ListView
+            <com.vitec.task.smartrule.view.SwipeListView
                 android:id="@+id/lv_display_file"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
                 android:divider="#00000000"
 
-                ></ListView>
+                ></com.vitec.task.smartrule.view.SwipeListView>
 
         </LinearLayout>
     </ScrollView>

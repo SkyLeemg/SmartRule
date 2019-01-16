@@ -50,6 +50,7 @@ public class MeasureDataView extends RelativeLayout {
     private int realNum = 0;
     private int qualifiedNum=0;
     private float qualifiedRate=0f;
+    private int curcor = 0;
     private DisplayMeasureDataAdapter measureDataAdapter;
 
 
@@ -110,8 +111,9 @@ public class MeasureDataView extends RelativeLayout {
         optionMeasures = OptionsMeasureUtils.getOptionMeasure(measures);
         if (optionMeasures.size() > 1) {
             int count = 0;
+            optionMeasure = optionMeasures.get(0);
             for (int k = 0; k < optionMeasures.size(); k++) {
-                if (optionMeasures.get(k).getData().equals(rulerCheckOptions.getFloorHeight())) {
+                if (String.valueOf(optionMeasures.get(k).getId()).equals(rulerCheckOptions.getFloorHeight())) {
                     optionMeasure = optionMeasures.get(k);
                     count++;
                 }
@@ -137,14 +139,21 @@ public class MeasureDataView extends RelativeLayout {
                 RulerCheckOptionsData data = new RulerCheckOptionsData();
                 data.setData("");
                 data.setQualified(true);
+                data.setNumber(0);
                 data.setRulerCheckOptions(rulerCheckOptions);
                 usingCheckOptionsDataList.add(data);
             }
             updateCompleteResult();
         } else {
+            int i = realDataCount - 1;
+            for (; i > 0; i--) {
+                if (usingCheckOptionsDataList.get(i).getNumber() > curcor) {
+                    curcor = usingCheckOptionsDataList.get(i).getNumber();
+                }
+            }
             completeResult();
         }
-
+        curcor++;
         measureDataAdapter = new DisplayMeasureDataAdapter(context, usingCheckOptionsDataList);
         gvDisplayData.setAdapter(measureDataAdapter);
         HeightUtils.setGridViewHeighBaseOnChildren(gvDisplayData,6);
@@ -164,14 +173,15 @@ public class MeasureDataView extends RelativeLayout {
                 String data = usingCheckOptionsDataList.get(i).getData().trim();
                 try {
                     float datanum = Float.valueOf(data);
+                    realNum++;
                     /**
+                     *
                      * 根据操作标志来计算结果，
-                     * 1 - 代表要 小于等于 才合格
-                     * 2 -
+                     * 1 =, 2 <=, 3 >=, 4 +, 5 -, 6 普通, 7 高级
                      */
                     switch (optionMeasure.getOperate()) {
                         case 1:
-                            if (datanum < optionMeasure.getStandard() || datanum == optionMeasure.getStandard()) {
+                            if ( datanum == optionMeasure.getStandard()) {
                                 qualifiedNum++;
 //                               设置合格
                                 usingCheckOptionsDataList.get(i).setQualified(true);
@@ -180,10 +190,26 @@ public class MeasureDataView extends RelativeLayout {
                             }
                             break;
                         case 2:
+                            if ( datanum <= optionMeasure.getStandard()) {
+                                qualifiedNum++;
+//                               设置合格
+                                usingCheckOptionsDataList.get(i).setQualified(true);
+                            } else {
+                                usingCheckOptionsDataList.get(i).setQualified(false);
+                            }
+                            break;
 
+                        case 3:
+                            if ( datanum >= optionMeasure.getStandard()) {
+                                qualifiedNum++;
+//                               设置合格
+                                usingCheckOptionsDataList.get(i).setQualified(true);
+                            } else {
+                                usingCheckOptionsDataList.get(i).setQualified(false);
+                            }
                             break;
                     }
-                    realNum++;
+
                 } catch (Exception e) {
                 }
             }
@@ -204,9 +230,18 @@ public class MeasureDataView extends RelativeLayout {
         tvQualifiedNum.setText(rulerCheckOptions.getQualifiedNum()+"");
         tvRealMeasureNum.setText(rulerCheckOptions.getMeasuredNum()+"");
         if (qualifiedRate >=0) {
-            tvQualifiedRate.setText(String.format("%.2f",qualifiedRate*100));
+            tvQualifiedRate.setText(String.format("%.2f",qualifiedRate*100)+"%");
         }else tvQualifiedRate.setText("0.00");
+        LogUtils.show("MeasureDataView----数据视图---查看当前管控要点的参数："+rulerCheckOptions);
         HeightUtils.setGridViewHeighBaseOnChildren(gvDisplayData,6);
+    }
+
+    public int getCurcor() {
+        return curcor;
+    }
+
+    public void setCurcor(int curcor) {
+        this.curcor = curcor;
     }
 
     /**以下是需要跟调用此View者需要交互的数据变量**/

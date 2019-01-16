@@ -3,11 +3,13 @@ package com.vitec.task.smartrule.view;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
@@ -102,7 +104,11 @@ public class ConnectDialog extends Dialog {
         }
     };
 
-
+    @Override
+    public void setOnDismissListener(@Nullable OnDismissListener listener) {
+        super.setOnDismissListener(listener);
+        unBindConnectService();
+    }
 
     /**
      * 接收从搜索服务里发送过来的数据

@@ -48,6 +48,7 @@ public class BaseActivity extends FragmentActivity {
     public ImageView imgMenu;
     public TextView tvTitle;
     public ImageView imgIcon;
+    public TextView tvChoose;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2;
     public ConnectDeviceService bleService = null;
@@ -189,6 +190,7 @@ public class BaseActivity extends FragmentActivity {
         imgIcon = findViewById(R.id.img_icon_toolbar);
         imgMenu = findViewById(R.id.img_menu_toolbar);
         tvTitle = findViewById(R.id.tv_toolbar_title);
+        tvChoose = findViewById(R.id.tv_choose);
 
         imgMenu.setOnClickListener(new View.OnClickListener() {
             @Override

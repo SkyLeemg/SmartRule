@@ -70,6 +70,8 @@ public class HandleBleMeasureDataReceiverService extends Service {
     private List<RulerCheckOptionsData> verticalOptinsDataList;//所有垂直度的测量数据集合
     private OptionMeasure levelOptionMeasure;//用户当前选择的层高
     private OptionMeasure verticalOptionMeasure;//用户当前选择的层高
+    private int levelIndex = 0;//水平度序号游标
+    private int verticalIndex = 0;//垂直度序号游标
 
     private final static int DAEMON_SERVICE_ID = -5121;
     public static int check_id = 0;
@@ -108,7 +110,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
             if (checkOptionsList.size() > 0) {
                 check_id = checkOptionsList.get(0).getRulerCheck().getId();
                 StringBuffer speakContent = new StringBuffer();
-                speakContent.append(checkOptionsList.get(0).getRulerCheck().getProjectName());
+                speakContent.append(checkOptionsList.get(0).getRulerCheck().getProject().getProjectName());
                 speakContent.append("项目");
                 speakContent.append(checkOptionsList.get(0).getRulerCheck().getEngineer().getEngineerName());
                 speakContent.append("开始测量");
@@ -139,6 +141,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
 //                            verticalOptionMeasure.setOperate(1);
 //                            verticalOptionMeasure.setId(1);
 //                        }
+                        verticalIndex = initIndexCurcor( verticalOption);
                     } else if (options.getRulerOptions().getType() == 2) {//type---2代表的是表面平整度的管控要点
                         levelOption = options;
                         List<OptionMeasure> optionMeasureList = OptionsMeasureUtils.getOptionMeasure(levelOption.getRulerOptions().getMeasure());
@@ -154,6 +157,8 @@ public class HandleBleMeasureDataReceiverService extends Service {
                         } else if (optionMeasureList.size() > 0) {
                             levelOptionMeasure = optionMeasureList.get(0);
                         }
+                        levelIndex = initIndexCurcor( levelOption);
+
 
 //                        if (optionMeasureList.size() > 0) {
 //                            levelOptionMeasure = optionMeasureList.get(0);
@@ -191,6 +196,27 @@ public class HandleBleMeasureDataReceiverService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
+    /**
+     * 初始化数据标题序号
+     * @param option
+     */
+    private int initIndexCurcor( RulerCheckOptions option) {
+        int index = 0;
+        String where = " where " + DataBaseParams.options_data_check_options_id + "=" + option.getId();
+        List<RulerCheckOptionsData> dataList = OperateDbUtil.queryMeasureDataFromSqlite(getApplicationContext(), where);
+        if (dataList.size() > 0) {
+            int i = dataList.size() - 1;
+            for (; i > 0; i--) {
+                if (dataList.get(i).getNumber() > index) {
+                    index = dataList.get(i).getNumber();
+                }
+            }
+        }
+        index++;
+        LogUtils.show("查看初始化后的定位：" + index);
+        return index;
+
+    }
 
 
 
@@ -230,24 +256,24 @@ public class HandleBleMeasureDataReceiverService extends Service {
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (bleService.LEVEL_DISCOVER_FLAG != 1) {
+//                    if (bleService.LEVEL_DISCOVER_FLAG != 1) {
                         bleService.enableTXNotification(ConnectDeviceService.LEVELNESS_SERVICE_UUID, ConnectDeviceService.LEVELNESS_TX_CHAR_UUID);
                         LogUtils.show("BleDeviceReceiver---正在监听水平度服务");
-                    }
+//                    }
 
                 }
-            }, 1000);
+            }, 2000);
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (bleService.VERTICAL_DISCOVER_FLAG != 1) {
+//                    if (bleService.VERTICAL_DISCOVER_FLAG != 1) {
                         bleService.enableTXNotification(ConnectDeviceService.VERTICALITY_SERVICE_UUID, ConnectDeviceService.VERTICALITY_TX_CHAR_UUID);
                         LogUtils.show("BleDeviceReceiver---正在监听垂直度服务");
-                    }
+//                    }
 
 
                 }
-            }, 3000);
+            }, 4000);
         }
 
         @Override
@@ -269,6 +295,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        textToSpeechHelper.speakChinese("暂停测量");
         if (verticalOptinsDataList.size() >0) {
             completeResult(verticalOptinsDataList,verticalOption,verticalOptionMeasure);
             uploadDataToServer(verticalOptinsDataList,verticalOption);
@@ -281,6 +308,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
         LogUtils.show("HandleBleMeasureDataReceiverService----onDestroy----销毁了");
         unregisterBleRecevier();
         unbindBleService();
+        textToSpeechHelper.stopSpeech();
         EventBus.getDefault().unregister(this);
     }
 
@@ -393,6 +421,28 @@ public class HandleBleMeasureDataReceiverService extends Service {
              */
             if (action.equals(BleParam.ACTION_GATT_CONNECTED)) {
                 textToSpeechHelper.speakChinese("蓝牙连接成功");
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (bleService.LEVEL_DISCOVER_FLAG != 1) {
+                            bleService.enableTXNotification(ConnectDeviceService.LEVELNESS_SERVICE_UUID, ConnectDeviceService.LEVELNESS_TX_CHAR_UUID);
+                            LogUtils.show("BleDeviceReceiver---正在监听水平度服务");
+                        }
+
+                    }
+                }, 2000);
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (bleService.VERTICAL_DISCOVER_FLAG != 1) {
+                            bleService.enableTXNotification(ConnectDeviceService.VERTICALITY_SERVICE_UUID, ConnectDeviceService.VERTICALITY_TX_CHAR_UUID);
+                            LogUtils.show("BleDeviceReceiver---正在监听垂直度服务");
+                        }
+
+
+                    }
+                }, 3000);
             }
 
             //*********************//
@@ -466,21 +516,32 @@ public class HandleBleMeasureDataReceiverService extends Service {
                     optionsData.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
                     optionsData.setData(text);
                     optionsData.setUpload_flag(0);
-
+                    if (levelIndex == 0) {
+                        levelIndex++;
+                    }
+                    if (verticalIndex == 0) {
+                        verticalIndex++;
+                    }
                     /**
                      * 收到水平度的数据
                      */
                     if (levelOption!=null && uuid.equalsIgnoreCase(ConnectDeviceService.LEVELNESS_TX_CHAR_UUID.toString())) {
                         textToSpeechHelper.speakChinese("收到"+levelOption.getRulerOptions().getOptionsName()+"数据" + text);
                         optionsData.setRulerCheckOptions(levelOption);
+                        optionsData.setNumber(levelIndex);
                         LogUtils.show("查看当前水平度管控要点的Id："+levelOption.getId());
                         int id = OperateDbUtil.addRealMeasureDataToSqlite(getApplicationContext(), optionsData);
                         optionsData.setId(id);
+                        levelIndex++;
                         levelOptionsDataList.add(optionsData);
                         LogUtils.show("查看收到水平度数据，保存到数据库后的对象："+optionsData);
                         if (levelOptionsDataList.size() >= 5 && levelOptionsDataList.size()%2==1) {
                             completeResult(levelOptionsDataList,levelOption,levelOptionMeasure);
                             uploadDataToServer(levelOptionsDataList,levelOption);
+                        }
+                        if (verticalOptinsDataList.size() >0 ) {
+                            completeResult(verticalOptinsDataList,verticalOption,verticalOptionMeasure);
+                            uploadDataToServer(verticalOptinsDataList,verticalOption);
                         }
 //                        bleService.writeRxCharacteristic(ConnectDeviceService.LEVELNESS_SERVICE_UUID,ConnectDeviceService.LEVELNESS_RX_CHAR_UUID,"111".getBytes());
                     }
@@ -491,14 +552,22 @@ public class HandleBleMeasureDataReceiverService extends Service {
                     else if (verticalOption != null && uuid.equalsIgnoreCase(ConnectDeviceService.VERTICALITY_TX_CHAR_UUID.toString())) {
                         textToSpeechHelper.speakChinese("收到"+verticalOption.getRulerOptions().getOptionsName()+"数据" + text);
                         optionsData.setRulerCheckOptions(verticalOption);
+                        optionsData.setNumber(verticalIndex);
                         int id = OperateDbUtil.addRealMeasureDataToSqlite(getApplicationContext(), optionsData);
                         optionsData.setId(id);
+                        verticalIndex++;
                         verticalOptinsDataList.add(optionsData);
                         LogUtils.show("查看收到垂直度数据，保存到数据库后的对象："+optionsData);
                         if (verticalOptinsDataList.size() >= 5 && verticalOptinsDataList.size()%2==1) {
                             completeResult(verticalOptinsDataList,verticalOption,verticalOptionMeasure);
                             uploadDataToServer(verticalOptinsDataList,verticalOption);
                         }
+
+                        if (levelOptionsDataList.size() >0 ) {
+                            completeResult(levelOptionsDataList,levelOption,levelOptionMeasure);
+                            uploadDataToServer(levelOptionsDataList,levelOption);
+                        }
+
 //                        bleService.writeRxCharacteristic(ConnectDeviceService.VERTICALITY_SERVICE_UUID, ConnectDeviceService.VERTICALITY_RX_CHAR_UUID, "222".getBytes());
                     }
 
@@ -578,7 +647,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
             }
             float qualifiedRate = (fq / frealnum);
             LogUtils.show("completeResult: 查看计算出来的实测点数："+ realNum +",合格点数："+ qualifiedNum +",合格率："+qualifiedRate );
-            checkOptions.setFloorHeight(optionMeasure.getData());
+            checkOptions.setFloorHeight(optionMeasure);
             checkOptions.setMeasuredNum((int) frealnum);
             checkOptions.setQualifiedNum((int) fq);
             checkOptions.setQualifiedRate(Float.parseFloat(String.format("%.2f",qualifiedRate*100)));
@@ -588,7 +657,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
             values.put(DataBaseParams.measure_option_qualified_points,checkOptions.getQualifiedNum());
             values.put(DataBaseParams.measure_option_percent_pass,checkOptions.getQualifiedRate());
             values.put(DataBaseParams.measure_option_update_time,DateFormatUtil.transForMilliSecond(new Date()));
-            values.put(DataBaseParams.measure_option_floor_height, checkOptions.getFloorHeight());
+//            values.put(DataBaseParams.measure_option_floor_height, checkOptions.getFloorHeight().getId());
             String[] ids = new String[]{String.valueOf(checkOptions.getId())};
             OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(),DataBaseParams.measure_option_table_name, values, ids);
 

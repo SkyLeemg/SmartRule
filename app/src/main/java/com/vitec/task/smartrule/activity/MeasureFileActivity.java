@@ -1,17 +1,25 @@
 package com.vitec.task.smartrule.activity;
 
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.tuyenmonkey.mkloader.MKLoader;
 import com.vitec.task.smartrule.R;
@@ -94,10 +102,17 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
                     chooseFileList.remove(allFileList.get(position));
                 }
                 tvhasChoose.setText("已选："+chooseFileList.size());
+                if (chooseFileList.size() > 0) {
+                    rlSelectable.setVisibility(View.VISIBLE);
+                } else {
+                    rlSelectable.setVisibility(View.GONE);
+                }
             }
         });
 
         tvKeyWord.addTextChangedListener(textWatcher);
+
+
 
     }
 
@@ -142,14 +157,14 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
                 if (chooseBtnStatus == 0) {
                     tvChoose.setText("取消");
                     chooseBtnStatus = 1;
-                    rlSelectable.setVisibility(View.VISIBLE);
+//                    rlSelectable.setVisibility(View.VISIBLE);
                     measureFileAdapter.setShowCheckBox(true);
                     measureFileAdapter.notifyDataSetChanged();
 
                 } else if (chooseBtnStatus == 1) {
                     tvChoose.setText("选择");
                     chooseBtnStatus = 0;
-                    rlSelectable.setVisibility(View.GONE);
+//                    rlSelectable.setVisibility(View.GONE);
                     chooseFileList.clear();
                     measureFileAdapter.setShowCheckBox(false);
                     measureFileAdapter.setAllChecked(false);
@@ -161,6 +176,10 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
              * TODO 删除按钮
              */
             case R.id.tv_del_file:
+                if (chooseFileList.size() == 0) {
+                    Toast.makeText(getApplicationContext(),"未选择文件",Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 AlertDialog.Builder builder = new AlertDialog.Builder(MeasureFileActivity.this);
                 builder.setTitle("是否确定删除以下文件？");
                 StringBuffer delFileNames = new StringBuffer();
@@ -286,8 +305,35 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
         builder.show();
     }
 
+    /**
+     * 点击事件
+     * @param position
+     */
     @Override
     public void onThirdClickable(int position) {
+        LogUtils.show("点击了打开文件");
+        try {
+            Intent intent = new Intent();
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setAction(Intent.ACTION_VIEW);
+            File openFile = displayFileList.get(position);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {//大于等于android 7.0的时候
+                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                //参数1 上下文, 参数2 Provider主机地址 和配置文件中保持一致   参数3  共享的文件
+                Uri uri = FileProvider.getUriForFile(
+                        MeasureFileActivity.this,
+                        "com.vitec.task.smartrule.fileprovider",
+                        openFile);
+                intent.setDataAndType(uri, "application/vnd.ms-excel");
+
+            } else {
+                intent.setDataAndType(Uri.fromFile(openFile), "application/vnd.ms-excel");
+            }
+            startActivity(intent);
+            Intent.createChooser(intent, "选择对应的软件打开文件");
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(getApplicationContext(),"文件无法打开，请下载相关软件",Toast.LENGTH_SHORT).show();
+        }
 
     }
 }

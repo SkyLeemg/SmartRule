@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <include
@@ -10,12 +11,13 @@
 
     <ImageView
         android:id="@+id/img_logo"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="150dp"
+        android:layout_height="125dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="38dp"
+        android:layout_marginTop="100dp"
         android:scaleType="centerCrop"
-        android:src="@mipmap/vlogo"
+        android:src="@mipmap/updates_logo_3x"
+        android:layout_marginLeft="30dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/include" />
@@ -28,28 +30,33 @@
         android:orientation="horizontal"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="35dp"
         >
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="APP版本："
+            android:textColor="@color/color_black_666"
+            android:textSize="15sp"
             />
         <TextView
             android:id="@+id/tv_app_ver"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="1.0.1"
+            android:textColor="@color/color_black_666"
+            android:textSize="15sp"
             />
 
         <TextView
             android:id="@+id/tv_app_check_update"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/blue_tv_color"
+            android:textColor="@color/color_word"
             android:text="检查更新"
             android:layout_marginLeft="10dp"
+            android:textSize="15sp"
             />
 
     </LinearLayout>
@@ -61,28 +68,33 @@
         android:orientation="horizontal"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="10dp"
         >
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="靠尺版本："
+            android:textColor="@color/color_black_666"
+            android:textSize="15sp"
             />
         <TextView
             android:id="@+id/tv_dev_ver"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="1.0.1"
+            android:textColor="@color/color_black_666"
+            android:textSize="15sp"
             />
 
         <TextView
             android:id="@+id/tv_dev_check_update"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/blue_tv_color"
+            android:textColor="@color/color_word"
             android:text="检查更新"
             android:layout_marginLeft="10dp"
+            android:textSize="15sp"
             />
 
     </LinearLayout>
@@ -95,6 +107,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginBottom="14dp"
+        android:textColor="@color/color_unselect_bar"
         android:text="网址：http://iotapp.vkforest.com"/>
 
     <TextView
@@ -104,6 +117,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginBottom="5dp"
+        android:textColor="@color/color_black_666"
         android:text="墨点狗智能科技有限公司"/>
 
 </android.support.constraint.ConstraintLayout>

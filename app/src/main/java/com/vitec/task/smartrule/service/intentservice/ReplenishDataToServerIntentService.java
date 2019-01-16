@@ -62,6 +62,9 @@ public class ReplenishDataToServerIntentService extends IntentService{
                 List<RulerCheckOptions> checkOptionsList = OperateDbUtil.queryCheckOptionFromSqlite(getApplicationContext(), rulerCheckList.get(i));
                 List<RulerCheckOptionsData> optionsDataList = new ArrayList<>();
                 for (RulerCheckOptions checkOptions : checkOptionsList) {
+//                    j检查是否有图纸未上传
+                    uploadOptionsPic(checkOptions);
+//                    通过option查找数据
                     List<RulerCheckOptionsData> dataList = OperateDbUtil.queryMeasureDataFromSqlite(getApplicationContext(), checkOptions);
                     optionsDataList.addAll(dataList);
                 }
@@ -70,7 +73,7 @@ public class ReplenishDataToServerIntentService extends IntentService{
                 uploadIntent.putExtra(PerformMeasureNetIntentService.GET_CREATE_OPTIONS_DATA_KEY, (Serializable) checkOptionsList);
                 uploadIntent.putExtra(PerformMeasureNetIntentService.GET_UPDATE_DATA_KEY, (Serializable) optionsDataList);
                 startService(uploadIntent);
-                LogUtils.show("ReplenishDataToServerIntentService----一直没网络，"+rulerCheckList.get(i).getProjectName()+",准备开始上传");
+                LogUtils.show("ReplenishDataToServerIntentService----一直没网络，"+rulerCheckList.get(i).getProject().getProjectName()+",准备开始上传");
             }
         } else {
             String dataWhere = " where " + DataBaseParams.server_id + "= 0  ";
@@ -94,6 +97,12 @@ public class ReplenishDataToServerIntentService extends IntentService{
             }
         }
 
+        /*********************请求图纸上传失败的***************************/
+//        String imgWhere = " where " + DataBaseParams.measure_option_img_upload_flag + "= 0";
+//        List<RulerCheckOptions> imgOptions = OperateDbUtil.queryCheckOptionFromSqlite(getApplicationContext(), imgWhere);
+//        for (RulerCheckOptions options : imgOptions) {
+//            uploadOptionsPic(options);
+//        }
 
 
         /***************************请求之前删除失败的记录表和数据********************************/
@@ -126,6 +135,23 @@ public class ReplenishDataToServerIntentService extends IntentService{
             serviceIntent.putExtra(PerformMeasureNetIntentService.GET_FINISH_MEASURE_KEY, (Serializable) finishRulerCheck);
             startService(serviceIntent);
             LogUtils.show("请求以前未结束测量的开始啦，。，。，。，。，。，。，。，。，。，。");
+        }
+    }
+
+    /**
+     * 判断RulerCheckOptions是否有未上传的图纸。
+     * 有则请求上传图纸。接着更新接口
+     * @param options
+     */
+    private void uploadOptionsPic(RulerCheckOptions options) {
+        if (options.getImg_upload_flag() == 0&& options.getImgPath() != null && options.getImgPath().length() > 5) {
+            String server_id = String.valueOf(options.getServerId());
+            LogUtils.show("ReplenishDataToServerIntentService---查看管控要点的服务ID：" + server_id);
+             Intent uploadIntent = new Intent(getApplicationContext(), UploadPicIntentService.class);
+             uploadIntent.putExtra(UploadPicIntentService.UPLOAD_FLAG, UploadPicIntentService.FLAG_UPLOAD_OPTION_IMG);
+             uploadIntent.putExtra(UploadPicIntentService.VALUE_IMG_PATH, options.getImgPath());
+             uploadIntent.putExtra(UploadPicIntentService.VALUE_OPTION_LIST, server_id);
+             startService(uploadIntent);
         }
     }
 }

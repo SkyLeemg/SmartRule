@@ -5,41 +5,37 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.adapter.ChooseMeasureProjectAdapter;
 import com.vitec.task.smartrule.bean.ChooseMeasureMsg;
 import com.vitec.task.smartrule.bean.NetCallBackMessage;
+import com.vitec.task.smartrule.bean.RulerCheckProject;
 import com.vitec.task.smartrule.bean.RulerEngineer;
 import com.vitec.task.smartrule.bean.RulerOptions;
 import com.vitec.task.smartrule.bean.User;
+import com.vitec.task.smartrule.bean.event.QueryProjectGroupMsgEvent;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
+import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.interfaces.IChooseGetter;
-import com.vitec.task.smartrule.net.NetParams;
-import com.vitec.task.smartrule.net.OkHttpHelper;
-import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
+import com.vitec.task.smartrule.net.FileOkHttpUtils;
+import com.vitec.task.smartrule.net.NetConstant;
 import com.vitec.task.smartrule.service.intentservice.GetMudelIntentService;
+import com.vitec.task.smartrule.service.intentservice.ProjectManageRequestIntentService;
+import com.vitec.task.smartrule.service.intentservice.ReplenishDataToServerIntentService;
 import com.vitec.task.smartrule.utils.HeightUtils;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
-import com.vitec.task.smartrule.utils.SharePreferenceUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * 点击进入测量后 选择项目工程的页面
@@ -55,13 +51,15 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
     private ChooseMeasureProjectAdapter projectAdapter;
     private int projectCount = 1;
 
-    private OkHttpHelper okHttpHelper;
+    private FileOkHttpUtils fileOkHttpUtils;
     private BleDataDbHelper dataDbHelper;
 
+    private User user;
 
     //    新的对象
     private List<RulerEngineer> engineerList;//模板
     private List<RulerOptions> optionsList;//模板
+    private List<RulerCheckProject> projectList;
     private List<ChooseMeasureMsg> chooseMeasureMsgList;//所有item的数据集合，集合engineerlist模板和optionsList模板的信息
     private ChooseMeasureMsg chooseMeasureMsg;//一个item模板
 
@@ -78,6 +76,7 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
     }
 
     private void initData() {
+        user = OperateDbUtil.getUser(getApplicationContext());
         /**
          * 测试区域
          */
@@ -88,8 +87,17 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
         engineerList = new ArrayList<>();
         chooseMeasureMsgList = new ArrayList<>();
         chooseMeasureMsg = new ChooseMeasureMsg();
+//        User user = OperateDbUtil.getUser(getApplicationContext());
 
-        okHttpHelper = new OkHttpHelper();
+
+        /**
+         * 获取所有项目表的数据
+         */
+        requestProjectData();
+//        String projectWhere = " where " + DataBaseParams.user_user_id + " = " + user.getUserID();
+        projectList = new ArrayList<>();
+
+        fileOkHttpUtils = new FileOkHttpUtils();
 //        旧数据对象初始化
 //        初始化数据库helper
         dataDbHelper = new BleDataDbHelper(getApplicationContext());
@@ -108,9 +116,44 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
         projectAdapter = new ChooseMeasureProjectAdapter(this, this);
         lvChoose.setAdapter(projectAdapter);
         HeightUtils.setListViewHeighBaseOnChildren(lvChoose);
-
+         /**
+          * 补上传服务启动
+          */
+        Intent replenishIntent = new Intent(getApplicationContext(), ReplenishDataToServerIntentService.class);
+        startService(replenishIntent);
 
     }
+
+   private void requestProjectData() {
+       Intent queryIntent = new Intent(this, ProjectManageRequestIntentService.class);
+       Bundle bundle = new Bundle();
+       bundle.putInt(DataBaseParams.user_user_id, user.getUserID());
+       bundle.putInt(NetConstant.page_size, 50);
+       bundle.putInt(NetConstant.current_Page, 1);
+       queryIntent.putExtra(ProjectManageRequestIntentService.REQUEST_FLAG, ProjectManageRequestIntentService.flag_group_get_project_list);
+       queryIntent.putExtra(ProjectManageRequestIntentService.key_get_value, bundle);
+       startService(queryIntent);
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void projectGroupEventCallBack(QueryProjectGroupMsgEvent event) {
+        LogUtils.show("projectGroupEventCallBack---接收到项目更新的返回");
+        if (event.isSuccess()) {
+            String where = " where " + DataBaseParams.user_user_id + '=' + user.getUserID()+" ORDER BY id DESC";
+            List<RulerCheckProject> projectList = OperateDbUtil.queryProjectDataFromSqlite(getApplicationContext(), where);
+            for (RulerCheckProject project : projectList) {
+                /************向服务器请求当前测量组的成员信息和单位工程信息*****************/
+                Bundle b = new Bundle();
+                b.putInt(DataBaseParams.measure_project_id, project.getServer_id());
+                Intent intent = new Intent(getApplicationContext(), ProjectManageRequestIntentService.class);
+                intent.putExtra(ProjectManageRequestIntentService.REQUEST_FLAG, ProjectManageRequestIntentService.flag_group_get_member_and_unit);
+                intent.putExtra(ProjectManageRequestIntentService.key_get_value, b);
+                startService(intent);
+            }
+        }
+    }
+
 
     /**
      * 初始化一个空的item模板，
@@ -182,7 +225,7 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
 //                    OperateDbUtil.addEngineerMudelData(getApplicationContext(),engineerList);
 //                    /**获取管控要点的Json字符串
 //                     */
-//                    okHttpHelper.getDataFromServer(NetParams.getOptionInfoUrl, 2);
+//                    fileOkHttpUtils.getDataFromServer(NetParams.getOptionInfoUrl, 2);
 //                } catch (JSONException e) {
 //                    e.printStackTrace();
 //                }
@@ -299,6 +342,16 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
     @Override
     public List<ChooseMeasureMsg> getChooseMeasureMsgList() {
         return chooseMeasureMsgList;
+    }
+
+    @Override
+    public List<RulerCheckProject> getCheckProjectList() {
+        if (projectList.size() == 0) {
+            String where = " where " + DataBaseParams.user_user_id + '=' + user.getUserID()+" ORDER BY id DESC";
+            projectList = OperateDbUtil.queryProjectDataFromSqlite(getApplicationContext(), where);
+
+        }
+        return projectList;
     }
 
     @Override

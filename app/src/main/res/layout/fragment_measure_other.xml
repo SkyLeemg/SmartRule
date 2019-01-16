@@ -9,17 +9,31 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tv_add_mpic"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="添加图纸"
-                android:textColor="@color/color_word"
-                android:textStyle="bold"
-                android:textSize="17sp"
-                android:layout_marginTop="11dp"
-                />
+            <RelativeLayout
+                android:id="@+id/rl_add_pic"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@color/white"
+                >
+                <TextView
+                    android:id="@+id/tv_add_mpic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="添加图纸"
+                    android:textColor="@color/color_word"
+                    android:background="@drawable/shape_btn_create_meausre"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:textSize="14sp"
+                    android:layout_marginTop="11dp"
+                    android:layout_centerInParent="true"
+                    />
+
+            </RelativeLayout>
+
             <!--**************************图纸编辑部分*****************************-->
             <RelativeLayout
                 android:id="@+id/rl_edit_pic"

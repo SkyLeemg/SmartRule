@@ -33,7 +33,11 @@ public class ZoomMoveFrameLayout extends FrameLayout {
     private float minScale = 1f;
     private float maxScale = 4f;
     private float fixScale = 1f;
+//    private float initX = 0f;
+//    private float initY = 0f;
     private ScaleGestureDetector scaleGestureDetector;
+    private float lastScale = 1f;
+    private boolean isSigle = true;//是否为单指滑动
 
     public ZoomMoveFrameLayout(@NonNull Context context) {
         super(context);
@@ -66,104 +70,57 @@ public class ZoomMoveFrameLayout extends FrameLayout {
                 break;
 
             case MotionEvent.ACTION_MOVE:
-//                LogUtils.show("ZoomMoveFrameLayout----ACTION_MOVE");
-//                奇序号点平均值
-//                PointF oddAveragePoint = new PointF();
-////                偶序号点平均值
-//                PointF evenAveragePoint = new PointF();
-//                for (int i=0;i<event.getPointerCount();i++) {
-//                    currentCenter.x += event.getX(i);
-//                    currentCenter.y += event.getY(i);
-//                }
-//                currentCenter.x /= event.getPointerCount();
-//                currentCenter.y /= event.getPointerCount();
-
-                if (event.getPointerCount() > 1) {
-//                    int oddCount = 0;
-//                    int eventCount = 0;
-//                    for (int i = 0; i < event.getPointerCount(); i++) {
-//                        if ((i + 1) % 2 == 0) {
-//                            evenAveragePoint.x += event.getX(i);
-//                            evenAveragePoint.y += event.getY(i);
-//                            eventCount++;
-//                        } else {
-//                            oddAveragePoint.x += event.getX(i);
-//                            oddAveragePoint.y += event.getY(i);
-//                            oddCount++;
-//                        }
-//                    }
-//                    evenAveragePoint.x /= eventCount;
-//                    evenAveragePoint.y /= eventCount;
-//                    oddAveragePoint.x /= oddCount;
-//                    oddAveragePoint.y /= oddCount;
-//
-//                    Path path = new Path();
-//                    for (int i = 0; i < event.getPointerCount(); i++) {
-//                        for (int j = 0; j < event.getPointerCount(); j++) {
-//                            path.moveTo(event.getX(i), event.getY(i));
-//                            path.lineTo(event.getX(j), event.getY(j));
-//                        }
-//                    }
-//
-//                    RectF rectF = new RectF();
-//                    path.computeBounds(rectF, false);
-//                    float distance = (rectF.width() + rectF.height()) * 2;
-//                    touchDistanceQueue.add(distance);
-////                    平滑处理
-//                    int size = 4;
-//                    if (touchDistanceQueue.size() >= size) {
-//                        float dTotalAverage = 0f;
-//                        for (Float d : touchDistanceQueue) {
-//                            dTotalAverage += d;
-//                            dTotalAverage += 200;
-//                        }
-//                        dTotalAverage /= touchDistanceQueue.size();
-////                        判断是多点漫游还是多点缩放
-//                        float distanceX = currentCenter.x - preCurrentCenter.x;
-//                        float distanceY = currentCenter.y - preCurrentCenter.y;
-//
-//                        if (Math.abs(distanceX) > 2 || Math.abs(distanceY) > 2) {
-////                            平移
-//                            transLate(distanceX, distanceY);
-//                        } else {
-//                            if (prevDistance != Float.MIN_VALUE) {
-////                                缩放
-//                                float scale = dTotalAverage / prevDistance;
-//                                totalScale *= dTotalAverage / prevDistance;
-//                                scale(scale, currentCenter.x, currentCenter.y);
-//                            }
-//                            prevDistance = dTotalAverage;
-//                        }
-//                        while (touchDistanceQueue.size() > size) {
-//                            touchDistanceQueue.poll();
-//                        }
-//
-//                    }
-
-                } else {
-                    currentCenter.x = event.getX();
-                    currentCenter.y = event.getY();
-                    if (preCurrentCenter != null) {
-                        float distanceX = currentCenter.x - preCurrentCenter.x;
-                        float distanceY = currentCenter.y - preCurrentCenter.y;
+                if (isSigle) {
+                    if (event.getPointerCount() == 1) {
+                        currentCenter.x = event.getX();
+                        currentCenter.y = event.getY();
+                        if (preCurrentCenter != null) {
+                            float distanceX = currentCenter.x - preCurrentCenter.x;
+                            float distanceY = currentCenter.y - preCurrentCenter.y;
                         transLate(distanceX, distanceY);
+//                            LogUtils.show("开始平移了");
+                        }
+                        preCurrentCenter = currentCenter;
+                        currentCenter = new PointF();
+                    } else{
+                        touchDistanceQueue.clear();
+                        preCurrentCenter = null;
+                        prevDistance = Float.MIN_VALUE;
+//                        LogUtils.show("双指");
+                        isSigle = false;
                     }
                 }
-                preCurrentCenter = currentCenter;
-                currentCenter = new PointF();
+
 
                 break;
             case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_POINTER_UP:
-            case MotionEvent.ACTION_CANCEL:
                 touchDistanceQueue.clear();
                 preCurrentCenter = null;
                 prevDistance = Float.MIN_VALUE;
+//                LogUtils.show("抬起了");
+                isSigle = true;
                 break;
         }
         return true;
 
     }
+
+//
+//    public void setInitX() {
+//        if (childViewList.size() > 0) {
+//            initX = childViewList.get(0).getX();
+//            initY = childViewList.get(0).getY();
+//            if (initY == 0) {
+//                initY = 80f;
+//            }
+//            if (initX == 0) {
+//                initX = 80f;
+//            }
+//            LogUtils.show("打印查看初始坐标：" + initX + "," + initY);
+//        }
+//    }
+
+
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -194,7 +151,16 @@ public class ZoomMoveFrameLayout extends FrameLayout {
      * @param dx x轴偏移多少
      * @param dy y轴偏移多少 **/
     public void transLate(float dx, float dy) {
+//        int i = 0;
         for (View view : childViewList) {
+//            if (i == 0) {
+//                if ((view.getX() + dx) > initX) {
+//                    break;
+//                }
+//                if ((view.getY() + dy) > initY) {
+//                    break;
+//                }
+//            }
             view.setX(view.getX() + (dx));
             view.setY(view.getY() + (dy));
         }
@@ -229,9 +195,13 @@ public class ZoomMoveFrameLayout extends FrameLayout {
     private ScaleGestureDetector.OnScaleGestureListener onScaleGestureListener=new ScaleGestureDetector.OnScaleGestureListener() {
         @Override
         public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
-//            LogUtils.show("onScaleGestureListener---打印查看缩放间隔：" + scaleGestureDetector.getScaleFactor());
-            LogUtils.show("onScaleGestureListener---打印查看缩放坐标：" + scaleGestureDetector.getFocusX() + "," + scaleGestureDetector.getFocusY());
-            scale(scaleGestureDetector.getScaleFactor(), scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
+//            LogUtils.show("onScaleGestureListener---打印查看缩放坐标：" + scaleGestureDetector.getFocusX() + "," + scaleGestureDetector.getFocusY());
+//            LogUtils.show("查看当前缩放值："+scaleGestureDetector.getScaleFactor());
+
+            if (scaleGestureDetector.getCurrentSpan()!=scaleGestureDetector.getPreviousSpan()) {
+                scale(scaleGestureDetector.getScaleFactor(), scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
+            }
+
             return true;
         }
 

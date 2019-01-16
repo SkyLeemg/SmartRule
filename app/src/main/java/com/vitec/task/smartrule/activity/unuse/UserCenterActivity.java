@@ -93,7 +93,7 @@ public class UserCenterActivity extends BaseActivity implements View.OnClickList
         userList = new ArrayList<>();
         user = new User();
 
-        String where = " where " + DataBaseParams.user_user_id + " = " + tUser.getUserID() + " or " + DataBaseParams.user_wid + " = " + tUser.getWid();
+        String where = " where " + DataBaseParams.user_user_id + " = " + tUser.getUserID() ;
         userList = userDbHelper.queryUserDataFromSqlite(where);
 
         if (userList.size() > 0) {
@@ -106,24 +106,25 @@ public class UserCenterActivity extends BaseActivity implements View.OnClickList
         if ( user.getUserID() > 0) {
             tvUserNameEditor.setVisibility(View.INVISIBLE);
             tvUserName.setText(user.getUserName());
-        } else if (!tUser.getWid().equalsIgnoreCase("null") && !tUser.getWid().equalsIgnoreCase("0")) {
-            tvUserNameEditor.setVisibility(View.VISIBLE);
-            tvUserName.setText("--");
         }
+//        else if (!tUser.getWid().equalsIgnoreCase("null") && !tUser.getWid().equalsIgnoreCase("0")) {
+//            tvUserNameEditor.setVisibility(View.VISIBLE);
+//            tvUserName.setText("--");
+//        }
 //        初始化岗位数据
-        try {
-            JSONArray jsonArray = new JSONArray(user.getUserJob());
-            if (jsonArray.length() > 0) {
-                job = jsonArray.getString(0);
-                tvJob.setText(job);
-                tvJobEditor.setVisibility(View.INVISIBLE);
-            } else {
-                tvJob.setText("--");
-                tvJobEditor.setVisibility(View.VISIBLE);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+//        try {
+////            JSONArray jsonArray = new JSONArray(user.getUserJob());
+////            if (jsonArray.length() > 0) {
+////                job = jsonArray.getString(0);
+////                tvJob.setText(job);
+////                tvJobEditor.setVisibility(View.INVISIBLE);
+////            } else {
+////                tvJob.setText("--");
+////                tvJobEditor.setVisibility(View.VISIBLE);
+////            }
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
 
 //        初始化手机号码
         if (user.getMobile()!=null && !user.getMobile().equalsIgnoreCase("0") && user.getMobile().length() > 5) {

@@ -5,16 +5,22 @@ import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
+import com.vitec.task.smartrule.bean.CompanyMessage;
+import com.vitec.task.smartrule.bean.OptionMeasure;
+import com.vitec.task.smartrule.bean.ProjectUser;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.bean.RulerCheckOptionsData;
+import com.vitec.task.smartrule.bean.RulerCheckProject;
 import com.vitec.task.smartrule.bean.RulerEngineer;
 import com.vitec.task.smartrule.bean.RulerOptions;
+import com.vitec.task.smartrule.bean.RulerUnitEngineer;
 import com.vitec.task.smartrule.bean.User;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
+import com.vitec.task.smartrule.utils.OptionsMeasureUtils;
 import com.vitec.task.smartrule.utils.SharePreferenceUtils;
 
 import java.util.ArrayList;
@@ -98,18 +104,21 @@ public class OperateDbUtil {
         values.put(DataBaseParams.measure_create_date,rulerCheck.getCreateDate());
         values.put(DataBaseParams.measure_create_time,rulerCheck.getCreateTime());
         values.put(DataBaseParams.measure_user_id,rulerCheck.getUser().getUserID());
-        values.put(DataBaseParams.measure_project_name,rulerCheck.getProjectName());
+        values.put(DataBaseParams.measure_project_id, rulerCheck.getProject().getId());
+        values.put(DataBaseParams.measure_unit_id, rulerCheck.getUnitEngineer().getId());
+        values.put(DataBaseParams.project_server_id, rulerCheck.getProject().getServer_id());
         values.put(DataBaseParams.upload_flag,rulerCheck.getUpload_flag());
         values.put(DataBaseParams.measure_is_finish,rulerCheck.getStatus());
         values.put(DataBaseParams.server_id,rulerCheck.getServerId());
         boolean flag = bleDataDbHelper.insertDevToSqlite(DataBaseParams.measure_table_name, values);
 
-//        Log.e(TAG, "addMeasureDataToSqlite: 查看测量表头是否添加成功："+flag+",查看内容：" +values);
+        Log.e(TAG, "addMeasureDataToSqlite: 查看测量表头是否添加成功："+flag+",查看内容：" +values);
 //        如果添加成功，则返回添加的哪一行的id
         if (flag) {
             String where = "where " + DataBaseParams.measure_engin_id + "=" + rulerCheck.getEngineer().getServerID() + " AND " +
                     DataBaseParams.measure_user_id + "=" + rulerCheck.getUser().getUserID()+" AND " +
-                    DataBaseParams.measure_project_name+"= \""+rulerCheck.getProjectName()+"\" AND "+
+                    DataBaseParams.measure_project_id+"= \""+rulerCheck.getProject().getId()+"\" AND "+
+                    DataBaseParams.measure_unit_id+"= \""+rulerCheck.getUnitEngineer().getId()+"\" AND "+
                     DataBaseParams.measure_check_floor+"= \""+rulerCheck.getCheckFloor()+"\" ;"
                     ;
 //            Log.e(TAG, "addMeasureDataToSqlite: 查看where条件：" + where);
@@ -145,12 +154,15 @@ public class OperateDbUtil {
         values.put(DataBaseParams.measure_option_check_id, rulerCheckOption.getRulerCheck().getId());
         values.put(DataBaseParams.measure_option_options_id, rulerCheckOption.getRulerOptions().getId());
         values.put(DataBaseParams.upload_flag,rulerCheckOption.getUpload_flag());
-        values.put(DataBaseParams.measure_option_floor_height, rulerCheckOption.getFloorHeight());
+        values.put(DataBaseParams.measure_option_floor_height, rulerCheckOption.getFloorHeight().getId());
         values.put(DataBaseParams.measure_option_measured_points,rulerCheckOption.getMeasuredNum());
         values.put(DataBaseParams.measure_option_qualified_points, rulerCheckOption.getQualifiedNum());
         values.put(DataBaseParams.measure_option_percent_pass,rulerCheckOption.getQualifiedRate());
         values.put(DataBaseParams.options_create_time, rulerCheckOption.getCreateTime());
-
+        values.put(DataBaseParams.measure_option_img_time,rulerCheckOption.getImgUpdateTime());
+        values.put(DataBaseParams.measure_option_img_upload_flag,rulerCheckOption.getImg_upload_flag());
+        values.put(DataBaseParams.measure_option_img_path, rulerCheckOption.getImgPath());
+        values.put(DataBaseParams.measure_option_img_number,rulerCheckOption.getImgNumber());
         boolean isSuccess = bleDataDbHelper.insertDevToSqlite(DataBaseParams.measure_option_table_name, values);
 
             if (isSuccess) {
@@ -182,6 +194,7 @@ public class OperateDbUtil {
         values.put(DataBaseParams.options_data_update_flag, data.getUpdateFlag());
         values.put(DataBaseParams.server_id,data.getServerId());
         values.put(DataBaseParams.upload_flag,data.getUpload_flag());
+        values.put(DataBaseParams.options_data_number,data.getNumber());
         boolean isSuccess = bleDataDbHelper.insertDevToSqlite(DataBaseParams.options_data_table_name, values);
         String where = " where " + DataBaseParams.options_data_check_options_id + " = " + data.getRulerCheckOptions().getId() + " and " + DataBaseParams.options_data_content + " = \""+
                 data.getData()+"\" and "+DataBaseParams.options_data_create_time+" = " +data.getCreateTime();
@@ -192,10 +205,237 @@ public class OperateDbUtil {
                 index = cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id));
             } while (cursor.moveToNext());
         }
+        cursor.close();
         bleDataDbHelper.close();
 //        LogUtils.show("保存测量数据------数据ID："+index+",对应的管控要点ID："+data.getRulerCheckOptions().getId());
         return index;
     }
+
+
+    /**
+     * 添加项目名到数据库
+     * @param context
+     * @param project
+     * @return
+     */
+    public static int addProjectNameDataToSqlite(Context context, RulerCheckProject project) {
+        BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
+        ContentValues values = new ContentValues();
+        values.put(DataBaseParams.check_project_name, project.getProjectName());
+        values.put(DataBaseParams.options_create_time, project.getCreateTime());
+        values.put(DataBaseParams.options_update_time, project.getUpdateTime());
+        values.put(DataBaseParams.server_id, project.getServer_id());
+        values.put(DataBaseParams.user_user_id,project.getUser().getUserID());
+        values.put(DataBaseParams.check_project_qrcode, project.getQrCode());
+        boolean result = bleDataDbHelper.insertDevToSqlite(DataBaseParams.check_project_table_name, values);
+        int index = 0;
+        if (result) {
+            String where = " where " + DataBaseParams.check_project_name + " = \"" + project.getProjectName() + "\"" +
+                    " AND " + DataBaseParams.measure_create_time + " = " + project.getCreateTime();
+            Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.check_project_table_name, " * " ,where);
+            if (cursor.moveToFirst()) {
+                do {
+                    index = cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id));
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        bleDataDbHelper.close();
+
+        return index;
+    }
+
+
+    public static int addUnitPositionDataToSqlite(Context context, RulerUnitEngineer unitEngineer) {
+        int index = 0;
+        BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
+        ContentValues values = new ContentValues();
+        values.put(DataBaseParams.unit_engineer_location, unitEngineer.getLocation());
+        values.put(DataBaseParams.options_create_time, unitEngineer.getCreateTime());
+        values.put(DataBaseParams.options_update_time, unitEngineer.getUpdateTime());
+        values.put(DataBaseParams.measure_project_id,unitEngineer.getProject_id());
+        values.put(DataBaseParams.server_id,unitEngineer.getServer_id());
+        values.put(DataBaseParams.project_server_id, unitEngineer.getProject_server_id());
+        boolean result = bleDataDbHelper.insertDevToSqlite(DataBaseParams.unit_engineer_table_name, values);
+        if (result) {
+            String where = " where " + DataBaseParams.unit_engineer_location + " = \"" + unitEngineer.getLocation() + "\"" +
+                    " AND " + DataBaseParams.measure_create_time + " = " + unitEngineer.getCreateTime()+
+                    " AND " + DataBaseParams.options_update_time + " = " + unitEngineer.getUpdateTime()+
+                    " AND " + DataBaseParams.measure_project_id + " = " + unitEngineer.getProject_id();
+            Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.unit_engineer_table_name, " * " ,where);
+            if (cursor.moveToFirst()) {
+                do {
+                    index = cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id));
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        bleDataDbHelper.close();
+        return index;
+    }
+
+    /**
+     * 添加测量组成员到数据库
+     */
+    public static int addProjectUserToSqlite(Context context, ProjectUser user) {
+        int index = 0;
+        BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
+        ContentValues values = new ContentValues();
+        values.put(DataBaseParams.user_user_id, user.getUser_id());
+        values.put(DataBaseParams.user_mobile, user.getMobile());
+        values.put(DataBaseParams.user_user_name, user.getUserName());
+        values.put(DataBaseParams.user_position, user.getPosition());
+        values.put(DataBaseParams.measure_project_id, user.getProjectId());
+        values.put(DataBaseParams.cid, user.getcId());
+        values.put(DataBaseParams.server_id,user.getServer_id());
+        values.put(DataBaseParams.project_server_id, user.getProjectServerId());
+        boolean result = bleDataDbHelper.insertDevToSqlite(DataBaseParams.project_user_table_name, values);
+        if (result) {
+            String where = " where " + DataBaseParams.user_user_name + " = \"" + user.getUserName() + "\"" +
+                    " AND " + DataBaseParams.user_mobile + " = \"" + user.getMobile() + "\"" +
+                    " AND " + DataBaseParams.user_position + " = \"" + user.getPosition() + "\"" +
+                    " AND " + DataBaseParams.user_user_id + " = " + user.getUser_id() +
+                    " AND " + DataBaseParams.measure_project_id + " = " + user.getProjectId() +
+                    " AND " + DataBaseParams.project_server_id + " = " + user.getProjectServerId();
+            Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.project_user_table_name, " * " ,where);
+            if (cursor.moveToFirst()) {
+                do {
+                    index = cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id));
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        bleDataDbHelper.close();
+
+        return index;
+    }
+
+    public static int addCompanyToSqlite(Context context, CompanyMessage companyMessage) {
+        int index = 0;
+        BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
+        ContentValues values = new ContentValues();
+        values.put(DataBaseParams.server_id,companyMessage.getServer_id());
+        values.put(DataBaseParams.iot_company_title, companyMessage.getName());
+        values.put(DataBaseParams.iot_company_content, companyMessage.getContent());
+        boolean result = bleDataDbHelper.insertDevToSqlite(DataBaseParams.iot_company_table_name, values);
+        if (result) {
+            String where = " where "
+                    + DataBaseParams.iot_company_content + " = \"" + companyMessage.getContent() + "\"" +
+                    " AND " + DataBaseParams.iot_company_title + " = \"" + companyMessage.getName() + "\"" +
+                    " AND " + DataBaseParams.server_id + " = " + companyMessage.getServer_id();
+            Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.iot_company_table_name, " * " ,where);
+            if (cursor.moveToFirst()) {
+                do {
+                    index = cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id));
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        bleDataDbHelper.close();
+
+        return index;
+
+    }
+
+
+    public static List<CompanyMessage> queryCompanyMsgFromSqlite(Context context, String where) {
+        List<CompanyMessage> companyMessageList = new ArrayList<>();
+        BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
+        Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.iot_company_table_name, " * ", where);
+        if (cursor.moveToFirst()) {
+            do {
+                CompanyMessage message = new CompanyMessage();
+                message.setId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id)));
+                message.setServer_id(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
+                message.setContent(cursor.getString(cursor.getColumnIndex(DataBaseParams.iot_company_content)));
+                message.setName(cursor.getString(cursor.getColumnIndex(DataBaseParams.iot_company_title)));
+                companyMessageList.add(message);
+            } while (cursor.moveToNext());
+        }
+        bleDataDbHelper.close();
+        return companyMessageList;
+    }
+
+
+    public static List<ProjectUser> queryProjectUserFromSqlite(Context context, String where) {
+        List<ProjectUser> users = new ArrayList<>();
+        BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
+        Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.project_user_table_name, " * ", where);
+        if (cursor.moveToFirst()) {
+            do {
+                ProjectUser user = new ProjectUser();
+                user.setId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id)));
+                user.setMobile(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_mobile)));
+                user.setPosition(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_position)));
+                user.setProjectId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.project_server_id)));
+                user.setProjectServerId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.project_server_id)));
+                user.setUserName(cursor.getString(cursor.getColumnIndex(DataBaseParams.user_user_name)));
+                user.setServer_id(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
+                user.setUser_id(cursor.getInt(cursor.getColumnIndex(DataBaseParams.user_user_id)));
+                user.setcId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.cid)));
+                users.add(user);
+            } while (cursor.moveToNext());
+        }
+        bleDataDbHelper.close();
+        return users;
+    }
+
+
+    /**
+     * 获取项目表的数据
+     * @param context
+     * @param where
+     * @return
+     */
+    public static List<RulerCheckProject> queryProjectDataFromSqlite(Context context, String where) {
+        List<RulerCheckProject> projectList = new ArrayList<>();
+        BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
+        Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.check_project_table_name, " * ", where);
+        if (cursor.moveToFirst()) {
+            do {
+                RulerCheckProject project = new RulerCheckProject();
+                project.setId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id)));
+                project.setServer_id(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
+                project.setProjectName(cursor.getString(cursor.getColumnIndex(DataBaseParams.check_project_name)));
+                project.setCreateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_create_time)));
+                project.setUpdateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_update_time)));
+                project.setQrCode(cursor.getString(cursor.getColumnIndex(DataBaseParams.check_project_qrcode)));
+                project.setUser(getUser(context));
+//                查询当前项目对应的单位工程
+                String unitWhere = " where " + DataBaseParams.measure_project_id + "=" + project.getId() + " or " +
+                        DataBaseParams.project_server_id + "=" + project.getServer_id();
+                List<RulerUnitEngineer> unitList = queryUnitEngineerDataFromSqlite(context, unitWhere);
+                project.setUnitList(unitList);
+                projectList.add(project);
+//                LogUtils.show("查找出的项目信息----"+project);
+            } while (cursor.moveToNext());
+        }
+        bleDataDbHelper.close();
+        return projectList;
+    }
+
+    public static List<RulerUnitEngineer> queryUnitEngineerDataFromSqlite(Context context, String where) {
+        List<RulerUnitEngineer> unitList = new ArrayList<>();
+        BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
+        Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.unit_engineer_table_name, " * ", where);
+        if (cursor.moveToFirst()) {
+            do {
+                RulerUnitEngineer unit = new RulerUnitEngineer();
+                unit.setId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id)));
+                unit.setServer_id(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
+                unit.setLocation(cursor.getString(cursor.getColumnIndex(DataBaseParams.unit_engineer_location)));
+                unit.setCreateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_create_time)));
+                unit.setUpdateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_update_time)));
+                unit.setProject_id(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_project_id)));
+                unit.setProject_server_id(cursor.getInt(cursor.getColumnIndex(DataBaseParams.project_server_id)));
+//                LogUtils.show("查找出的单位工程----"+unit);
+                unitList.add(unit);
+            } while (cursor.moveToNext());
+        }
+        bleDataDbHelper.close();
+        return unitList;
+    }
+
 
     /**
      * 查询RulerCheckOptionData表格
@@ -207,8 +447,12 @@ public class OperateDbUtil {
         List<RulerCheckOptionsData> checkOptionsDataList = new ArrayList<>();
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
         String where = " where " + DataBaseParams.options_data_check_options_id + "=" + checkOption.getId();
+        StringBuffer sb = new StringBuffer();
+        sb.append(where);
+        sb.append(" ");
+        sb.append(" ORDER BY number ASC ");
 //        Log.e(TAG, "queryMeasureDataFromSqlite: 查看option_data表格中的where语句："+ where);
-        Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.options_data_table_name,"*", where);
+        Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.options_data_table_name,"*", sb.toString());
         if (cursor.moveToFirst()) {
             do {
 //                MeasureData data = new MeasureData();
@@ -219,6 +463,8 @@ public class OperateDbUtil {
                 data.setData(cursor.getString(cursor.getColumnIndex(DataBaseParams.options_data_content)));
                 data.setUpdateFlag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.options_data_update_flag)));
                 data.setUpload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.upload_flag)));
+                data.setNumber(cursor.getInt(cursor.getColumnIndex(DataBaseParams.options_data_number)));
+
                 checkOptionsDataList.add(data);
             } while (cursor.moveToNext());
         }
@@ -236,8 +482,12 @@ public class OperateDbUtil {
     public static List<RulerCheckOptionsData> queryMeasureDataFromSqlite(Context context,RulerCheckOptions checkOption, String where) {
         List<RulerCheckOptionsData> checkOptionsDataList = new ArrayList<>();
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
+        StringBuffer sb = new StringBuffer();
+        sb.append(where);
+        sb.append(" ");
+        sb.append(" ORDER BY number ASC ");
 //        Log.e(TAG, "queryMeasureDataFromSqlite: 查看option_data表格中的where语句："+ where);
-        Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.options_data_table_name,"*", where);
+        Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.options_data_table_name,"*", sb.toString());
         if (cursor.moveToFirst()) {
             do {
 //                MeasureData data = new MeasureData();
@@ -249,6 +499,7 @@ public class OperateDbUtil {
                 data.setData(cursor.getString(cursor.getColumnIndex(DataBaseParams.options_data_content)));
                 data.setUpdateFlag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.options_data_update_flag)));
                 data.setUpload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.upload_flag)));
+                data.setNumber(cursor.getInt(cursor.getColumnIndex(DataBaseParams.options_data_number)));
                 checkOptionsDataList.add(data);
             } while (cursor.moveToNext());
         }
@@ -266,8 +517,12 @@ public class OperateDbUtil {
     public static List<RulerCheckOptionsData> queryMeasureDataFromSqlite(Context context, String where) {
         List<RulerCheckOptionsData> checkOptionsDataList = new ArrayList<>();
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
+        StringBuffer sb = new StringBuffer();
+        sb.append(where);
+        sb.append(" ");
+        sb.append(" ORDER BY number ASC ");
 //        Log.e(TAG, "queryMeasureDataFromSqlite: 查看option_data表格中的where语句："+ where);
-        Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.options_data_table_name,"*", where);
+        Cursor cursor = bleDataDbHelper.queryMeasureOptionsFromSqlite(DataBaseParams.options_data_table_name,"*", sb.toString());
         if (cursor.moveToFirst()) {
             do {
 //                MeasureData data = new MeasureData();
@@ -287,6 +542,7 @@ public class OperateDbUtil {
                 data.setData(cursor.getString(cursor.getColumnIndex(DataBaseParams.options_data_content)));
                 data.setUpdateFlag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.options_data_update_flag)));
                 data.setUpload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.upload_flag)));
+                data.setNumber(cursor.getInt(cursor.getColumnIndex(DataBaseParams.options_data_number)));
                 checkOptionsDataList.add(data);
             } while (cursor.moveToNext());
         }
@@ -327,11 +583,29 @@ public class OperateDbUtil {
                 checkOption.setMeasuredNum(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_measured_points)));
                 checkOption.setQualifiedNum(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_qualified_points)));
                 checkOption.setQualifiedRate(cursor.getFloat(cursor.getColumnIndex(DataBaseParams.measure_option_percent_pass)));
+//                checkOption.setFloorHeight(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_floor_height)));
+                checkOption.setImg_upload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_upload_flag)));
+                checkOption.setImgPath(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_img_path)));
+                checkOption.setImgUpdateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_time)));
+                checkOption.setImgNumber(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_number)));
 //                根据optionid查询iot_ruler_options模板表里对应的数据
                 List<RulerOptions> optionsList = bleDataDbHelper.queryOptionsAllDataFromSqlite(" where id=" + optionId);
                 if (optionsList.size() > 0) {
                     checkOption.setRulerOptions(optionsList.get(0));
                 }
+
+                List<OptionMeasure> measureList = OptionsMeasureUtils.getOptionMeasure(checkOption.getRulerOptions().getMeasure());
+                if (measureList.size() > 0) {
+                    for (OptionMeasure measure : measureList) {
+                        checkOption.setFloorHeight(measure);
+                        if (measure.getId() == cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_floor_height))) {
+                            break;
+                        }
+                    }
+                }
+
+
+
                 checkOptionsList.add(checkOption);
 //                Log.e(TAG, "queryData: 查询历史的RulerCheckOption:"+checkOption.toString() );
             } while (cursor.moveToNext());
@@ -362,11 +636,28 @@ public class OperateDbUtil {
                 checkOption.setMeasuredNum(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_measured_points)));
                 checkOption.setQualifiedNum(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_qualified_points)));
                 checkOption.setQualifiedRate(cursor.getFloat(cursor.getColumnIndex(DataBaseParams.measure_option_percent_pass)));
+                checkOption.setImg_upload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_upload_flag)));
+//                checkOption.setFloorHeight(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_floor_height)));
+                checkOption.setImgPath(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_img_path)));
+                checkOption.setImgNumber(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_number)));
+                checkOption.setImgUpdateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_time)));
 //                根据optionid查询iot_ruler_options模板表里对应的数据
                 List<RulerOptions> optionsList = bleDataDbHelper.queryOptionsAllDataFromSqlite(" where id=" + optionId);
                 if (optionsList.size() > 0) {
                     checkOption.setRulerOptions(optionsList.get(0));
                 }
+
+                List<OptionMeasure> measureList = OptionsMeasureUtils.getOptionMeasure(checkOption.getRulerOptions().getMeasure());
+                if (measureList.size() > 0) {
+                    for (OptionMeasure measure : measureList) {
+                        checkOption.setFloorHeight(measure);
+                        if (measure.getId() == cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_floor_height))) {
+                            break;
+                        }
+                    }
+                }
+
+
                 checkOptionsList.add(checkOption);
 //                Log.e(TAG, "queryData: 查询历史的RulerCheckOption:"+checkOption.toString() );
             } while (cursor.moveToNext());
@@ -401,11 +692,27 @@ public class OperateDbUtil {
                 checkOption.setMeasuredNum(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_measured_points)));
                 checkOption.setQualifiedNum(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_qualified_points)));
                 checkOption.setQualifiedRate(cursor.getFloat(cursor.getColumnIndex(DataBaseParams.measure_option_percent_pass)));
+                checkOption.setImg_upload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_upload_flag)));
+                checkOption.setImgPath(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_img_path)));
+                checkOption.setImgNumber(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_number)));
+//                checkOption.setFloorHeight(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_floor_height)));
+                checkOption.setImgUpdateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_time)));
 //                根据optionid查询iot_ruler_options模板表里对应的数据
                 List<RulerOptions> optionsList = bleDataDbHelper.queryOptionsAllDataFromSqlite(" where id=" + optionId);
                 if (optionsList.size() > 0) {
                     checkOption.setRulerOptions(optionsList.get(0));
                 }
+
+                List<OptionMeasure> measureList = OptionsMeasureUtils.getOptionMeasure(checkOption.getRulerOptions().getMeasure());
+                if (measureList.size() > 0) {
+                    for (OptionMeasure measure : measureList) {
+                        checkOption.setFloorHeight(measure);
+                        if (measure.getId() == cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_floor_height))) {
+                            break;
+                        }
+                    }
+                }
+
                 checkOptionsList.add(checkOption);
 //                Log.e(TAG, "queryData: 查询历史的RulerCheckOption:"+checkOption.toString() );
             } while (cursor.moveToNext());
@@ -425,13 +732,8 @@ public class OperateDbUtil {
             user.setUserID(Integer.parseInt(valueMap.get(SharePreferenceUtils.user_id)));
         }
 
-        String wid = valueMap.get(SharePreferenceUtils.user_wid);
-        if (wid == null || wid.equals("null") || wid.equals("")) {
-            user.setWid("0");
-        } else {
-            user.setWid(wid);
-        }
-        user.setLoginName(valueMap.get(SharePreferenceUtils.user_login_name));
+//        String wid = valueMap.get(SharePreferenceUtils.user_wid);
+        user.setUser_type(valueMap.get(SharePreferenceUtils.user_type));
         user.setUserName(valueMap.get(SharePreferenceUtils.user_real_name));
         user.setMobile(valueMap.get(SharePreferenceUtils.user_real_name));
         user.setPassword(valueMap.get(SharePreferenceUtils.user_pwd));
@@ -456,4 +758,32 @@ public class OperateDbUtil {
         dataDbHelper.close();
         return result;
     }
+
+    public static int updateOptionsDataToSqlite(Context context,String tablename,String where,ContentValues values,String[] id) {
+        BleDataDbHelper dataDbHelper = new BleDataDbHelper(context);
+        int result = dataDbHelper.updateDataToSqlite(tablename, values, where, id);
+//        LogUtils.show("updateOptionsDataToSqlite----查看更新返回值："+result+",更新的值："+values);
+        dataDbHelper.close();
+        return result;
+    }
+
+    /**
+     *
+     * @param context
+     * @param tableName
+     * @param where
+     * @param id
+     * @return
+     */
+    public static boolean delData(Context context,String tableName, String where, String[] id) {
+        BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
+        boolean resutl = bleDataDbHelper.delData(tableName, where, id);
+        bleDataDbHelper.close();
+        return resutl;
+
+    }
+
+
+
+
 }

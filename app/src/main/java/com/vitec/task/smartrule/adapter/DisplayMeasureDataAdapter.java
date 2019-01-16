@@ -59,7 +59,10 @@ public class DisplayMeasureDataAdapter extends BaseAdapter {
         }
         holder.etData.setText(checkOptionsDataList.get(i).getData());
         holder.tvContent.setText(checkOptionsDataList.get(i).getData());
-        holder.tvTitleIndex.setText(i+1+"");
+        if (checkOptionsDataList.get(i).getNumber() != 0) {
+            holder.tvTitleIndex.setText(checkOptionsDataList.get(i).getNumber()+"");
+        }else  holder.tvTitleIndex.setText("");
+
         if (checkOptionsDataList.get(i).isQualified()) {
             holder.tvContent.setTextColor(Color.rgb(51,51,51));
         }else {

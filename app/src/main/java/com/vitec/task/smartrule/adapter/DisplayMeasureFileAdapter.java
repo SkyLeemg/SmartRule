@@ -8,6 +8,8 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mcxtzhang.swipemenulib.SwipeMenuLayout;
@@ -15,6 +17,8 @@ import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.interfaces.IClickable;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 public class DisplayMeasureFileAdapter extends BaseAdapter {
@@ -57,17 +61,31 @@ public class DisplayMeasureFileAdapter extends BaseAdapter {
             holder.checkBox = view.findViewById(R.id.cb_item);
             holder.textView = view.findViewById(R.id.tv_item_file_name);
             holder.btnDelete = view.findViewById(R.id.btn_delete);
+            holder.tvFileTime = view.findViewById(R.id.tv_file_time);
             holder.btnShare = view.findViewById(R.id.btn_share);
             holder.swipeMenuLayout = view.findViewById(R.id.swipe_menu_layout);
+            holder.linearLayout = view.findViewById(R.id.ll_content);
             view.setTag(holder);
         } else {
             holder = (ViewHolder) view.getTag();
         }
         holder.textView.setText(fileList.get(i).getName());
+        /*******获取最后修改时间*******/
+        Calendar calendar = Calendar.getInstance();
+        long time = fileList.get(i).lastModified();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        calendar.setTimeInMillis(time);
+        holder.tvFileTime.setText(format.format(calendar.getTime()));
         if (isShowCheckBox) {
             holder.checkBox.setVisibility(View.VISIBLE);
         } else {
             holder.checkBox.setVisibility(View.GONE);
+            holder.linearLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    iClickable.onThirdClickable(i);
+                }
+            });
         }
         if (!isAllChecked) {
             holder.checkBox.setChecked(false);
@@ -96,6 +114,12 @@ public class DisplayMeasureFileAdapter extends BaseAdapter {
 
             }
         });
+
+
+
+
+
+
         return view;
     }
 
@@ -135,8 +159,14 @@ public class DisplayMeasureFileAdapter extends BaseAdapter {
         SwipeMenuLayout swipeMenuLayout;
         CheckBox checkBox;
         TextView textView;
+        TextView tvFileTime;
         Button btnShare;
         Button btnDelete;
+        LinearLayout linearLayout;
+    }
+
+    public interface OnItemClickListnener {
+
     }
 
 }

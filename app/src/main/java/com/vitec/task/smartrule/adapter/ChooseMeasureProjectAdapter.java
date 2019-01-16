@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -23,17 +24,22 @@ import com.vitec.task.smartrule.bean.ChooseMeasureMsg;
 import com.vitec.task.smartrule.bean.MeasureData;
 import com.vitec.task.smartrule.bean.OptionMeasure;
 import com.vitec.task.smartrule.bean.RulerCheck;
+import com.vitec.task.smartrule.bean.RulerCheckProject;
 import com.vitec.task.smartrule.bean.RulerEngineer;
 import com.vitec.task.smartrule.bean.RulerOptions;
+import com.vitec.task.smartrule.bean.RulerUnitEngineer;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
+import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.interfaces.IChooseGetter;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.interfaces.ISelectorResultCallBack;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.utils.OptionsMeasureUtils;
+import com.vitec.task.smartrule.view.BottomSelectorAndInputDialog;
 import com.vitec.task.smartrule.view.BottomSelectorDialog;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,9 +53,11 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
     private Context context;
     private int count;
 //    private List<EngineerBean> engineerBeanList;
-    private List<String> spinnerList;
+    private List<String> spinnerList;//
     private String chooseEngineerName;//选中的工程名称
-    private int chooseEngineerIndex = 0;//spinner下拉框中选中的工程编号
+    private int choosePorjectIndex = -2;//选中的项目名称定位，小于0代表是自定义的，其他对应projectNameList的序号
+    private int chooseUnitIndex = -2;//选中的检查位置定位，同上，对应checkFloorList
+    private int chooseEngineerIndex = -2;//spinner下拉框中选中的工程编号
     private List<ChooseMeasureMsg> chooseMeasureMsgList;
     private List<RulerEngineer> engineerList;
     private List<RulerOptions> optionsList;
@@ -60,11 +68,13 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
     private List<String> projectNameList;//tvProjectName控件的数据源
     private List<String> checkFloorList;//tvCheckFloor控件的数据源
     private BleDataDbHelper dataDbHelper;
+    private List<RulerCheckProject> projectList;
 
     private ArrayAdapter projectNameAdapter;//项目名的adapter
     private ArrayAdapter checkFloorAdapter;//检查位置的adapter
-    private int chooseIndex = 0;//层高选择定位，0代表≤6，1代表＞6
+    private int chooseIndex = -2;//层高选择定位，0代表≤6，1代表＞6
     private List<String> floorHeightDatalist;
+    private List<OptionMeasure> measureList;
 
 
 //    private List<String> engineers;
@@ -80,6 +90,7 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
         chooseMeasureMsgList = getter.getChooseMeasureMsgList();
         engineerList = getter.getEngineerList();
         optionsList = getter.getOptionsList();
+        projectList = getter.getCheckProjectList();
         initSpinnerData();
     }
 
@@ -105,12 +116,16 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
         dataDbHelper = new BleDataDbHelper(context);
         checkList = dataDbHelper.queryRulerCheckTableDataFromSqlite("");
 //        初始化数据源
-        for (int i=0;i<checkList.size();i++) {
-            checkFloorList.add(checkList.get(i).getCheckFloor());
-            projectNameList.add(checkList.get(i).getProjectName());
+//        for (int i=0;i<checkList.size();i++) {
+//            checkFloorList.add(checkList.get(i).getCheckFloor());
+////            projectNameList.add(checkList.get(i).getProjectName());
+//        }
+        for (RulerCheckProject project : projectList) {
+            projectNameList.add(project.getProjectName());
         }
-        projectNameAdapter = new ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, projectNameList);
-        checkFloorAdapter = new ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, checkFloorList);
+
+//        projectNameAdapter = new ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, projectNameList);
+//        checkFloorAdapter = new ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, checkFloorList);
 
     }
 
@@ -146,14 +161,81 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
             holder.tvEngineer = view.findViewById(R.id.tv_engineer_choose);
             holder.rlFloorHeight = view.findViewById(R.id.rl_floor_height);
             holder.tvFloorHeight = view.findViewById(R.id.tv_floor_height);
+            holder.sencondPosition = view.findViewById(R.id.tv_sencond_position);
             view.setTag(holder);
 
         } else {
             holder = (ViewHolder) view.getTag();
         }
+
+        /*********************TODO 项目名称的点击事件-弹窗****************************/
+        holder.autoTvProjectName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final BottomSelectorAndInputDialog inputDialog = new BottomSelectorAndInputDialog(context, R.style.BottomDialog);
+                inputDialog.setDatalist(projectNameList);
+                inputDialog.setSelectorResultCallBack(new ISelectorResultCallBack() {
+                    @Override
+                    public void onSelectCallBack(String item, int index) {
+                        holder.autoTvProjectName.setText(item);
+                        holder.autoTvProjectName.setTextColor(Color.rgb(51,51,51));
+                        choosePorjectIndex = index;
+                        checkFloorList.clear();
+                        if (index >= 0) {
+                            if (index < projectList.size()) {
+                                if (projectList.get(index).getProjectName().equals(item)) {
+                                    checkFloorList = getUnitData(projectList.get(index));
+                                } else {
+                                    int j = 0;
+                                    for (RulerCheckProject rulerPorject : projectList) {
+                                        if (rulerPorject.getProjectName().equals(item)) {
+                                            checkFloorList = getUnitData(rulerPorject);
+                                            choosePorjectIndex = j;
+                                        }
+                                        j++;
+                                    }
+                                }
+                            }
+                        }
+                        if (!checkFloorList.contains(holder.autoTvCheckPosition.getText().toString())) {
+                            chooseUnitIndex = -2;
+                            holder.autoTvCheckPosition.setText("请选择  >");
+                            holder.autoTvCheckPosition.setTextColor(Color.rgb(201,201,201));
+                        }
+                        inputDialog.dismiss();
+
+                    }
+                });
+                inputDialog.show();
+            }
+        });
+
+        /******************TODO 检查位置的点击事件-弹窗*******************/
+        holder.autoTvCheckPosition.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (choosePorjectIndex == -2) {
+                    Toast.makeText(context, "请先选择项目名称", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                final BottomSelectorAndInputDialog inputDialog = new BottomSelectorAndInputDialog(context);
+                inputDialog.setDatalist(checkFloorList);
+                inputDialog.setSelectorResultCallBack(new ISelectorResultCallBack() {
+                    @Override
+                    public void onSelectCallBack(String item, int index) {
+                        holder.autoTvCheckPosition.setText(item);
+                        holder.autoTvCheckPosition.setTextColor(Color.rgb(51,51,51));
+                        chooseUnitIndex = index;
+                        inputDialog.dismiss();
+                    }
+                });
+                inputDialog.show();
+            }
+        });
+
+
+
         if (spinnerList.size() > 0) {
-//            final ArrayAdapter listArrayAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, spinnerList);
-//            holder.spinnerCheckProjectType.setAdapter(listArrayAdapter);
             /**
              * 初始化工程类型的选择
              */
@@ -167,21 +249,32 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                         public void onSelectCallBack(String item, int index) {
                             holder.tvEngineer.setText(item);
                             holder.tvEngineer.setTextColor(Color.rgb(51,51,51));
-                            if (index < spinnerList.size()) {
-                                chooseEngineerName = item;
-                                chooseEngineerIndex = index;
-                            }
+                            /********大于等于0说明事选择中的，*****/
+                            if (index >= 0) {
+                                if (index < spinnerList.size()) {
+                                    chooseEngineerName = item;
+                                    chooseEngineerIndex = index;
+                                }
 
-                            if (chooseEngineerIndex < engineerList.size()) {
-                                if (engineerList.get(chooseEngineerIndex).equals(chooseEngineerName)) {
-                                    floorHeightDatalist = initFloorHeightData(engineerList.get(chooseEngineerIndex));
-                                } else {
-                                    for (RulerEngineer engineer1 : engineerList) {
-                                        if (engineer1.getEngineerName().equals(chooseEngineerName)) {
-                                            floorHeightDatalist = initFloorHeightData(engineer1);
+                                if (chooseEngineerIndex < engineerList.size()) {
+                                    if (engineerList.get(chooseEngineerIndex).equals(chooseEngineerName)) {
+                                        floorHeightDatalist = initFloorHeightData(engineerList.get(chooseEngineerIndex));
+                                    } else {
+                                        int j = 0;
+                                        for (RulerEngineer engineer1 : engineerList) {
+                                            if (engineer1.getEngineerName().equals(chooseEngineerName)) {
+                                                floorHeightDatalist = initFloorHeightData(engineer1);
+                                                chooseEngineerIndex = j;
+                                            }
+                                            j++;
                                         }
                                     }
                                 }
+
+                            } else {
+                                /*********小于0说明是新建的***********/
+                                chooseEngineerName = item;
+                                chooseEngineerIndex = index;
                             }
 
                             selectorDialog.dismiss();
@@ -194,20 +287,17 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
         Log.e("aaa", "getView: Adapter中收到的集合对象："+ chooseMeasureMsgList.size()+",内容"+chooseMeasureMsgList.get(i).toString());
 //        如果是之前就测量过的项目则不可更改
         if (chooseMeasureMsgList.get(i).getRulerCheck() != null && chooseMeasureMsgList.get(i).getRulerCheck().getId() > 0) {
-            holder.autoTvCheckPosition.setText(chooseMeasureMsgList.get(i).getRulerCheck().getCheckFloor());
-            holder.autoTvProjectName.setText(chooseMeasureMsgList.get(i).getRulerCheck().getProjectName());
-            holder.autoTvProjectName.setClickable(false);
-            holder.autoTvCheckPosition.setClickable(false);
-        } else {
-            holder.autoTvCheckPosition.setText("");
-            holder.autoTvProjectName.setText("");
+            holder.sencondPosition.setText(chooseMeasureMsgList.get(i).getRulerCheck().getCheckFloor());
+            holder.autoTvProjectName.setText(chooseMeasureMsgList.get(i).getRulerCheck().getProject().getProjectName());
+            holder.autoTvCheckPosition.setText(chooseMeasureMsgList.get(i).getRulerCheck().getUnitEngineer().getLocation());
+//            holder.autoTvProjectName.setClickable(false);
+//            holder.autoTvCheckPosition.setClickable(false);
         }
-
         holder.tvCheckPerson.setText(chooseMeasureMsgList.get(i).getUser().getUserName());
         holder.tvCheckTime.setText(chooseMeasureMsgList.get(i).getCreateDate());
 
-        holder.autoTvCheckPosition.setAdapter(checkFloorAdapter);
-        holder.autoTvProjectName.setAdapter(projectNameAdapter);
+//        holder.autoTvCheckPosition.setAdapter(checkFloorAdapter);
+//        holder.autoTvProjectName.setAdapter(projectNameAdapter);
 
 
 
@@ -232,7 +322,7 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                 selectorDialog.setSelectorResultCallBack(new ISelectorResultCallBack() {
                     @Override
                     public void onSelectCallBack(String item, int index) {
-                        holder.tvFloorHeight.setText(item);
+                        holder.tvFloorHeight.setText(item+"");
                         holder.tvFloorHeight.setTextColor(Color.rgb(51,51,51));
                         chooseIndex = index;
                         selectorDialog.dismiss();
@@ -264,19 +354,83 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                     Log.e("aaa", "onClick: 之前引用之前的" );
 //                    有则说明该项时之前测量过的，直接引用之前的rulercheck
                     rulerCheck = chooseMeasureMsgList.get(i).getRulerCheck();
-                    rulerCheck.setProjectName(holder.autoTvProjectName.getText().toString());
-                    rulerCheck.setCheckFloor(holder.autoTvCheckPosition.getText().toString());
+//                    rulerCheck.setProjectName(holder.autoTvProjectName.getText().toString());
+                    rulerCheck.setCheckFloor(holder.sencondPosition.getText().toString());
+
+//                    设置项目名称：如果小于0则说明是新建的，保存到本地数据库
+                    if (choosePorjectIndex < 0) {
+                        RulerCheckProject  project = createProjectName(holder.autoTvProjectName.getText().toString());
+                        rulerCheck.setProject(project);
+                    } else {
+                        rulerCheck.setProject(projectList.get(choosePorjectIndex));
+                    }
+
+
+//                    设置检查位置：如果小于0则说明是新建的，保存到本地数据库
+                    if (chooseUnitIndex < 0) {
+                        RulerUnitEngineer unit = createUnit(holder.autoTvCheckPosition.getText().toString(), rulerCheck.getProject().getId());
+                        rulerCheck.setUnitEngineer(unit);
+                    } else {
+                        List<RulerUnitEngineer> unitList = rulerCheck.getProject().getUnitList();
+                        if (unitList != null && unitList.size() > 0) {
+                            if (chooseUnitIndex < unitList.size()) {
+                                if (unitList.get(chooseUnitIndex).equals(holder.autoTvCheckPosition.getText().toString())) {
+                                    rulerCheck.setUnitEngineer(unitList.get(chooseUnitIndex));
+                                } else {
+                                    for (RulerUnitEngineer engineer1  : unitList) {
+                                        if (engineer1.getLocation().equals(holder.autoTvCheckPosition.getText().toString())) {
+                                            rulerCheck.setUnitEngineer(engineer1);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
 //
                 } else {
+                    if (chooseIndex < -1 || choosePorjectIndex < -1 || chooseUnitIndex < -1 || chooseEngineerIndex < -1) {
+                        Toast.makeText(context, "信息填写不完整", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
 //                    无则说明是需要新添加的,把数据添加到对象中
                     Log.e("aaa", "onClick: 新添加的,项目名："+ holder.autoTvProjectName.getText().toString().trim()+
                             ",楼层："+holder.autoTvCheckPosition.getText().toString().trim());
-                    rulerCheck.setProjectName(holder.autoTvProjectName.getText().toString().trim());
-                    rulerCheck.setCheckFloor(holder.autoTvCheckPosition.getText().toString().trim());
+//                    设置项目名称：如果小于0则说明是新建的，保存到本地数据库
+                    if (choosePorjectIndex < 0) {
+                        RulerCheckProject  project = createProjectName(holder.autoTvProjectName.getText().toString());
+                        rulerCheck.setProject(project);
+                    } else {
+                        rulerCheck.setProject(projectList.get(choosePorjectIndex));
+                    }
+
+//                    设置检查位置：如果小于0则说明是新建的，保存到本地数据库
+                    if (chooseUnitIndex < 0) {
+                        RulerUnitEngineer unit = createUnit(holder.autoTvCheckPosition.getText().toString(), rulerCheck.getProject().getId());
+                        rulerCheck.setUnitEngineer(unit);
+                    } else {
+                        List<RulerUnitEngineer> unitList = rulerCheck.getProject().getUnitList();
+                        if (unitList != null && unitList.size() > 0) {
+                            if (chooseUnitIndex < unitList.size()) {
+                                if (unitList.get(chooseUnitIndex).equals(holder.autoTvCheckPosition.getText().toString())) {
+                                   rulerCheck.setUnitEngineer(unitList.get(chooseUnitIndex));
+                                } else {
+                                    for (RulerUnitEngineer engineer1  : unitList) {
+                                        if (engineer1.getLocation().equals(holder.autoTvCheckPosition.getText().toString())) {
+                                            rulerCheck.setUnitEngineer(engineer1);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    rulerCheck.setCheckFloor(holder.sencondPosition.getText().toString().trim());
                     rulerCheck.setUser(chooseMeasureMsgList.get(i).getUser());
                     rulerCheck.setCreateDate(String.valueOf(DateFormatUtil.getDate()));
                     rulerCheck.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
-                    LogUtils.show("保存下来的createtime时间戳："+DateFormatUtil.transForMilliSecond(new Date()));
+//                    LogUtils.show("保存下来的createtime时间戳："+DateFormatUtil.transForMilliSecond(new Date()));
                     rulerCheck.setServerId(0);
                     rulerCheck.setUpload_flag(0);
                     rulerCheck.setStatus(0);
@@ -302,11 +456,23 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                     getter.updateChooseMeasureMsgList(i, chooseMeasureMsgList.get(i));
 
                 }
-
+                OptionMeasure chooseM=new OptionMeasure();
+                chooseM.setData(holder.tvFloorHeight.getText().toString().trim());
+                if (chooseIndex < measureList.size()) {
+                    if (measureList.get(chooseIndex).getData().equals(holder.tvFloorHeight.getText().toString())) {
+                        chooseM = measureList.get(chooseIndex);
+                    } else {
+                        for (OptionMeasure measure : measureList) {
+                            if (measure.getData().equals(holder.tvFloorHeight.getText().toString().trim())) {
+                                chooseM = measure;
+                            }
+                        }
+                    }
+                }
                 Intent startIntent = new Intent(context, MeasureManagerAcitivty.class);
                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startIntent.putExtra("projectMsg", rulerCheck);
-                startIntent.putExtra("floor_height", holder.tvFloorHeight.getText().toString().trim());
+                startIntent.putExtra("floor_height", (Serializable) chooseM);
                 Log.e("chakabiaozhi", "onClick: 查看准备发给另外一个界面的数据信息："+rulerCheck.toString() );
                 context.startActivity(startIntent);
             }
@@ -314,6 +480,41 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
 
 
         return view;
+    }
+
+    /**
+     * 新建检查位置
+     * @param unitName 需要新建的检查位置
+     * @param project_id 对应的项目_id
+     * @return
+     */
+    private RulerUnitEngineer createUnit(String unitName, int project_id) {
+        RulerUnitEngineer unit = new RulerUnitEngineer();
+        unit.setProject_id(project_id);
+        unit.setLocation(unitName);
+        unit.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
+        unit.setUpdateTime(DateFormatUtil.transForMilliSecond(new Date()));
+        unit.setServer_id(0);
+        int index = OperateDbUtil.addUnitPositionDataToSqlite(context, unit);
+        unit.setId(index);
+        return unit;
+    }
+
+    /**
+     * TODO 新建项目名
+     * @param projectName
+     * @return
+     */
+    private RulerCheckProject createProjectName(String projectName) {
+        RulerCheckProject project = new RulerCheckProject();
+        project.setProjectName(projectName);
+        project.setUpdateTime(DateFormatUtil.transForMilliSecond(new Date()));
+        project.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
+        project.setServer_id(0);
+        project.setUser(OperateDbUtil.getUser(context));
+        int index = OperateDbUtil.addProjectNameDataToSqlite(context, project);
+        project.setId(index);
+        return project;
     }
 
     /**
@@ -327,16 +528,30 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
             return datalist;
         }
         List<RulerOptions> optionsList = rulerEngineer.getOptionsList();
-        for (RulerOptions options : rulerEngineer.getOptionsList()) {
+        for (RulerOptions options : optionsList) {
             if (options.getType() == 1) {
-                List<OptionMeasure> measureList = OptionsMeasureUtils.getOptionMeasure(options.getMeasure());
-                for (OptionMeasure measure : measureList) {
-                    datalist.add(measure.getData());
+                measureList = OptionsMeasureUtils.getOptionMeasure(options.getMeasure());
+                    for (OptionMeasure measure : measureList) {
+                        datalist.add(measure.getData());
                 }
                 break;
             }
         }
         return datalist;
+    }
+
+    /**
+     * 选择完项目名称后，根据所选的项目名称，获取检查位置的数据源
+     * @param project
+     * @return
+     */
+    private List<String> getUnitData(RulerCheckProject project) {
+        List<RulerUnitEngineer> unitEngineerList = project.getUnitList();
+        List<String> unitNameList = new ArrayList<>();
+        for (RulerUnitEngineer unit : unitEngineerList) {
+            unitNameList.add(unit.getLocation());
+        }
+        return unitNameList;
     }
 
     public List<ChooseMeasureMsg> getChooseMeasureMsgList() {
@@ -354,8 +569,9 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
         TextView tvCheckTime;
         TextView tvCheckPerson;
         TextView tvEngineer;
-        AutoCompleteTextView autoTvCheckPosition;
-        AutoCompleteTextView autoTvProjectName;
+        TextView autoTvCheckPosition;
+        TextView autoTvProjectName;
+        EditText sencondPosition;
 //        Spinner spinnerCheckProjectType;
         RelativeLayout rlFloorHeight;//层高选择
         TextView tvFloorHeight;//层高显示

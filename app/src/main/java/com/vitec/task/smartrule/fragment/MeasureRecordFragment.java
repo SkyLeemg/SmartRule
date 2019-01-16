@@ -18,9 +18,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.bean.event.DownFileMsgEvent;
 import com.vitec.task.smartrule.bean.event.HeightFloorMsgEvent;
 import com.vitec.task.smartrule.bean.OptionMeasure;
 import com.vitec.task.smartrule.bean.RulerCheck;
@@ -66,6 +68,7 @@ public class MeasureRecordFragment extends Fragment implements View.OnClickListe
 //    private ImageView imgAdd;
     private LinearLayout llDisplayData;//显示测量数据的占位LL，
     private RelativeLayout rlEditPic;//图纸编辑的占位RL
+    private RelativeLayout rl_add_pic;
 
 
 //    private MeasureDataAdapter measureDataAdapter;
@@ -121,6 +124,8 @@ public class MeasureRecordFragment extends Fragment implements View.OnClickListe
 //        imgAdd = view.findViewById(R.id.img_add);
         llDisplayData = view.findViewById(R.id.ll_display_mdata);
         rlEditPic = view.findViewById(R.id.rl_edit_pic);
+        rl_add_pic = view.findViewById(R.id.rl_add_pic);
+        rl_add_pic.setVisibility(View.GONE);
 //        imgAdd.setVisibility(View.GONE);
 
     }
@@ -135,7 +140,37 @@ public class MeasureRecordFragment extends Fragment implements View.OnClickListe
     }
 
 
-
+    /**
+     * 接收图纸更新的信息
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void headImgUpdateCallBack(DownFileMsgEvent event) {
+        LogUtils.show("个人中心----收到头像加载完毕回调");
+        if (event.isSuccess() && event.getPath().length() > 5) {
+            RulerCheckOptions options = (RulerCheckOptions) event.getObject();
+            for (int i=0;i<accessOptions.size();i++) {
+                if (accessOptions.get(i).getServerId() == options.getServerId()) {
+                    accessOptions.get(i).setImgPath(event.getPath());
+                    //        将编辑图纸的页面添加到rlEditPic中
+                    if (commonEditPicView == null) {
+                        commonEditPicView = new CommonEditPicView(getActivity(),this);
+                        rlEditPic.addView(commonEditPicView);
+                    } else {
+                        commonEditPicView.setVisibility(View.VISIBLE);
+                    }
+                    final   String  fUrl = event.getPath();
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            commonEditPicView.setmImageView(getActivity(),fUrl);
+                        }
+                    }, 100);
+                }
+            }
+        }
+    }
 
 
     private void initData() {
@@ -162,6 +197,7 @@ public class MeasureRecordFragment extends Fragment implements View.OnClickListe
                 llDisplayData.addView(measureView);
             }
             /** 如果数据库中已经存有一个图纸，则显示到界面中 **/
+            LogUtils.show("查看管控要点的地址："+accessOptions.get(0).toString());
             if (accessOptions.get(0).getImgPath() != null && !accessOptions.get(0).getImgPath().equals("")) {
                 File imgFile = new File(accessOptions.get(0).getImgPath());
                 if (imgFile.exists()) {
@@ -183,6 +219,8 @@ public class MeasureRecordFragment extends Fragment implements View.OnClickListe
                 }
             }
         }
+
+
 //        checkOptionsData.setCreateTime((int) System.currentTimeMillis());
 //        checkOptionsData.setRulerCheckOptions(checkOptions);
 //        初始化optionMeasures
@@ -394,7 +432,7 @@ public class MeasureRecordFragment extends Fragment implements View.OnClickListe
 
     @Override
     public List<RulerCheckOptions> getCheckOptions() {
-        return null;
+        return accessOptions;
     }
 
     @Override

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
+import com.vitec.task.smartrule.bean.MeasureData;
 import com.vitec.task.smartrule.bean.MeasureTable;
 import com.vitec.task.smartrule.bean.MeasureTableRow;
 import com.vitec.task.smartrule.interfaces.IAddExcelResultCallBack;
@@ -94,12 +95,10 @@ public class ExportMeaureDataHelper {
                 /**
                  * 设置列宽
                  */
-                mWritableSheet.setColumnView(1, 20);
-                mWritableSheet.setColumnView(2, 20);
-                mWritableSheet.setColumnView(3, 50);
-                mWritableSheet.setColumnView(14, 20);
-                mWritableSheet.setColumnView(15, 20);
-                mWritableSheet.setColumnView(16, 20);
+                for (int i=0;i<10;i++) {
+                    mWritableSheet.setColumnView(i, 10);
+
+                }
                 format();
             }
 
@@ -127,7 +126,7 @@ public class ExportMeaureDataHelper {
              */
             tableTiTleFont = new WritableFont(WritableFont.ARIAL, 14, WritableFont.BOLD);
             tableTitleFormat = new WritableCellFormat(tableTiTleFont);
-            tableTitleFormat.setAlignment(Alignment.CENTRE);
+//            tableTitleFormat.setAlignment(Alignment.CENTRE);
             tableTitleFormat.setVerticalAlignment(VerticalAlignment.CENTRE);
             tableTitleFormat.setBorder(jxl.format.Border.ALL,jxl.format.BorderLineStyle.THIN);
 
@@ -217,7 +216,7 @@ public class ExportMeaureDataHelper {
             for (int i=0; i<rowList.size();i++) {
 //                数据内容的行号游标
                 int dataRowCucor = rowCucor;
-                List<String> dataList = rowList.get(i).getDatalist();
+                List<MeasureData> dataList = rowList.get(i).getDatalist();
 //                合并个数
                 int mergeNum = dataList.size() / 10;
                 if (dataList.size() % 10 == 0) {
@@ -246,7 +245,7 @@ public class ExportMeaureDataHelper {
 //                开始写入datalist的数据内容
                 int dataColCucor = 4;
                 for (int j = 0; j < dataList.size(); j++) {
-                    mWritableSheet.addCell(new Label(dataColCucor,dataRowCucor,dataList.get(j), contentFormat));
+                    mWritableSheet.addCell(new Label(dataColCucor,dataRowCucor,dataList.get(j).getData(), contentFormat));
 //                    每执行完第十个数据就要开始换行，所以列游标移到开始，行游标+1
                     if (dataColCucor < 13) {
                         dataColCucor++;

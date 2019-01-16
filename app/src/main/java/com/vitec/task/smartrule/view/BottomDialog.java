@@ -89,28 +89,66 @@ public class BottomDialog extends Dialog implements View.OnClickListener{
              * 拍照
              */
             case R.id.take_photo:
-                PictureSelector.create(fragment)
-                        .openCamera(PictureMimeType.ofImage())
-                        .previewImage(true)
-                        .isCamera(true)
-                        .openClickSound(false)
-                        .forResult(PictureConfig.CHOOSE_REQUEST);
-                dismiss();
+                if (fragment != null) {
+                    PictureSelector.create(fragment)
+                            .openCamera(PictureMimeType.ofImage())
+                            .previewImage(true)
+                            .isCamera(true)
+                            .openClickSound(false)
+                            .compress(true)// 是否压缩 true or false
+                            .minimumCompressSize(150)// 小于150kb的图片不压缩
+                            .forResult(PictureConfig.CHOOSE_REQUEST);
+                    dismiss();
+                } else if (activity != null) {
+                    PictureSelector.create(activity)
+                            .openCamera(PictureMimeType.ofImage())
+                            .previewImage(true)
+                            .isCamera(true)
+                            .openClickSound(false)
+                            .enableCrop(true)
+                            .compress(true)// 是否压缩
+                            .minimumCompressSize(60)// 小于70kb的图片不压缩
+                            .withAspectRatio(1,1)//裁剪比例
+                            .forResult(PictureConfig.CHOOSE_REQUEST);
+                    dismiss();
+                }
+
                 break;
 
             /**
              * 相册选择
              */
             case R.id.choose_photo:
-                PictureSelector.create(fragment)
-                        .openGallery(PictureMimeType.ofImage())//打开相册
-                        .maxSelectNum(1)//最多选择一张
-                        .minSelectNum(1)
-                        .imageSpanCount(4)//每行显示4张
-                        .selectionMode(PictureConfig.SINGLE)//单选
-                        .previewImage(true)//可以预览图片
-                        .forResult(PictureConfig.CHOOSE_REQUEST);//结果回调onActivityResult code
-                dismiss();
+                if (fragment != null) {
+                    PictureSelector.create(fragment)
+                            .openGallery(PictureMimeType.ofImage())//打开相册
+                            .maxSelectNum(1)//最多选择一张
+                            .minSelectNum(1)
+                            .imageSpanCount(4)//每行显示4张
+                            .selectionMode(PictureConfig.SINGLE)//单选
+                            .compress(true)// 是否压缩 true or false
+                            .minimumCompressSize(150)// 小于100kb的图片不压缩
+                            .previewImage(true)//可以预览图片
+                            .forResult(PictureConfig.CHOOSE_REQUEST);//结果回调onActivityResult code
+                    dismiss();
+                } else if (activity != null) {
+                    PictureSelector.create(activity)
+                            .openGallery(PictureMimeType.ofImage())//打开相册
+                            .maxSelectNum(1)//最多选择一张
+                            .minSelectNum(1)
+                            .imageSpanCount(4)//每行显示4张
+                            .selectionMode(PictureConfig.SINGLE)//单选
+                            .previewImage(true)//可以预览图片
+                            .enableCrop(true)//是否裁剪
+                            .compress(true)// 是否压缩
+                            .minimumCompressSize(60)// 小于70kb的图片不压缩
+                            .rotateEnabled(false)//裁剪是否可旋转图片 true or false
+                            .withAspectRatio(1,1)//裁剪比例
+                            .forResult(PictureConfig.CHOOSE_REQUEST);//结果回调onActivityResult code
+                    dismiss();
+                }
+
+
                 break;
             /**
              * 取消

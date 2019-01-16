@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.activity.BaseActivity;
+import com.vitec.task.smartrule.bean.MeasureData;
 import com.vitec.task.smartrule.bean.MeasureTable;
 import com.vitec.task.smartrule.bean.MeasureTableRow;
 import com.vitec.task.smartrule.helper.WeChatHelper;
@@ -94,9 +95,9 @@ public class TestActivity extends BaseActivity implements View.OnClickListener{
                             row.setRealMeasureNum(80);
                             row.setQualifiedRate("80%");
                             row.setStandard("≤8mm\\/≤10mm(≤6m取8)");
-                            List<String> datalist = new ArrayList<>();
+                            List<MeasureData> datalist = new ArrayList<>();
                             for (int j=0;j<57;j++) {
-                                datalist.add(String.valueOf(j));
+//                                datalist.add(String.valueOf(j));
                             }
                             row.setDatalist(datalist);
                             rowList.add(row);
@@ -140,7 +141,7 @@ public class TestActivity extends BaseActivity implements View.OnClickListener{
                             for (int j=0;j<21;j++) {
                                 datalist.add(String.valueOf(j));
                             }
-                            row.setDatalist(datalist);
+//                            row.setDatalist(datalist);
                             rowList1.add(row);
                         }
                         measureTable.setRowList(rowList1);

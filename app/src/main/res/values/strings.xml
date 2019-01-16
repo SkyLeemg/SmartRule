@@ -9,6 +9,7 @@
     <!--层高选择-->
     <string name="floor_height_1">≤6</string>
     <string name="floor_height_2">＞6</string>
+    <string name="string_update_mobile_first_tip">为了保证您的账户安全，请验证身份。验证成功后进行下一步操作</string>
 
     <string-array name="project_name">
         <item></item>

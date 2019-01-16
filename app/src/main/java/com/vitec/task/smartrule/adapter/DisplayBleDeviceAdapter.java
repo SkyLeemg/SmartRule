@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.telecom.ConnectionService;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +23,7 @@ import com.vitec.task.smartrule.bean.BleDevice;
 import com.vitec.task.smartrule.db.BleDeviceDbHelper;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.interfaces.IDevManager;
+import com.vitec.task.smartrule.service.ConnectDeviceService;
 import com.vitec.task.smartrule.utils.ScreenSizeUtil;
 
 import java.util.List;
@@ -153,11 +155,14 @@ public class DisplayBleDeviceAdapter extends BaseAdapter{
                         String id = String.valueOf(devs.get(i).getId());
                         if (bleDeviceDbHelper.delDevice(new String[]{id})) {
                             Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
+                            devManager.delDevs(i, devs.get(i));
+
                             devs.remove(i);
 //                            更新列表数据
                             if (devManager != null) {
                                 devManager.setDevs(devs);
                             }
+
                         } else {
                             Toast.makeText(context,"删除失败",Toast.LENGTH_SHORT).show();
                         }

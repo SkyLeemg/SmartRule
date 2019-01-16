@@ -1,5 +1,7 @@
 package com.vitec.task.smartrule.bean;
 
+import java.io.Serializable;
+
 /**
  * 服务器下发Json数据中，其中有一个是measure json数组
  * 是测量数据的标准，数据模板如下：
@@ -17,7 +19,7 @@ package com.vitec.task.smartrule.bean;
     }
     ]
  */
-public class OptionMeasure {
+public class OptionMeasure implements Serializable {
 
     private int id;//id
     private int operate;//操作标志，1-小于等于

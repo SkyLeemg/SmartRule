@@ -213,7 +213,7 @@ public class MainHomeActivity extends BaseActivity implements View.OnClickListen
                     @Override
                     public void run() {
                         UpdateHelper updateHelper = new UpdateHelper(MainHomeActivity.this);
-                        updateHelper.readyDownload(checkUpdataMsg);
+                        updateHelper.readyDownloadZip(checkUpdataMsg);
                     }
                 }).start();
 

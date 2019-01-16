@@ -4,11 +4,13 @@ import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -25,11 +27,14 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.activity.UserDatumActivity;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.fragment.MeasureFragment;
 import com.vitec.task.smartrule.interfaces.IEditPicControler;
+import com.vitec.task.smartrule.net.NetConstant;
+import com.vitec.task.smartrule.service.intentservice.UploadPicIntentService;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
 
@@ -68,6 +73,7 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
     private List<IconImageView> levelIconList;//水平度图标集合
     private int verticalIndex = 0;//垂直度图标序号
     private int leverIndex = 0;//水平度图标序号
+    private List<RulerCheckOptions> optionsList;
 
     private MeasureFragment fragment;
     private IEditPicControler editPicControler;
@@ -111,6 +117,18 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
         levelIconList = new ArrayList<>();
         verticalIconList = new ArrayList<>();
         addLink = new ArrayList<>();
+        optionsList = new ArrayList<>();
+        optionsList = editPicControler.getCheckOptions();
+        //初始化序号
+        for (int i=0;i<optionsList.size();i++) {
+            if (optionsList.get(i).getRulerOptions().getType() == 1) {
+                verticalIndex = optionsList.get(i).getImgNumber();
+                LogUtils.show("查看初始化垂直度的值：" + verticalIndex);
+            } else if (optionsList.get(i).getRulerOptions().getType() == 2) {
+                leverIndex = optionsList.get(i).getImgNumber();
+                LogUtils.show("查看初始化平整度的值：" + verticalIndex);
+            }
+        }
     }
 
     /**
@@ -133,6 +151,7 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
 
 //                InputStream inputStream = context.getAssets().open("paper.png");
 //                Bitmap imgBitmap = BitmapFactory.decodeStream(inputStream);
+
                 Bitmap imgBitmap = BitmapFactory.decodeFile(path);
                 this.imgBitmap = Bitmap.createBitmap(imgBitmap);
                 LogUtils.show("查看FrameLayout的长宽：" +zoomWidth+ "," + zoomHeight);
@@ -196,11 +215,39 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                     LogUtils.show("查看初始化后，大图的中心点坐标：" + srcCenterPoint.x + "," + srcCenterPoint.y);
                     LogUtils.show("查看原始的长宽：" + mImageView.getWidth() + "," + mImageView.getHeight());
                     LogUtils.show("查看大图的右上角坐标：" + mImageView.getLeft() + "," + mImageView.getTop() + ",XY坐标：" + mImageView.getX() + "," + mImageView.getY());
+//                    zoomMoveFrameLayout.setInitX();
                 }
             }, 100);
+
+           saveBitmapToFile(imgBitmap);
+
         }
 
     }
+
+    private void updateOptionData(RulerCheckOptions options) {
+        ContentValues values = new ContentValues();
+        values.put(DataBaseParams.measure_option_img_number, options.getImgNumber());
+        String where = " id=?";
+       int res= OperateDbUtil.updateOptionsDataToSqlite(context, DataBaseParams.measure_option_table_name, where, values, new String[]{String.valueOf(options.getId())});
+        LogUtils.show("图片序号保存----查看序号:" + options.getImgNumber() + ",查看是否保存成功：" + res);
+
+    }
+
+    private void delUpdateOptionData() {
+        for (int i=0;i<optionsList.size();i++) {
+            optionsList.get(i).setImgNumber(0);
+            ContentValues values = new ContentValues();
+            values.put(DataBaseParams.measure_option_img_number, 0);
+            values.put(DataBaseParams.measure_option_img_path, "");
+            String where = " id=?";
+            int res= OperateDbUtil.updateOptionsDataToSqlite(context, DataBaseParams.measure_option_table_name, where, values, new String[]{String.valueOf(optionsList.get(i).getId())});
+            LogUtils.show("删除图纸----查看序号:" + optionsList.get(i).getImgNumber() + ",查看是否删除成功：" + res);
+        }
+
+
+    }
+
 
     @Override
     public void onClick(View view) {
@@ -209,6 +256,7 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
              * 添加水平度图标
              */
             case R.id.rl_add_level:
+
                 IconImageView imageView = new IconImageView(context);
                 leverIndex++;
                 String text = leverIndex+"";
@@ -221,6 +269,14 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                 imageView.setX(srcCenterPoint.x);
                 imageView.setY(srcCenterPoint.y);
                 addLink.add(2);
+                //
+                for (int i=0;i<optionsList.size();i++) {
+                    if (optionsList.get(i).getRulerOptions().getType() == 2) {
+                        optionsList.get(i).setImgNumber(leverIndex);
+                        updateOptionData(optionsList.get(i));
+                    }
+                }
+
 
                 break;
 
@@ -241,6 +297,12 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                 verImg.setX(srcCenterPoint.x);
                 verImg.setY(srcCenterPoint.y);
                 addLink.add(1);
+                for (int i=0;i<optionsList.size();i++) {
+                    if (optionsList.get(i).getRulerOptions().getType() == 1) {
+                        optionsList.get(i).setImgNumber(verticalIndex);
+                        updateOptionData(optionsList.get(i));
+                    }
+                }
 
                 break;
 
@@ -248,7 +310,7 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
              *TODO FR保存图片
              */
             case R.id.rl_save_pic:
-                if (mImageView != null) {
+                if (mImageView != null && (verticalIconList.size() > 0 || levelIconList.size() > 0)) {
                     /*******把图片缩为原来的大小********/
                     LogUtils.show("查看当前缩放值：" + mImageView.getScaleX() + "," + mImageView.getScaleY());
                     float currentScale = mImageView.getScaleX();
@@ -268,74 +330,19 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                     zoomMoveFrameLayout.transLate(deltaPoint.x * -1, deltaPoint.y * -1);
 //            合并图像
                     Bitmap newBitmap = saveBitmap();
-                    String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
-                    String imgFileName;
-                    List<RulerCheckOptions> optionsList = new ArrayList<>();
-                    if (editPicControler != null) {
-                         optionsList = editPicControler.getCheckOptions();
-
-                        imgFileName = optionsList.get(0).getCreateTime()+".jpg";
-                    } else {
-                        imgFileName =DateFormatUtil.formatDate(new Date(), "yyyyMMddHHmmSS")+".jpg";
-                    }
-//                    String imgFileName = DateFormatUtil.formatDate(new Date(), "yyyyMMddHHmmSS")+".jpg";
-//                    String imgFileName = optionsList.get(0).getCreateTime()+".jpg";
-
-                    File imgFile = new File(path, imgFileName);
-                    if (!imgFile.getParentFile().exists()) {
-                        imgFile.getParentFile().mkdir();
-                    }
-                    if (imgFile.exists()) {
-                        imgFile.delete();
-                    }
-                    try {
-                        imgFile.createNewFile();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        FileOutputStream fos = new FileOutputStream(imgFile);
-                        newBitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos);
-                        //将图片地址更新到数据库
-                        ContentValues values = new ContentValues();
-                        values.put(DataBaseParams.measure_option_img_path, imgFile.getPath());
-                        values.put(DataBaseParams.measure_option_img_time,DateFormatUtil.transForMilliSecond(new Date()));
-
-                        for (RulerCheckOptions options : optionsList) {
-                            OperateDbUtil.updateOptionsDataToSqlite(getContext(), DataBaseParams.measure_option_table_name, values, new String[]{String.valueOf(options.getId())});
-                        }
-                        fos.flush();
-                        fos.close();
-                        Toast.makeText(context,"保存成功",Toast.LENGTH_SHORT).show();
-                        LogUtils.show("查看保存的目录："+imgFile.getPath());
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
+                    String filePath = saveBitmapToFile(newBitmap);
+//                    上传文件到服务器
+                    uploadPicToServer(filePath);
                     mImageView.setImageBitmap(newBitmap);
-                    for (int i=0;i<levelIconList.size();i++) {
+                    for (int i = 0; i < levelIconList.size(); i++) {
                         zoomMoveFrameLayout.removeView(levelIconList.get(i));
                     }
-                    for (int i=0;i<verticalIconList.size();i++) {
+                    for (int i = 0; i < verticalIconList.size(); i++) {
                         zoomMoveFrameLayout.removeView(verticalIconList.get(i));
                     }
                     levelIconList.clear();
                     verticalIconList.clear();
                     addLink.clear();
-
-//
-//            LogUtils.show("查看保存时的长宽：" + myImageView.getWidth() + "," + myImageView.getHeight());
-//            LogUtils.show("查看大图的右上角坐标：" + myImageView.getLeft() + "," + myImageView.getTop() + "，XY坐标：" + myImageView.getX() + "," + myImageView.getY());
-//            if (iconImgList.size() > 0) {
-//                for (IconViewBean bean : iconImgList) {
-//                    LogUtils.show("查看小图标的右上角坐标：" + bean.getImageView().getX() + "," + bean.getImageView().getY());
-//
-//                }
-//            }
-////            LogUtils.show("查看屏幕的长款："+ ScreenSizeUtil.getScreenWidth(getApplicationContext()));
-//            LogUtils.show("查看图片的偏距："+myImageView.getPaddingLeft()+"，"+myImageView.getPaddingRight());
                 }
                 break;
 
@@ -391,6 +398,9 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
                                         levelIconList.clear();
                                         mImageView = null;
                                         imgBitmap.recycle();
+                                        leverIndex = 0;
+                                        verticalIndex = 0;
+
                                         if (editPicControler != null) {
                                             editPicControler.setTvAddmPicVisibale(1);
                                         }
@@ -412,6 +422,97 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
         }
 
     }
+
+    /**
+     * TODO 上传图纸到服务器
+     */
+    private void uploadPicToServer(String path) {
+        List<RulerCheckOptions> optionsList = new ArrayList<>();
+        StringBuffer stringBuffer = new StringBuffer();
+        StringBuffer imgNum = new StringBuffer();
+
+        if (editPicControler != null) {
+            optionsList = editPicControler.getCheckOptions();
+
+            for (int i = 0; i < optionsList.size(); i++) {
+                stringBuffer.append(optionsList.get(i).getServerId());
+                imgNum.append(optionsList.get(0).getImgNumber());
+                if (i < (optionsList.size() - 1)) {
+                    stringBuffer.append(",");
+                    imgNum.append(",");
+                }
+            }
+            LogUtils.show("打印查看保存图纸之前的管控要点："+stringBuffer.toString());
+            if (!stringBuffer.toString().equals("")) {
+                Intent uploadIntent = new Intent(context, UploadPicIntentService.class);
+                uploadIntent.putExtra(UploadPicIntentService.UPLOAD_FLAG, UploadPicIntentService.FLAG_UPLOAD_OPTION_IMG);
+                uploadIntent.putExtra(UploadPicIntentService.VALUE_IMG_PATH, path);
+//                uploadIntent.putExtra(UploadPicIntentService.VALUE_OPTION_LIST, stringBuffer.toString());
+                Bundle bundle = new Bundle();
+                bundle.putString(NetConstant.upload_option_pic_check_options_list, stringBuffer.toString());
+                bundle.putString(NetConstant.upload_option_pic_number_list, imgNum.toString());
+                uploadIntent.putExtra(UploadPicIntentService.VALUE_OPTION_BUNDLE, bundle);
+                context.startService(uploadIntent);
+            }
+        }
+
+
+    }
+
+
+    /**
+     * TODO 将Bitmap图片保存到本地，并更新到数据库
+     * @param bitmap
+     */
+    private String saveBitmapToFile(Bitmap bitmap) {
+        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
+        String imgFileName;
+        List<RulerCheckOptions> optionsList = new ArrayList<>();
+        if (editPicControler != null && editPicControler.getCheckOptions()!=null) {
+            optionsList = editPicControler.getCheckOptions();
+            imgFileName = optionsList.get(0).getCreateTime() + ".png";
+        } else {
+            imgFileName = DateFormatUtil.formatDate(new Date(), "yyyyMMddHHmmSS") + ".png";
+        }
+//                    String imgFileName = DateFormatUtil.formatDate(new Date(), "yyyyMMddHHmmSS")+".jpg";
+//                    String imgFileName = optionsList.get(0).getCreateTime()+".jpg";
+
+        File imgFile = new File(path, imgFileName);
+        if (!imgFile.getParentFile().exists()) {
+            imgFile.getParentFile().mkdir();
+        }
+        if (imgFile.exists()) {
+            imgFile.delete();
+        }
+        try {
+            imgFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            FileOutputStream fos = new FileOutputStream(imgFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+            //将图片地址更新到数据库
+            ContentValues values = new ContentValues();
+            values.put(DataBaseParams.measure_option_img_path, imgFile.getPath());
+            values.put(DataBaseParams.measure_option_img_time,DateFormatUtil.transForMilliSecond(new Date()));
+            values.put(DataBaseParams.measure_option_img_upload_flag, 0);
+            for (RulerCheckOptions options : optionsList) {
+                OperateDbUtil.updateOptionsDataToSqlite(getContext(), DataBaseParams.measure_option_table_name, values, new String[]{String.valueOf(options.getId())});
+            }
+            fos.flush();
+            fos.close();
+            Toast.makeText(context,"保存成功",Toast.LENGTH_SHORT).show();
+            LogUtils.show("查看保存的目录："+imgFile.getPath());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return imgFile.getPath();
+    }
+
 
     /**
      * 合成图像

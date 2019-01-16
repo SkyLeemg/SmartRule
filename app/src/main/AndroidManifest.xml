@@ -14,6 +14,7 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <uses-permission android:name="android.permission.VIBRATE" /> <!-- 震动权限 -->
     <uses-permission android:name="android.permission.CAMERA" />
@@ -42,8 +43,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
-        <activity android:name=".activity.LoginActivity">
+        <!--登录界面-->
+        <activity android:name=".activity.LoginActivity"
+            android:launchMode="singleTop"
+            >
 
         </activity>
         <!--<activity android:name=".activity.DeviceActivity">-->
@@ -80,11 +83,29 @@
         <activity android:name=".activity.unuse.ImageTestActivity2">
         </activity>
         <!--首页管理-->
-        <activity android:name=".activity.MainActivity"/>
+        <activity android:name=".activity.MainActivity"
+            android:launchMode="singleTask"
+            >
+
+        </activity>
         <!--忘记密码-->
         <activity android:name=".activity.ForgetPswActivity"/>
         <!--个人资料-->
         <activity android:name=".activity.UserDatumActivity"/>
+        <!--修改姓名-->
+        <activity android:name=".activity.UpdateUserNameActivity"/>
+        <!--修改手机号码-->
+        <activity android:name=".activity.ChangeMobileActivity"/>
+        <!--使用说明界面-->
+        <activity android:name=".activity.UseInstructionActivity"/>
+        <!--新建测量组页面-->
+        <activity android:name=".activity.CreateMeasureTeamActivity"/>
+        <!--测量组管理页面-->
+        <activity android:name=".activity.MeasureTeamManagerActivity"/>
+        <!--添加团队成员页面-->
+        <activity android:name=".activity.AddMemberActivity"/>
+        <!--编辑项目信息页面-->
+        <activity android:name=".activity.EditMeasureMsgActivity"/>
 
         <!--注册微信回调 WXEntryActivity -->
         <activity
@@ -134,6 +155,18 @@
         <service android:name=".service.HandleBleMeasureDataReceiverService"/>
         <service android:name=".service.intentservice.ExportDataToExcelIntentService"/>
         <service android:name=".service.intentservice.ReplenishDataToServerIntentService"/>
+        <!--处理修改用户资料的各种请求-->
+        <service android:name=".service.ChangeUserMessageIntentService"/>
+        <!--处理获取手机验证码和验证验证码是否正确的请求-->
+        <service android:name=".service.intentservice.RequestMoblieIntentService"/>
+        <!--处理上传文件类型的请求：上传头像和上传图纸-->
+        <service android:name=".service.intentservice.UploadPicIntentService"/>
+        <!--检查APP更新-->
+        <service android:name=".service.intentservice.UpdateAppVersionIntentService"/>
+        <!--项目管理相关的各种接口请求-->
+        <service android:name=".service.intentservice.ProjectManageRequestIntentService"/>
+        <!--处理个人中心相关的网络请求-->
+        <service android:name=".service.intentservice.AboutUserIntentService"/>
 
     </application>
 

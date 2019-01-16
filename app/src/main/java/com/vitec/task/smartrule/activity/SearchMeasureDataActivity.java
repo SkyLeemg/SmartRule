@@ -120,7 +120,7 @@ public class SearchMeasureDataActivity extends BaseActivity implements View.OnCl
 //        初始化数据源
         for (int i=0;i<checkList.size();i++) {
             checkFloorList.add(checkList.get(i).getCheckFloor());
-            projectNameList.add(checkList.get(i).getProjectName());
+            projectNameList.add(checkList.get(i).getProject().getProjectName());
         }
 //        初始化这两个控件的需要的adapter
         Log.e(TAG, "initData: 查看项目名："+projectNameList.toString() );

@@ -78,14 +78,17 @@ public class HeightUtils {
             return;
         }
         int totalHeight = 0;
-
+        int sigleItemHeight = 0;
         for (int i = 0; i < maxItem; i++) {
             View listItem = listAdapter.getView(i, null, listView);
             if (listItem != null) {
                 listItem.measure(0, 0);
                 totalHeight += listItem.getMeasuredHeight();
+                sigleItemHeight = listItem.getMeasuredHeight();
             }
         }
+        sigleItemHeight /= 2;
+        totalHeight -= sigleItemHeight;
         ViewGroup.LayoutParams params = listView.getLayoutParams();
 //        params.height = totalHeight + (gridView.getMeasuredHeight() * (listAdapter.getCount() - 1));
         params.height = totalHeight;

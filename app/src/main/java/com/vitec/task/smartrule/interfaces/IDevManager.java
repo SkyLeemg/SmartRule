@@ -9,4 +9,6 @@ public interface IDevManager {
     void setDevs(List<BleDevice> bleDevices);
 
     List<BleDevice> getDevs();
+
+    void delDevs(int index, BleDevice bleDevice);
 }

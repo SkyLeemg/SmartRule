@@ -37,9 +37,9 @@ public class ChangePasswordActivity extends BaseActivity implements View.OnClick
 
     private void initView() {
         initWidget();
-        imgIcon.setImageResource(R.mipmap.icon_back);
-        imgIcon.setVisibility(View.VISIBLE);
-        imgIcon.setOnClickListener(this);
+//        imgIcon.setImageResource(R.mipmap.icon_back);
+//        imgIcon.setVisibility(View.VISIBLE);
+//        imgIcon.setOnClickListener(this);
 
         etNewPwd = findViewById(R.id.et_new_pwd);
         etNewRepeatPwd = findViewById(R.id.et_new_repeat_pwd);

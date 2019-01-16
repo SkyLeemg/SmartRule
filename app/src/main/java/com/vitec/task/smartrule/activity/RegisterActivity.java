@@ -35,7 +35,7 @@ import scut.carson_ho.diy_view.SuperEditText;
 public class RegisterActivity extends BaseActivity implements OnClickListener{
 
     private static final String TAG = "RegisterActivity";
-    private EditText etUserName;
+//    private EditText etUserName;
     private EditText etPhone;
     private EditText etMobileCode;
     private EditText etPwd;
@@ -74,7 +74,7 @@ public class RegisterActivity extends BaseActivity implements OnClickListener{
         setTvTitle("注册");
         imgMenu.setOnClickListener(this);
 
-        etUserName = findViewById(R.id.et_rsg_username);
+//        etUserName = findViewById(R.id.et_rsg_username);
         etPhone = findViewById(R.id.et_rsg_phone);
         etMobileCode = findViewById(R.id.et_rsg_mibile_code);
         etPwd = findViewById(R.id.et_rsg_pwd);
@@ -217,18 +217,18 @@ public class RegisterActivity extends BaseActivity implements OnClickListener{
                 break;
 
             case R.id.btn_register://注册
-                final  String loginName = etUserName.getText().toString().trim();
+//                final  String loginName = etUserName.getText().toString().trim();
                 final  String phoneNum = etPhone.getText().toString().trim();
                 final  String pwd = etPwd.getText().toString().trim();
                 final  String repeatPwd = etRepeatPwd.getText().toString().trim();
                 final  String code = etMobileCode.getText().toString().trim();
                 final  String name = etName.getText().toString().trim();
 
-                String userPattern = "^[A-Za-z][A-Za-z1-9_-]+$";//登录名的正则表达式：（字母开头 + 数字/字母/下划线）
-                if (!loginName.matches(userPattern)) {
-                    Toast.makeText(getApplicationContext(),"登录名格式不正确",Toast.LENGTH_SHORT).show();
-                    return;
-                }
+//                String userPattern = "^[A-Za-z][A-Za-z1-9_-]+$";//登录名的正则表达式：（字母开头 + 数字/字母/下划线）
+//                if (!loginName.matches(userPattern)) {
+//                    Toast.makeText(getApplicationContext(),"登录名格式不正确",Toast.LENGTH_SHORT).show();
+//                    return;
+//                }
                 if (!pwd.equals(repeatPwd)) {
                     Toast.makeText(getApplicationContext(),"两次密码不相同",Toast.LENGTH_SHORT).show();
                     return;
@@ -243,7 +243,7 @@ public class RegisterActivity extends BaseActivity implements OnClickListener{
                     @Override
                     public void run() {
 //                        OkHttpUtils.Param uinonId = new OkHttpUtils.Param(NetConstant.unionId, resultInfo.getUnionId());
-                        OkHttpUtils.Param loginParam = new OkHttpUtils.Param(NetConstant.register_username, loginName);
+//                        OkHttpUtils.Param loginParam = new OkHttpUtils.Param(NetConstant.register_username, loginName);
                         OkHttpUtils.Param pwdParam = new OkHttpUtils.Param(NetConstant.register_password, pwd);
                         OkHttpUtils.Param pwdConfirmParam = new OkHttpUtils.Param(NetConstant.register_password_confirm, repeatPwd);
                         OkHttpUtils.Param nameParam = new OkHttpUtils.Param(NetConstant.register_name, name);
@@ -251,7 +251,7 @@ public class RegisterActivity extends BaseActivity implements OnClickListener{
                         OkHttpUtils.Param codeParam = new OkHttpUtils.Param(NetConstant.register_code, code);
                         List<OkHttpUtils.Param> registerParams = new ArrayList<>();
 //                        registerParams.add(uinonId);
-                        registerParams.add(loginParam);
+//                        registerParams.add(loginParam);
                         registerParams.add(pwdParam);
                         registerParams.add(pwdConfirmParam);
                         registerParams.add(nameParam);
@@ -292,7 +292,7 @@ public class RegisterActivity extends BaseActivity implements OnClickListener{
                                         String token = dataJson.optString("token");
 //                                        请求成功则将用户数据保存到数据库
                                         ContentValues values = new ContentValues();
-                                        values.put(DataBaseParams.user_login_name, loginName);
+//                                        values.put(DataBaseParams.user_login_name, loginName);
                                         values.put(DataBaseParams.user_user_name, name);
 //                                        values.put(DataBaseParams.user_wx_unionid, resultInfo.getUnionId());
                                         values.put(DataBaseParams.user_password, pwd);

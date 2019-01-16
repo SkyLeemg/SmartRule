@@ -66,7 +66,7 @@
             android:id="@+id/tv_real_measure_num"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="18"
+            android:text="0"
             android:textColor="@color/color_word"
             />
     </LinearLayout>
@@ -90,7 +90,7 @@
             android:id="@+id/tv_qualified_num"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="18"
+            android:text="0"
             android:textColor="@color/color_word"
             />
     </LinearLayout>
@@ -109,13 +109,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/color_measure_result_tip_word"
-            android:text="实测点数："
+            android:text="合格率："
             />
         <TextView
             android:id="@+id/tv_qualified_rate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="18"
+            android:text="0"
             android:textColor="@color/color_word"
             />
     </LinearLayout>

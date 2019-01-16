@@ -13,7 +13,7 @@ public class MeasureTableRow implements Serializable {
     private String optionName;
     private String standard;
     private String checkMethod;
-    private List<String> datalist;
+    private List<MeasureData> datalist;
     private int realMeasureNum;
     private int qualifiedNum;
     private String qualifiedRate;
@@ -50,11 +50,11 @@ public class MeasureTableRow implements Serializable {
         this.checkMethod = checkMethod;
     }
 
-    public List<String> getDatalist() {
+    public List<MeasureData> getDatalist() {
         return datalist;
     }
 
-    public void setDatalist(List<String> datalist) {
+    public void setDatalist(List<MeasureData> datalist) {
         this.datalist = datalist;
     }
 

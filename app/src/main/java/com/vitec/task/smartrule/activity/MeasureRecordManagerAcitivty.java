@@ -16,6 +16,7 @@ import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.tuyenmonkey.mkloader.MKLoader;
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.adapter.MeasureFragmentPagerAdapter;
+import com.vitec.task.smartrule.bean.OptionMeasure;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.bean.RulerOptions;
@@ -29,6 +30,7 @@ import com.vitec.task.smartrule.fragment.MeasureFragmentRecordControllerImpl;
 import com.vitec.task.smartrule.fragment.MeasureRecordFragment;
 import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
 import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
+import com.vitec.task.smartrule.utils.OptionsMeasureUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -93,16 +95,6 @@ public class MeasureRecordManagerAcitivty extends BaseFragmentActivity {
     }
 
 
-    /**
-     * 在使用该方法前，checkOptionsList和rulerCheck两个对象的数据要先初始化好
-     */
-    private void startRequestServer() {
-        Intent intent = new Intent(this, PerformMeasureNetIntentService.class);
-        intent.putExtra(PerformMeasureNetIntentService.GET_FLAG_KEY, PerformMeasureNetIntentService.FLAG_CREATE_RECORD);
-        intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_OPTIONS_DATA_KEY, (Serializable) checkOptionsList);
-        intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_RULER_DATA_KEY, rulerCheck);
-        startService(intent);
-    }
 
 
     private void initFragmentData() {
@@ -127,22 +119,24 @@ public class MeasureRecordManagerAcitivty extends BaseFragmentActivity {
                 }
                 continue;
             }
-            MeasureRecordFragment fragment = new MeasureRecordFragment();
-            RulerCheckOptions checkOptions = checkOptionsList.get(i);
-            List<RulerCheckOptions> otherOptionsList = new ArrayList<>();
-            Bundle bundle = new Bundle();
-//            此id对应iot_ruler_check_options表的id
-            otherOptionsList.add(checkOptions);
-            bundle.putInt(DataBaseParams.options_data_check_options_id, checkOptions.getId());
-            bundle.putSerializable("checkoptions", (Serializable) otherOptionsList);
-            fragment.setArguments(bundle);
-            fragments.add(fragment);
-            if (checkOptions.getRulerOptions()!=null)
-                tags.add(checkOptions.getRulerOptions().getOptionsName());
+//            MeasureRecordFragment fragment = new MeasureRecordFragment();
+//            RulerCheckOptions checkOptions = checkOptionsList.get(i);
+//            List<RulerCheckOptions> otherOptionsList = new ArrayList<>();
+//            Bundle bundle = new Bundle();
+////            此id对应iot_ruler_check_options表的id
+//            otherOptionsList.add(checkOptions);
+//            bundle.putInt(DataBaseParams.options_data_check_options_id, checkOptions.getId());
+//            bundle.putSerializable("checkoptions", (Serializable) otherOptionsList);
+//            fragment.setArguments(bundle);
+//            fragments.add(fragment);
+//            if (checkOptions.getRulerOptions()!=null)
+//                tags.add(checkOptions.getRulerOptions().getOptionsName());
         }
         if (checkOptionsList.size() == 0) {
             MeasureRecordFragment fragment = new MeasureRecordFragment();
             fragments.add(fragment);
+            tags.add("垂直/水平度");
+
         }
         MeasureFragmentPagerAdapter fragmentPagerAdapter = new MeasureFragmentPagerAdapter(getSupportFragmentManager(), fragments, tags);
         viewPager.setAdapter(fragmentPagerAdapter);
@@ -175,11 +169,32 @@ public class MeasureRecordManagerAcitivty extends BaseFragmentActivity {
                 checkOption.setId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id)));
                 int optionId = cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_options_id));
                 checkOption.setUpload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.upload_flag)));
+                checkOption.setServerId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
+                checkOption.setImgNumber(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_number)));
+//                获取本地图片地址
+                checkOption.setImgPath(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_img_path)));
+//                获取本地图片更新时间
+                checkOption.setImgUpdateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_time)));
+//               获取图片更新标志
+                checkOption.setImg_upload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_upload_flag)));
+//                获取服务器的图片地址
+                checkOption.setServerImgUrl(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_server_img_url)));
 //                根据optionid查询iot_ruler_options模板表里对应的数据
                 List<RulerOptions> optionsList = bleDataDbHelper.queryOptionsAllDataFromSqlite(" where id=" + optionId);
                 if (optionsList.size() > 0) {
                     checkOption.setRulerOptions(optionsList.get(0));
                 }
+
+                List<OptionMeasure> measureList = OptionsMeasureUtils.getOptionMeasure(checkOption.getRulerOptions().getMeasure());
+                if (measureList.size() > 0) {
+                    for (OptionMeasure measure : measureList) {
+                        checkOption.setFloorHeight(measure);
+                        if (measure.getId() == cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_floor_height))) {
+                            break;
+                        }
+                    }
+                }
+
                 checkOptionsList.add(checkOption);
                 Log.e(TAG, "queryData: 查询历史的RulerCheckOption:"+checkOption.toString() );
             } while (cursor.moveToNext());

@@ -30,6 +30,9 @@ import no.nordicsemi.android.dfu.DfuServiceController;
 import no.nordicsemi.android.dfu.DfuServiceInitiator;
 import no.nordicsemi.android.dfu.DfuServiceListenerHelper;
 
+/**
+ * 检查靠尺的更新，固件版本信息，
+ */
 public class UpdateFirmIntentService extends IntentService {
 
     public static final String DEAL_FLAG_KEY = "deal_flag";
@@ -88,7 +91,7 @@ public class UpdateFirmIntentService extends IntentService {
                     url.append("&");
                     url.append(NetConstant.check_update_app_name);
                     url.append("=");
-                    url.append("靠尺");
+                    url.append("hardware");
                     LogUtils.show("更新固件，查看请求链接："+url.toString());
                     OkHttpUtils.get(url.toString(),resultCallback);
                     bleDeviceDbHelper.close();
@@ -140,6 +143,7 @@ public class UpdateFirmIntentService extends IntentService {
                     JSONObject object = new JSONObject(rootJson.optString("data"));
                     CheckUpdataMsg checkUpdataMsg = new CheckUpdataMsg();
                     int serviceVerCode = object.optInt("version_code");
+                    checkUpdataMsg.setUpdate_flag(1);
                     checkUpdataMsg.setVerCode(serviceVerCode);
                     checkUpdataMsg.setVerName(object.optString("version_number"));
                     checkUpdataMsg.setAppName(object.optString("app_name"));
@@ -155,7 +159,13 @@ public class UpdateFirmIntentService extends IntentService {
                     BleDeviceDbHelper bleDeviceDbHelper = new BleDeviceDbHelper(getApplicationContext());
                     BleDevice currentBle = bleDeviceDbHelper.getCurrentConnectDevice();
                     LogUtils.show("获取更新后的当前设备信息："+currentBle);
+                    checkUpdataMsg.setSuccess(true);
+                    checkUpdataMsg.setMsg("返回成功");
                     if (serviceVerCode > currentBle.getBleVerCode()) {
+                        checkUpdataMsg.setNeedUpdate(true);
+                        EventBus.getDefault().post(checkUpdataMsg);
+                    } else {
+                        checkUpdataMsg.setNeedUpdate(false);
                         EventBus.getDefault().post(checkUpdataMsg);
                     }
                     bleDeviceDbHelper.close();
@@ -163,6 +173,11 @@ public class UpdateFirmIntentService extends IntentService {
 
             } catch (JSONException e) {
                 e.printStackTrace();
+                CheckUpdataMsg checkUpdataMsg = new CheckUpdataMsg();
+                checkUpdataMsg.setSuccess(true);
+                checkUpdataMsg.setMsg("数据解析失败");
+                checkUpdataMsg.setNeedUpdate(false);
+                EventBus.getDefault().post(checkUpdataMsg);
             }
 
 
@@ -170,7 +185,11 @@ public class UpdateFirmIntentService extends IntentService {
 
         @Override
         public void onFailure(Exception e) {
-
+            CheckUpdataMsg checkUpdataMsg = new CheckUpdataMsg();
+            checkUpdataMsg.setSuccess(false);
+            checkUpdataMsg.setMsg("网络请求失败");
+            checkUpdataMsg.setNeedUpdate(false);
+            EventBus.getDefault().post(checkUpdataMsg);
         }
     };
 

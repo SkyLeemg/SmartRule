@@ -79,12 +79,12 @@ public class MeasureProjectListAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) view.getTag();
         }
-        String projectName = rulerCheckList.get(i).getProjectName();
-        if (projectName.equals("")) {
+        String projectName = rulerCheckList.get(i).getProject().getProjectName();
+        if (projectName==null || projectName.equals("")) {
             projectName = "未命名";
         }
         holder.tvProjectName.setText(projectName);
-        holder.tvCheckPosition.setText("检查位置："+rulerCheckList.get(i).getCheckFloor());
+        holder.tvCheckPosition.setText("检查位置："+rulerCheckList.get(i).getUnitEngineer().getLocation()+" "+rulerCheckList.get(i).getCheckFloor());
         holder.tvCheckPerson.setText("检查人："+rulerCheckList.get(i).getUser().getUserName());
         holder.llMenu.setVisibility(View.GONE);
 //        设置图标的头文字
@@ -92,7 +92,7 @@ public class MeasureProjectListAdapter extends BaseAdapter {
 //        设置图标的背景颜色
 
         int colorIndex = Math.abs((projectName.hashCode()+rulerCheckList.get(i).getCheckFloor().hashCode()) % 4);
-        LogUtils.show("查看颜色编号：" + colorIndex);
+//        LogUtils.show("查看颜色编号：" + colorIndex);
         if (colorIndex < bgColors.length) {
             holder.rlIconBg.setBackgroundColor(bgColors[colorIndex]);
         } else {

@@ -8,18 +8,21 @@ import java.util.Objects;
  */
 public class RulerCheckOptions implements Serializable{
     private int id;
-    private RulerCheck rulerCheck;
     private int serverId;
-    private RulerOptions rulerOptions;
-    private String floorHeight;
+    private OptionMeasure floorHeight;
     private int measuredNum;
     private int qualifiedNum;
     private float qualifiedRate;
     private int createTime;
     private int updateTime;
     private int upload_flag;
-    private String imgPath;
+    private int img_upload_flag;//0代表当前图片未上传，1代表已经上传
+    private String imgPath;//图纸的本地地址
     private int imgUpdateTime;
+    private int imgNumber;
+    private String serverImgUrl;//图纸的网络链接
+    private RulerCheck rulerCheck;
+    private RulerOptions rulerOptions;
 
     public int getId() {
         return id;
@@ -53,11 +56,11 @@ public class RulerCheckOptions implements Serializable{
         this.rulerOptions = rulerOptions;
     }
 
-    public String getFloorHeight() {
+    public OptionMeasure getFloorHeight() {
         return floorHeight;
     }
 
-    public void setFloorHeight(String floorHeight) {
+    public void setFloorHeight(OptionMeasure floorHeight) {
         this.floorHeight = floorHeight;
     }
 
@@ -126,6 +129,30 @@ public class RulerCheckOptions implements Serializable{
         this.imgUpdateTime = imgUpdateTime;
     }
 
+    public String getServerImgUrl() {
+        return serverImgUrl;
+    }
+
+    public void setServerImgUrl(String serverImgUrl) {
+        this.serverImgUrl = serverImgUrl;
+    }
+
+    public int getImg_upload_flag() {
+        return img_upload_flag;
+    }
+
+    public void setImg_upload_flag(int img_upload_flag) {
+        this.img_upload_flag = img_upload_flag;
+    }
+
+    public int getImgNumber() {
+        return imgNumber;
+    }
+
+    public void setImgNumber(int imgNumber) {
+        this.imgNumber = imgNumber;
+    }
+
     @Override
     public String toString() {
         return "RulerCheckOptions{" +
@@ -138,11 +165,15 @@ public class RulerCheckOptions implements Serializable{
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 ", upload_flag=" + upload_flag +
+                ", imgNumber=" + imgNumber +
+                ", img_upload_flag=" + img_upload_flag +
+                ", imgPath='" + imgPath + '\'' +
+                ", imgUpdateTime=" + imgUpdateTime +
+                ", serverImgUrl='" + serverImgUrl + '\'' +
                 ", rulerCheck=" + rulerCheck +
                 ", rulerOptions=" + rulerOptions +
                 '}';
     }
-
 
     @Override
     public boolean equals(Object o) {

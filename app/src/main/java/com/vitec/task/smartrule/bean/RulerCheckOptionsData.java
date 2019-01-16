@@ -11,6 +11,7 @@ public class RulerCheckOptionsData implements Serializable{
     private static final long serialVersionUID = -7060210544600464482L;
     private int id;
     private int serverId;
+    private int number;
     private RulerCheckOptions rulerCheckOptions;
     private String data;
     private boolean isQualified;//是否合格
@@ -76,6 +77,13 @@ public class RulerCheckOptionsData implements Serializable{
         this.upload_flag = upload_flag;
     }
 
+    public int getNumber() {
+        return number;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
+    }
 
     public boolean isQualified() {
         return isQualified;
@@ -90,11 +98,13 @@ public class RulerCheckOptionsData implements Serializable{
         return "RulerCheckOptionsData{" +
                 "id=" + id +
                 ", serverId=" + serverId +
+                ", number=" + number +
                 ", data='" + data + '\'' +
+                ", isQualified=" + isQualified +
                 ", createTime=" + createTime +
                 ", updateFlag=" + updateFlag +
                 ", upload_flag=" + upload_flag +
-                ", rulerCheckOptions=" + rulerCheckOptions +
+//                ", rulerCheckOptions=" + rulerCheckOptions +
                 '}';
     }
 

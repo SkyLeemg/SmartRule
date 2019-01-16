@@ -1,6 +1,7 @@
 package com.vitec.task.smartrule.interfaces;
 
 import com.vitec.task.smartrule.bean.ChooseMeasureMsg;
+import com.vitec.task.smartrule.bean.RulerCheckProject;
 import com.vitec.task.smartrule.bean.RulerEngineer;
 import com.vitec.task.smartrule.bean.RulerOptions;
 
@@ -13,6 +14,8 @@ public interface IChooseGetter {
     List<RulerOptions> getOptionsList();
 
     List<ChooseMeasureMsg> getChooseMeasureMsgList();
+
+    List<RulerCheckProject> getCheckProjectList();
 
     void updateChooseMeasureMsgList(int index, ChooseMeasureMsg chooseMeasureMsg);
 

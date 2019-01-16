@@ -120,7 +120,8 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
 //        if (rules.size() != 0) {
 //            tvNoRuleDev.setVisibility(View.GONE);
 //        }
-
+        Intent bindIntent = new Intent(this, ConnectDeviceService.class);
+        boolean isSuccess = bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
         setListViewHeighBaseOnChildren(gvRule);
 
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(UARTStatusChangeReceiver, makeGattUpdateIntentFilter());
@@ -130,7 +131,8 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
                 if (i < rules.size()) {
                     current_connected_device_id = i;
                     if (ConnectDeviceService.current_connecting_mac_address.equals(rules.get(i).getBleMac())) {
-                        Toast.makeText(getApplicationContext(), "蓝牙已连接", Toast.LENGTH_SHORT).show();
+                        mService.disconnect();
+//                        Toast.makeText(getApplicationContext(), "蓝牙已连接", Toast.LENGTH_SHORT).show();
                     } else {
                         mLoadingDialog = new LoadingDialog(DeviceManagerActivity.this, "正在连接");
                         mLoadingDialog.show();
@@ -373,8 +375,9 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
 
             //*********************//
             if (action.equals(BleParam.ACTION_GATT_DISCONNECTED)) {
-                mTextToSpeechHelper.speakChinese("蓝牙连接失败");
-                Toast.makeText(context,"连接失败", Toast.LENGTH_SHORT).show();
+                mTextToSpeechHelper.speakChinese("蓝牙连接断开");
+                Toast.makeText(context,"连接断开", Toast.LENGTH_SHORT).show();
+                current_connected_device_id = -1;
                 setDeviceImg(current_connected_device_id);
                 ruleDevAdapter.setDevs(rules);
                 ruleDevAdapter.notifyDataSetChanged();
@@ -459,5 +462,12 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
     @Override
     public List<BleDevice> getDevs() {
         return rules;
+    }
+
+    @Override
+    public void delDevs(int index, BleDevice bleDevice) {
+        if (ConnectDeviceService.current_connecting_mac_address.equals(bleDevice.getBleMac())&& mService!=null) {
+            mService.disconnect();
+        }
     }
 }

@@ -4,6 +4,9 @@
     android:layout_height="match_parent"
     android:background="@color/background"
     >
+
+
+
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -221,6 +224,15 @@
 
     </RelativeLayout>
 
+    <ImageView
+        android:id="@+id/img_scan_qr"
+        android:layout_width="24dp"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/ico_scan_qr"
+        android:layout_marginRight="12dp"
+        android:layout_marginTop="10dp"
+        android:layout_alignParentRight="true"
 
+        />
 
 </RelativeLayout>

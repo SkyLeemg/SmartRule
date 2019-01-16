@@ -10,6 +10,7 @@ import android.support.annotation.RequiresApi;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.DragAndDropPermissions;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -20,6 +21,7 @@ import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.tuyenmonkey.mkloader.MKLoader;
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.adapter.MeasureFragmentPagerAdapter;
+import com.vitec.task.smartrule.bean.OptionMeasure;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.bean.RulerOptions;
@@ -33,6 +35,7 @@ import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentSer
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
+import com.vitec.task.smartrule.utils.OptionsMeasureUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -85,7 +88,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
 //        获取上一个类（ChooseMeasureProjectAdapter）传过来的数据
         rulerCheck = (RulerCheck) getIntent().getSerializableExtra("projectMsg");
 //        int chooseIndex = getIntent().getIntExtra("floor_height", 0);
-        String chooseFloorHeight = getIntent().getStringExtra("floor_height");
+        OptionMeasure chooseFloorHeight = (OptionMeasure) getIntent().getSerializableExtra("floor_height");
         Log.e(TAG, "initData: 查看收到的rulercheck:"+rulerCheck.toString() );
         checkOptionsList = new ArrayList<>();
 //        rulerCheckOption = new RulerCheckOptions();
@@ -113,7 +116,17 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
                 rulerCheckOption.setRulerCheck(rulerCheck);
                 rulerCheckOption.setRulerOptions(rulerOption);
                 rulerCheckOption.setUpload_flag(0);
-                rulerCheckOption.setFloorHeight(chooseFloorHeight);
+//                rulerCheckOption.setFloorHeight(chooseFloorHeight);
+                List<OptionMeasure> measureList = OptionsMeasureUtils.getOptionMeasure(rulerOption.getMeasure());
+                if (measureList.size() > 0) {
+                    for (OptionMeasure measure : measureList) {
+                        rulerCheckOption.setFloorHeight(measure);
+                        if (measure.getId() == chooseFloorHeight.getId()) {
+                            break;
+                        }
+                    }
+                }
+                rulerCheckOption.setServerId(0);
                 int id = OperateDbUtil.addMeasureOptionsDataToSqlite(getApplicationContext(), rulerCheckOption);
                 rulerCheckOption.setId(id);
                 checkOptionsList.add(rulerCheckOption);
@@ -151,23 +164,27 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
         tags = new ArrayList<>();
         LogUtils.show("initFragmentData-----进入了初始化fragment方法");
         List<RulerCheckOptions> optionsList = new ArrayList<>();
+        List<String> tagList = new ArrayList<>();
+        List<android.support.v4.app.Fragment> fragmentList = new ArrayList<>();
         for (int i = 0; i< checkOptionsList.size(); i++) {
 
             if (checkOptionsList.get(i).getRulerOptions().getType() == 1 || checkOptionsList.get(i).getRulerOptions().getType() == 2) {
                 optionsList.add(checkOptionsList.get(i));
+                LogUtils.show("initFragmentData----打印查看管控要点的值：" + optionsList.get(i));
                 continue;
             }
-            MeasureFragmentOthers fragment = new MeasureFragmentOthers();
-            RulerCheckOptions checkOptions = checkOptionsList.get(i);
-            Bundle bundle = new Bundle();
-//            此id对应iot_ruler_check_options表的id
-            bundle.putInt(DataBaseParams.options_data_check_options_id, checkOptions.getId());
-            bundle.putSerializable("checkoptions",checkOptions);
-            fragment.setArguments(bundle);
-            fragments.add(fragment);
-            if (checkOptions.getRulerOptions()!=null)
-                tags.add(checkOptions.getRulerOptions().getOptionsName());
+//            MeasureFragmentOthers fragment = new MeasureFragmentOthers();
+//            RulerCheckOptions checkOptions = checkOptionsList.get(i);
+//            Bundle bundle = new Bundle();
+////            此id对应iot_ruler_check_options表的id
+//            bundle.putInt(DataBaseParams.options_data_check_options_id, checkOptions.getId());
+//            bundle.putSerializable("checkoptions",checkOptions);
+//            fragment.setArguments(bundle);
+//            fragmentList.add(fragment);
+//            if (checkOptions.getRulerOptions()!=null)
+//                tagList.add(checkOptions.getRulerOptions().getOptionsName());
         }
+
         if (optionsList.size() > 0) {
             MeasureFragment fragment = new MeasureFragment();
             Bundle bundle = new Bundle();
@@ -177,9 +194,11 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
             bundle.putSerializable("checkoptions", (Serializable) optionsList);
             fragment.setArguments(bundle);
             fragments.add(fragment);
+            LogUtils.show("垂直/水平度-----的管控要点："+optionsList.toString());
             tags.add("垂直/水平度");
         }
-
+        fragments.addAll(fragmentList);
+        tags.addAll(tagList);
 
         if (checkOptionsList.size() == 0) {
             MeasureFragment fragment = new MeasureFragment();
@@ -226,17 +245,33 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
                 RulerCheckOptions checkOption = new RulerCheckOptions();
                 checkOption.setRulerCheck(rulerCheck);
                 checkOption.setCreateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_create_time)));
+                checkOption.setUpdateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_update_time)));
                 checkOption.setId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id)));
-                checkOption.setFloorHeight(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_floor_height)));
+
                 checkOption.setImgPath(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_img_path)));
                 checkOption.setImgUpdateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_time)));
+                checkOption.setImg_upload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_upload_flag)));
+                checkOption.setServerImgUrl(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_server_img_url)));
                 int optionId = cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_options_id));
                 checkOption.setUpload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.upload_flag)));
+                checkOption.setServerId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
+                checkOption.setImgNumber(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_number)));
 //                根据optionid查询iot_ruler_options模板表里对应的数据
                 List<RulerOptions> optionsList = bleDataDbHelper.queryOptionsAllDataFromSqlite(" where id=" + optionId);
                 if (optionsList.size() > 0) {
                     checkOption.setRulerOptions(optionsList.get(0));
                 }
+
+                List<OptionMeasure> measureList = OptionsMeasureUtils.getOptionMeasure(checkOption.getRulerOptions().getMeasure());
+                if (measureList.size() > 0) {
+                    for (OptionMeasure measure : measureList) {
+                        checkOption.setFloorHeight(measure);
+                        if (measure.getId() == cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_floor_height))) {
+                            break;
+                        }
+                    }
+                }
+
                 checkOptionsList.add(checkOption);
                 Log.e(TAG, "queryData: 查询历史的RulerCheckOption:"+checkOption.toString() );
             } while (cursor.moveToNext());

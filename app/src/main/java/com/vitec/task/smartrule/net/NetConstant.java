@@ -15,6 +15,11 @@ public class NetConstant {
      */
     public static final String validateMobileCodeUrl = "/api/user/validateMobileCode";
 
+    /**
+     * 根据手机号修改密码
+     */
+    public static final String change_password_by_mobile_url = "/api/user/changePasswordByMobile";
+
 
     /**
      * 注册接口
@@ -97,6 +102,8 @@ public class NetConstant {
      */
     public static final String update_data_url = "/api/ruler/updateData";
     public static final String update_data_param = "data";
+    public static final String update_check_options = "check_options";
+
 
 
     /**
@@ -126,8 +133,66 @@ public class NetConstant {
     public static final String del_record_url = "/api/ruler/deleteRecord";
     public static final String del_check_list = "check_list";
 
+    /**
+     * 更新用户信息
+     */
+    public static final String update_user_msg = "/api/user/updateUserInfo";
 
 
+    /**
+     * 通用上传文件
+     */
+    public static final String upload_file_url = "/api/oss/upload";
+    public static final String upload_file_key = "file";
+
+    /**
+     * 上传管控要点图纸
+     */
+    public static final String upload_option_pic_url = "/api/ruler/uploadPicture";
+    public static final String upload_option_pic_check_options_list = "check_options_list";
+    public static final String upload_option_pic_url_key= "url";
+    public static final String upload_option_pic_number_list= "number_list";
+
+    /**
+     * 获取公司资料接口
+     */
+    public static final String get_company_frofile_url = "/api/ruler/getCompanyProfile";
+
+    /**
+     * 提交意见
+     */
+    public static final String post_submit_advice_url = "/api/ruler/submitAdvice";
+    public static final String post_submit_advice_content = "content";
+
+
+
+
+    /*******************************测量组相关的接口*************************************/
+    //创建测量组接口
+    public static final String group_create_project_url = "/api/ruler/createProject";
+    //更新测量组
+    public static final String group_update_proect_url = "/api/ruler/updateProject";
+    //删除测量组
+    public static final String group_del_project_url = "/api/ruler/deleteProject";
+    //查询测量组
+    public static final String group_get_project_list_url = "/api/ruler/getProjectList";
+    //添加成员
+    public static final String group_add_member_url = "/api/ruler/addGroupMemberByMobile";
+    //删除成员
+    public static final String group_del_member_url = "/api/ruler/deleteGroupMember";
+    //添加单位工程
+    public static final String group_add_unit_engineer_url = "/api/ruler/addUnitEngineer";
+    //更新单位工程
+    public static final String group_update_unit_engineer_url = "/api/ruler/updateUnitEngineer";
+    //删除单位工程
+    public static final String group_del_unit_engineer_url = "/api/ruler/deleteUnitEngineer";
+    //查询测量组成员和单位工程
+    public static final String group_get_member_and_unit_url = "/api/ruler/getGroupMemberAndUnitEngineer";
+
+    //通用参数
+    public static final String group_project_list = "project_list";
+    public static final String group_group_list = "group_list";
+    public static final String group_unit_list = "unit_list";
 
 
 }

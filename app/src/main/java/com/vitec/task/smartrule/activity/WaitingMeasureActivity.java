@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.tuyenmonkey.mkloader.MKLoader;
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.adapter.MeasureProjectListAdapter;
+import com.vitec.task.smartrule.bean.OptionMeasure;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.bean.event.DelMeasureRecordMsgEvent;
 import com.vitec.task.smartrule.bean.event.MeasureDataMsgEvent;
@@ -32,6 +33,7 @@ import com.vitec.task.smartrule.interfaces.IClickable;
 import com.vitec.task.smartrule.net.NetConstant;
 import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
 import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
+import com.vitec.task.smartrule.service.intentservice.ReplenishDataToServerIntentService;
 import com.vitec.task.smartrule.utils.HeightUtils;
 import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.utils.ScreenSizeUtil;
@@ -58,6 +60,7 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
             pageSize = 20;//当前页总数
 
     private ListView lvWaitingMeasureList;
+    private TextView tvTip;
     private List<RulerCheck> rulerCheckList;//从数据库获取的所有等待测量的rulercheck集合
     private MeasureProjectListAdapter measureProjectListAdapter;
 //    private Button btnFinish;//测量完成按钮
@@ -80,6 +83,12 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
     }
 
     private void initData() {
+        /**
+         * 补上传服务启动
+         */
+        Intent replenishIntent = new Intent(getApplicationContext(), ReplenishDataToServerIntentService.class);
+        startService(replenishIntent);
+
         rulerCheckList = new ArrayList<>();
         /**
          * 应当先从服务器获取，服务器获取失败再从本地获取
@@ -144,6 +153,7 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
         rulerCheckList.clear();
         rulerCheckList = dataDbHelper.queryRulerCheckTableDataFromSqlite(where);
         LogUtils.show("查看本地搜索到的测量记录："+rulerCheckList.size()+",内容："+rulerCheckList);
+        measureProjectListAdapter.setRulerCheckList(rulerCheckList);
         dataDbHelper.close();
         total = rulerCheckList.size();
 //        updatePageData();
@@ -181,6 +191,9 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
 //        params.height = totalHeight + (gridView.getMeasuredHeight() * (listAdapter.getCount() - 1));
         params.height = height;
         lvWaitingMeasureList.setLayoutParams(params);
+        if (rulerCheckList.size() == 0) {
+            tvTip.setVisibility(View.VISIBLE);
+        }else tvTip.setVisibility(View.GONE);
 
     }
 
@@ -211,6 +224,9 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
                 getUnFinishServerCheckData();
             } else {
                 mkLoader.setVisibility(View.GONE);
+                if (rulerCheckList.size() == 0) {
+                    tvTip.setVisibility(View.VISIBLE);
+                }
                 updateAdapterData();
             }
 
@@ -255,7 +271,8 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
         Intent intent = new Intent(WaitingMeasureActivity.this, MeasureManagerAcitivty.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("projectMsg", rulerCheckList.get(chooseIndex));
-        intent.putExtra("floor_height", "");
+        OptionMeasure optionMeasure = new OptionMeasure();
+        intent.putExtra("floor_height", optionMeasure);
         startActivity(intent);
     }
 
@@ -284,6 +301,8 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
 
         initWidget();
         setTvTitle("等待测量");
+        tvTip = findViewById(R.id.tv_tip);
+        tvTip.setVisibility(View.GONE);
 //        imgIcon.setImageResource(R.mipmap.icon_back);
 //        imgIcon.setVisibility(View.VISIBLE);
 //        imgIcon.setOnClickListener(this);
@@ -312,64 +331,6 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
 
                 onBackPressed();
                 break;
-//
-//            case R.id.btn_finish:
-//                AlertDialog.Builder builder = new AlertDialog.Builder(WaitingMeasureActivity.this);
-//                builder.setTitle("是否完成测量？");
-//                builder.setMessage("完成测量后，所有(重点)等待测量中的项目都不能再继续测量，是否确定完成测量？");
-//                builder.setPositiveButton("完成测量", new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialogInterface, int i) {
-//
-//                        mkLoader.setVisibility(View.VISIBLE);
-//                        BleDataDbHelper dataDbHelper = new BleDataDbHelper(getApplicationContext());
-//                        for (int j=0;j<rulerCheckList.size();j++) {
-//
-//                            /**
-//                             * 更新到本地
-//                             */
-//                            ContentValues values = new ContentValues();
-//                            values.put(DataBaseParams.measure_is_finish, 1);
-//                            String where = " id = ?";
-//                            String[] whereValues = new String[]{String.valueOf(rulerCheckList.get(j).getId())};
-//                            int result = dataDbHelper.updateDataToSqlite(DataBaseParams.measure_table_name, values, where, whereValues);
-//                            LogUtils.show("完成测量，更新数据是否成功："+rulerCheckList.get(j).getProjectName()+",更新状态："+result);
-////                            更新完成后，更新集合中的状态，接下来向服务器发起更新的时候会用到状态标志
-//                            if (result > 0) {
-//                                rulerCheckList.get(j).setStatus(1);
-//                            }
-////                            requestStopMeasure(rulerCheckList.get(j).getServerId());
-//                        }
-//                        dataDbHelper.close();
-//                        /**
-//                         * 更新到服务器
-//                         */
-//                        LogUtils.show("点击结束测量按钮-----查看开启服务前的总数："+rulerCheckList.size());
-//                        currentSuccessStopNum = 0;
-//                        stopTotalNum = rulerCheckList.size();
-//
-//                        Intent serviceIntent = new Intent(WaitingMeasureActivity.this, PerformMeasureNetIntentService.class);
-//                        serviceIntent.putExtra(PerformMeasureNetIntentService.GET_FLAG_KEY, PerformMeasureNetIntentService.FLAG_FINISH_MEASURE);
-//                        serviceIntent.putExtra(PerformMeasureNetIntentService.GET_FINISH_MEASURE_KEY, (Serializable) rulerCheckList);
-//                        startService(serviceIntent);
-//
-//
-////                        如果处理数据的服务还在运行，则停止服务
-//                        boolean isAlive = ServiceUtils.isServiceRunning(getApplicationContext(), "com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService");
-//                        if (isAlive) {
-//                            HandleBleMeasureDataReceiverService.stopHandleService(getApplicationContext());
-//                        }
-////                        更新列表
-////                        getUnFinishServerCheckData();
-////                        updateAdapterData();
-//
-//
-//                    }
-//                });
-//                builder.setNegativeButton("继续测量", null);
-//                builder.show();
-//
-//                break;
 
             /**
              * 上一页
@@ -432,6 +393,13 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
      */
     @Override
     public void onSencondClickable(int position) {
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("rulerCheck", rulerCheckList.get(position));
+        Intent intent = new Intent(this,EditMeasureMsgActivity.class);
+        intent.putExtra("rulerCheck", bundle);
+
+        startActivityForResult(intent,1);
+
 
     }
 
@@ -444,7 +412,7 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
     public void onThirdClickable(final int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(WaitingMeasureActivity.this);
         builder.setTitle("提示");
-        builder.setMessage("是否确定删除" + rulerCheckList.get(position).getProjectName() + "?");
+        builder.setMessage("是否确定删除" + rulerCheckList.get(position).getProject().getProjectName() + "?");
         builder.setPositiveButton("删除", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {

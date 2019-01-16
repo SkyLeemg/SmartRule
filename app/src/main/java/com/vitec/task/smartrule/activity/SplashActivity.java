@@ -39,13 +39,13 @@ public class SplashActivity extends Activity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                String wxID = user.getWid();
-                boolean wxResult = wxID != null && !wxID.equals("") && !wxID.equals("0") && !wxID.equals("null");
-                if (user.getUserID() > 0 || wxResult) {
+                if (user.getUserID() > 0 ) {
                     startActivity(new Intent(SplashActivity.this, MainActivity.class));
                     SplashActivity.this.finish();
                 } else {
-                    startActivity(new Intent(SplashActivity.this,LoginActivity.class));
+                    Intent loginIntent = new Intent(SplashActivity.this, LoginActivity.class);
+                    loginIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(loginIntent);
                     SplashActivity.this.finish();
                 }
             }

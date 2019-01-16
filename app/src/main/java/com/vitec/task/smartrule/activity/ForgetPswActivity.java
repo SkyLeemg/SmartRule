@@ -1,5 +1,7 @@
 package com.vitec.task.smartrule.activity;
 
+import android.content.ContentValues;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,15 +18,29 @@ import android.widget.Toast;
 
 import com.tuyenmonkey.mkloader.MKLoader;
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.bean.User;
+import com.vitec.task.smartrule.bean.WxResultMessage;
+import com.vitec.task.smartrule.bean.event.MoblieRequestResutEvent;
+import com.vitec.task.smartrule.db.DataBaseParams;
+import com.vitec.task.smartrule.db.OperateDbUtil;
+import com.vitec.task.smartrule.db.UserDbHelper;
 import com.vitec.task.smartrule.net.NetConstant;
+import com.vitec.task.smartrule.service.intentservice.RequestMoblieIntentService;
+import com.vitec.task.smartrule.utils.Base64Utils;
 import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.utils.OkHttpUtils;
+import com.vitec.task.smartrule.utils.SharePreferenceUtils;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ForgetPswActivity extends BaseActivity implements View.OnClickListener{
 
@@ -52,6 +68,7 @@ public class ForgetPswActivity extends BaseActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forget_pwd);
         initView();
+        EventBus.getDefault().register(this);
     }
 
     private void initView() {
@@ -65,7 +82,7 @@ public class ForgetPswActivity extends BaseActivity implements View.OnClickListe
         llRepeatPsw = findViewById(R.id.ll_repeat_psw);
         etPhone = findViewById(R.id.et_phone);
         etCode = findViewById(R.id.et_mobile_code);
-        etPsw = findViewById(R.id.et_psw);
+        etPsw = findViewById(R.id.et_pwd);
         etRepeatPsw = findViewById(R.id.et_repeat_pwd);
         btnGetCode = findViewById(R.id.btn_get_mobile_code);
         btnSubmit = findViewById(R.id.btn_submit);
@@ -83,10 +100,17 @@ public class ForgetPswActivity extends BaseActivity implements View.OnClickListe
         etCode.addTextChangedListener(submitTextWatcher);
         btnSubmit.setClickable(false);
 
-        etPsw.addTextChangedListener(pswTextWatcher);
-        etRepeatPsw.addTextChangedListener(pswTextWatcher);
+
 
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+
 
     /**
      * 监听密码输入状态
@@ -172,6 +196,67 @@ public class ForgetPswActivity extends BaseActivity implements View.OnClickListe
         }
     };
 
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void mobileRequestCallBack(MoblieRequestResutEvent message) {
+        switch (message.getRequst_flag()) {
+            /**
+             * 请求发送验证码返回
+             */
+            case RequestMoblieIntentService.FLAG_REQUEST_MOBLIE_CODE:
+                countDown = 60;
+                if (message.isSuccess()) {
+                    mkLoader.setVisibility(View.GONE);
+                    btnGetCode.setClickable(false);
+                    btnGetCode.setBackgroundResource(R.drawable.shape_btn_gray_unclickable);
+                    canGetCode = false;
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            countDown--;
+                            if (countDown > 0) {
+                                btnGetCode.setText("重新获取(" + countDown + ")");
+                                handler.postDelayed(this, 1000);
+                            } else {
+                                btnGetCode.setText("重新获取");
+                                btnGetCode.setClickable(true);
+                                btnGetCode.setBackgroundResource(R.drawable.btn_nomal);
+                                canGetCode = true;
+                            }
+
+                        }
+                    }, 1000);
+                } else {
+                    mkLoader.setVisibility(View.GONE);
+                    Toast.makeText(getApplicationContext(), message.getMsg(), Toast.LENGTH_SHORT).show();
+                }
+                break;
+
+            /**
+             * 验证验证码是否正确的返回信息
+             */
+            case RequestMoblieIntentService.FLAG_VALIDATE_MOBLIE_CODE:
+                if (message.isSuccess()) {
+                    btnSubmit.setText(submit_string);
+                    btnSubmit.setBackgroundResource(R.drawable.shape_btn_blue_unclick);
+                    btnSubmit.setClickable(false);
+                    llCode.setVisibility(View.GONE);
+                    llPhone.setVisibility(View.GONE);
+                    llPsw.setVisibility(View.VISIBLE);
+                    llRepeatPsw.setVisibility(View.VISIBLE);
+                    etPsw.addTextChangedListener(pswTextWatcher);
+                    etRepeatPsw.addTextChangedListener(pswTextWatcher);
+                } else {
+                    Toast.makeText(getApplicationContext(),message.getMsg(),Toast.LENGTH_SHORT).show();
+                }
+                mkLoader.setVisibility(View.GONE);
+                break;
+
+        }
+    }
+
+
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -193,92 +278,11 @@ public class ForgetPswActivity extends BaseActivity implements View.OnClickListe
                     Toast.makeText(getApplicationContext(), "手机号码长度不对", Toast.LENGTH_SHORT).show();
                     return;
                 } else {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            OkHttpUtils.Param param = new OkHttpUtils.Param(NetConstant.mobile_param,phone);
-                            List<OkHttpUtils.Param> paramList = new ArrayList<>();
-                            paramList.add(param);
-                            StringBuffer url = new StringBuffer();
-                            url.append(NetConstant.baseUrl);
-                            url.append(NetConstant.getMobileCodeUrl);
-                            OkHttpUtils.post(url.toString(), new OkHttpUtils.ResultCallback<String>() {
-                                @Override
-                                public void onSuccess(String response) {
-                                    try {
-                                        /**
-                                         *
-                                         {"status":"success","code":200,"msg":"验证码下发成功"}
-                                         */
-                                        JSONObject jsonObject = new JSONObject(response);
-                                        String status = jsonObject.optString("status");
-                                        int code = jsonObject.optInt("code");
-                                        Log.e("aaa", "onSuccess: 获取验证码成功："+response );
-                                        final String msg = jsonObject.optString("msg");
-                                        countDown = 60;
-                                        if (code == 200) {
-                                            runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    mkLoader.setVisibility(View.GONE);
-                                                    btnGetCode.setClickable(false);
-                                                    btnGetCode.setBackgroundResource(R.drawable.shape_btn_gray_unclickable);
-                                                    canGetCode = false;
-                                                    final Handler handler = new Handler();
-                                                    handler.postDelayed(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            countDown--;
-                                                            if (countDown > 0) {
-                                                                btnGetCode.setText("重新获取(" + countDown + ")");
-                                                                handler.postDelayed(this, 1000);
-                                                            } else {
-                                                                btnGetCode.setText("重新获取");
-                                                                btnGetCode.setClickable(true);
-                                                                btnGetCode.setBackgroundResource(R.drawable.btn_nomal);
-                                                                canGetCode = true;
-                                                            }
+                    Intent intent = new Intent(getApplicationContext(), RequestMoblieIntentService.class);
+                    intent.putExtra(RequestMoblieIntentService.REQUEST_FLAG, RequestMoblieIntentService.FLAG_REQUEST_MOBLIE_CODE);
+                    intent.putExtra(RequestMoblieIntentService.VALUE_MOBLIE, phone);
+                    startService(intent);
 
-                                                        }
-                                                    }, 1000);
-                                                }
-                                            });
-                                        } else {
-                                            runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    mkLoader.setVisibility(View.GONE);
-                                                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
-                                        }
-
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                mkLoader.setVisibility(View.GONE);
-                                                Toast.makeText(getApplicationContext(),"网络请求失败",Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                                    }
-                                }
-
-                                @Override
-                                public void onFailure(Exception e) {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            mkLoader.setVisibility(View.GONE);
-                                            Toast.makeText(getApplicationContext(),"网络请求失败",Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-
-                                }
-                            },paramList);
-                        }
-                    }).start();
 
                 }
                 break;
@@ -299,69 +303,11 @@ public class ForgetPswActivity extends BaseActivity implements View.OnClickListe
                         Toast.makeText(getApplicationContext(), "手机号码长度不对", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    final List<OkHttpUtils.Param> paramList = new ArrayList<>();
-                    OkHttpUtils.Param mobileParam = new OkHttpUtils.Param(NetConstant.mobile_param, mobleString);
-                    OkHttpUtils.Param codeParam = new OkHttpUtils.Param(NetConstant.register_code, mobleCodeString);
-                    paramList.add(mobileParam);
-                    paramList.add(codeParam);
-                    final String url = NetConstant.baseUrl + NetConstant.validateMobileCodeUrl;
-                    LogUtils.show("请求前的参数和连接："+url+",参数："+paramList.toString());
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            OkHttpUtils.post(url, new OkHttpUtils.ResultCallback<String>() {
-                                @Override
-                                public void onSuccess(String response) {
-                                    try {
-                                        LogUtils.show("onSuccess-----打印查看返回信息："+response);
-                                        JSONObject jsonObject = new JSONObject(response);
-                                        final int code = jsonObject.optInt("code");
-                                        final String msg = jsonObject.optString("msg");
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                if (code == 200) {
-                                                    btnSubmit.setText(submit_string);
-                                                    btnSubmit.setBackgroundResource(R.drawable.shape_btn_gray_unclickable);
-                                                    btnSubmit.setClickable(false);
-                                                    llCode.setVisibility(View.GONE);
-                                                    llPhone.setVisibility(View.GONE);
-                                                    llPsw.setVisibility(View.VISIBLE);
-                                                    llRepeatPsw.setVisibility(View.VISIBLE);
-                                                } else {
-//                                                    mkLoader.setVisibility(View.GONE);
-                                                    Toast.makeText(getApplicationContext(),msg,Toast.LENGTH_SHORT).show();
-                                                }
-                                                mkLoader.setVisibility(View.GONE);
-
-                                            }
-                                        });
-
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                mkLoader.setVisibility(View.GONE);
-                                                Toast.makeText(getApplicationContext(),"服务器请求失败",Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                                    }
-                                }
-
-                                @Override
-                                public void onFailure(Exception e) {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            mkLoader.setVisibility(View.GONE);
-                                            Toast.makeText(getApplicationContext(),"网络请求失败",Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                }
-                            }, paramList);
-                        }
-                    }).start();
+                    Intent mobileIntent = new Intent(getApplicationContext(), RequestMoblieIntentService.class);
+                    mobileIntent.putExtra(RequestMoblieIntentService.REQUEST_FLAG, RequestMoblieIntentService.FLAG_VALIDATE_MOBLIE_CODE);
+                    mobileIntent.putExtra(RequestMoblieIntentService.VALUE_MOBLIE, mobleString);
+                    mobileIntent.putExtra(RequestMoblieIntentService.VALUE_MOBLIE_CODE, mobleCodeString);
+                    startService(mobileIntent);
 
                     return;
                 }
@@ -377,6 +323,58 @@ public class ForgetPswActivity extends BaseActivity implements View.OnClickListe
                     paramList.add(mobileParam);
                     paramList.add(codeParam);
                     paramList.add(pswParam);
+                    String url = NetConstant.baseUrl + NetConstant.change_password_by_mobile_url;
+                    LogUtils.show("修改密码----查看请求的链接："+url+",参数："+paramList.toString());
+                    OkHttpUtils.post(url, new OkHttpUtils.ResultCallback<String>() {
+                        @Override
+                        public void onSuccess(String response) {
+                            LogUtils.show("查看返回的修改密码信息：" + response);
+                            try {
+                                JSONObject jsonObject = new JSONObject(response);
+                                int code = jsonObject.optInt("code");
+                                final String msg = jsonObject.optString("msg");
+                                if (code == 200) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getApplicationContext(),msg,Toast.LENGTH_SHORT).show();
+                                            mkLoader.setVisibility(View.GONE);
+                                            onBackPressed();
+                                        }
+                                    });
+                                } else {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getApplicationContext(),msg,Toast.LENGTH_SHORT).show();
+                                            mkLoader.setVisibility(View.GONE);
+                                        }
+                                    });
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getApplicationContext(),"服务器异常",Toast.LENGTH_SHORT).show();
+                                        mkLoader.setVisibility(View.GONE);
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(),"网络请求失败",Toast.LENGTH_SHORT).show();
+                                    mkLoader.setVisibility(View.GONE);
+                                }
+                            });
+                        }
+                    }, paramList);
+
                 }
 
 

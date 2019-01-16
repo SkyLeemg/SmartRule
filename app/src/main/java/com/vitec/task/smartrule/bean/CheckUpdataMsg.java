@@ -21,6 +21,9 @@ public class CheckUpdataMsg implements Serializable{
      * "create_time":"2018-11-26 16:15:25"},
      * "msg":"查询成功"}
      */
+    private boolean isSuccess;//网络请求是否成功
+    private boolean isNeedUpdate;
+    private int update_flag;//1-靠尺升级，2-软件升级
     private int verCode;
     private String verName;
     private String downloadUrl;
@@ -28,6 +31,7 @@ public class CheckUpdataMsg implements Serializable{
     private String fileName;
     private String fileSize;
     private String updateLog;
+    private String msg;
 
     public int getVerCode() {
         return verCode;
@@ -85,6 +89,22 @@ public class CheckUpdataMsg implements Serializable{
         this.updateLog = updateLog;
     }
 
+    public boolean isNeedUpdate() {
+        return isNeedUpdate;
+    }
+
+    public void setNeedUpdate(boolean needUpdate) {
+        isNeedUpdate = needUpdate;
+    }
+
+    public int getUpdate_flag() {
+        return update_flag;
+    }
+
+    public void setUpdate_flag(int update_flag) {
+        this.update_flag = update_flag;
+    }
+
     @Override
     public String toString() {
         return "CheckUpdataMsg{" +
@@ -96,5 +116,21 @@ public class CheckUpdataMsg implements Serializable{
                 ", fileSize='" + fileSize + '\'' +
                 ", updateLog='" + updateLog + '\'' +
                 '}';
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public boolean isSuccess() {
+        return isSuccess;
+    }
+
+    public void setSuccess(boolean success) {
+        isSuccess = success;
     }
 }

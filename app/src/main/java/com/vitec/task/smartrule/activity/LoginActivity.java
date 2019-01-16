@@ -20,6 +20,7 @@ import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.UserDbHelper;
 import com.vitec.task.smartrule.helper.WeChatHelper;
 import com.vitec.task.smartrule.net.NetConstant;
+import com.vitec.task.smartrule.service.intentservice.GetMudelIntentService;
 import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.utils.LoginSuccess;
 import com.vitec.task.smartrule.utils.OkHttpUtils;
@@ -56,6 +57,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         EventBus.getDefault().register(this);
+        requestLocationPermissions();
         registerWeChat();
         initView();
         initDb();
@@ -68,6 +70,11 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         } catch (IOException e) {
             e.printStackTrace();
         }
+        /**
+         * 获取模板信息
+         */
+        Intent intent = new Intent(this, GetMudelIntentService.class);
+        startService(intent);
 
     }
 
@@ -142,18 +149,20 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        OkHttpUtils.Param nameParam = new OkHttpUtils.Param(NetConstant.login_username, loginName);
+                        OkHttpUtils.Param nameParam = new OkHttpUtils.Param(NetConstant.login_mobile, loginName);
                         OkHttpUtils.Param pwdParam = new OkHttpUtils.Param(NetConstant.login_password, pwd);
                         List<OkHttpUtils.Param> paramList = new ArrayList<>();
                         paramList.add(nameParam);
                         paramList.add(pwdParam);
-                        Log.e(TAG, "run: 查看登录请求的信息：" + paramList.toString());
+
                         StringBuffer url = new StringBuffer();
                         url.append(NetConstant.baseUrl);
                         url.append(NetConstant.loginUrl);
+                        LogUtils.show( "run: 查看登录请求的信息："+ url+"参数："+ paramList.toString());
                         OkHttpUtils.post(url.toString(), new OkHttpUtils.ResultCallback<String>() {
                             @Override
                             public void onSuccess(String response) {
+                                LogUtils.show("LoginActivity-----查看登录界面返回的登录信息："+response);
                                 LoginSuccess loginSuccess = new LoginSuccess(LoginActivity.this);
                                 OkHttpUtils.Param pwdParam = new OkHttpUtils.Param(NetConstant.login_password, pwd);
                                 List<OkHttpUtils.Param> paramList = new ArrayList<>();
@@ -273,9 +282,9 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     protected void onStop() {
         super.onStop();
         LogUtils.show("登录界面---stop");
-        if (isLoginSuccess) {
-            this.finish();
-        }
+//        if (isLoginSuccess) {
+//            this.finish();
+//        }
     }
 
     @Override

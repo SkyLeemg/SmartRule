@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.FileProvider;
@@ -163,6 +164,9 @@ public class DfuDialog extends Dialog {
             LogUtils.show("DfuProgressListener----onDfuCompleted。。。"+deviceAddress);
             Toast.makeText(getContext(),"升级成功",Toast.LENGTH_SHORT).show();
             tvTip.setText("升级成功...");
+            File file = new File(path);
+            file.delete();
+
             dismiss();
         }
 

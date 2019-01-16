@@ -10,6 +10,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -36,13 +38,16 @@ import com.luck.picture.lib.PictureSelector;
 import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.entity.LocalMedia;
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.activity.MainActivity;
 import com.vitec.task.smartrule.activity.WaitingMeasureActivity;
 import com.vitec.task.smartrule.adapter.DisplayMeasureDataAdapter;
+import com.vitec.task.smartrule.bean.event.DownFileMsgEvent;
 import com.vitec.task.smartrule.bean.event.HeightFloorMsgEvent;
 import com.vitec.task.smartrule.bean.OptionMeasure;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.bean.RulerCheckOptionsData;
+import com.vitec.task.smartrule.bean.event.MeasureDataMsgEvent;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.helper.TextToSpeechHelper;
@@ -95,6 +100,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
 
     private TextView tvAddmPic;//添加图纸按钮
     private LinearLayout llDisplayData;//显示测量数据的占位LL，
+    private RelativeLayout rlAddPic;
 
 
     private DisplayMeasureDataAdapter measureDataAdapter;
@@ -141,6 +147,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
     private void initView() {
         mTextToSpeechHelper = new TextToSpeechHelper(getActivity(),"");
         tvAddmPic = view.findViewById(R.id.tv_add_mpic);
+        rlAddPic = view.findViewById(R.id.rl_add_pic);
 
 //        layoutEditPic = view.findViewById(R.id.layout_edit_pic);
         rlEditPic = view.findViewById(R.id.rl_edit_pic);
@@ -221,7 +228,6 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
 
     @Override
     public List<RulerCheckOptions> getCheckOptions() {
-
         return accessOptions;
     }
 
@@ -229,9 +235,11 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
         if (flag == 1) {
             tvAddmPic.setVisibility(View.VISIBLE);
             commonEditPicView.setVisibility(View.GONE);
+            rlAddPic.setVisibility(View.VISIBLE);
         } else if (flag == 0) {
             tvAddmPic.setVisibility(View.GONE);
             commonEditPicView.setVisibility(View.VISIBLE);
+            rlAddPic.setVisibility(View.GONE);
         }
     }
 
@@ -253,30 +261,37 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                             LogUtils.show("onActivityResult---打印查看返回的原图片路径：" + media.getPath() + ",长宽：" + media.getWidth() + "," + media.getHeight());
                             LogUtils.show("onActivityResult---打印查看返回裁剪后的图片路径：" + media.getCutPath());
                             LogUtils.show("onActivityResult---打印查看压缩后的图片路径：" + media.getCompressPath());
-
+                            String url = media.getPath();
+                            if (media.getCompressPath() != null && !media.getCompressPath().equals("") && !media.getCompressPath().equals("null")) {
+                                url = media.getCompressPath();
+                            }
                             //        将编辑图纸的页面添加到rlEditPic中
                             if (commonEditPicView == null) {
                                 commonEditPicView = new CommonEditPicView(getActivity(),this);
-
                                 rlEditPic.addView(commonEditPicView);
                             } else {
                                 commonEditPicView.setVisibility(View.VISIBLE);
                             }
                             commonEditPicView.setFragment(MeasureFragment.this);
                             tvAddmPic.setVisibility(View.GONE);
+                            rlAddPic.setVisibility(View.GONE);
+                            final   String  fUrl = url;
                             Handler handler = new Handler();
                             handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    commonEditPicView.setmImageView(getActivity(),media.getPath());
+                                    commonEditPicView.setmImageView(getActivity(),fUrl);
                                 }
                             }, 100);
+
                         }
                     }
                     break;
             }
         }
     }
+
+
 
     private void initData() {
         /**
@@ -328,10 +343,12 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                 }
                 commonEditPicView.setFragment(MeasureFragment.this);
                 tvAddmPic.setVisibility(View.GONE);
+                rlAddPic.setVisibility(View.GONE);
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        LogUtils.show("查看需要显示的图片地址："+useCheckOption.getImgPath());
                         commonEditPicView.setmImageView(getActivity(),useCheckOption.getImgPath());
                     }
                 }, 100);
@@ -385,7 +402,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
             fq = qualifiedNum;
             qualifiedRate = (fq / frealnum);
             Log.e(TAG, "completeResult: 查看计算出来的实测点数："+realNum+",合格点数："+qualifiedNum+",合格率："+qualifiedRate );
-            levelCheckOption.setFloorHeight(floodHeight);
+//            levelCheckOption.setFloorHeight(floodHeight);
             levelCheckOption.setMeasuredNum(realNum);
             levelCheckOption.setQualifiedNum(qualifiedNum);
             levelCheckOption.setQualifiedRate(Float.parseFloat(String.format("%.2f",qualifiedRate*100)));
@@ -395,7 +412,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void netBussCallBack(String flag) {
+    public void netBussCallBack(MeasureDataMsgEvent flag) {
         LogUtils.show("netBussCallBack---查看创建好记录表后返回的标志:"+flag);
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(getActivity());
 //        先更新RulerCheck的server_id
@@ -405,18 +422,63 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
             LogUtils.show("netBussCallBack====查看数据库查询出来的Rulercheck：" + rulerCheckList.get(0));
             RulerCheck rulerCheck = useCheckOption.getRulerCheck();
             rulerCheck.setServerId(rulerCheckList.get(0).getServerId());
+            rulerCheck.getProject().setServer_id(rulerCheckList.get(0).getProject().getServer_id());
+            rulerCheck.getUnitEngineer().setServer_id(rulerCheckList.get(0).getUnitEngineer().getServer_id());
             useCheckOption.setRulerCheck(rulerCheck);
+
         }
         bleDataDbHelper.close();
         //        再更新RulerCheckOption的Server_id
-        String optionWhere = " where id = " + useCheckOption.getId();
-        List<RulerCheckOptions> rulerCheckOptionsList = OperateDbUtil.queryCheckOptionFromSqlite(getActivity(), useCheckOption.getRulerCheck(), optionWhere);
-        if (rulerCheckOptionsList.size() > 0) {
-            useCheckOption.setServerId(rulerCheckOptionsList.get(0).getServerId());
-            LogUtils.show("netBussCallBack====查看数据库查询出来的RrulerCheckOptionsList：" + rulerCheckOptionsList.get(0));
+        for (int i = 0; i < accessOptions.size(); i++) {
+            String optionWhere = " where id = " + accessOptions.get(i);
+            List<RulerCheckOptions> rulerCheckOptionsList = OperateDbUtil.queryCheckOptionFromSqlite(getActivity(), accessOptions.get(i).getRulerCheck(), optionWhere);
+            if (rulerCheckOptionsList.size() > 0) {
+                accessOptions.get(i).setRulerCheck(useCheckOption.getRulerCheck());
+                accessOptions.get(i).setServerId(rulerCheckOptionsList.get(0).getServerId());
+                LogUtils.show("netBussCallBack====查看数据库查询出来的RrulerCheckOptionsList：" + rulerCheckOptionsList.get(0));
+                if (useCheckOption.getId() == accessOptions.get(i).getId()) {
+                    useCheckOption.setServerId(rulerCheckOptionsList.get(0).getServerId());
+                }
+            }
         }
+
     }
 
+
+    /**
+     * 接收图纸更新的信息
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void headImgUpdateCallBack(DownFileMsgEvent event) {
+        LogUtils.show("个人中心----收到头像加载完毕回调");
+        if (event.isSuccess() && event.getPath().length() > 5) {
+            RulerCheckOptions options = (RulerCheckOptions) event.getObject();
+            for (int i=0;i<accessOptions.size();i++) {
+                if (accessOptions.get(i).getServerId() == options.getServerId()) {
+                    accessOptions.get(i).setImgPath(event.getPath());
+                    //        将编辑图纸的页面添加到rlEditPic中
+                    if (commonEditPicView == null) {
+                        commonEditPicView = new CommonEditPicView(getActivity(),this);
+                        rlEditPic.addView(commonEditPicView);
+                    } else {
+                        commonEditPicView.setVisibility(View.VISIBLE);
+                    }
+                    commonEditPicView.setFragment(MeasureFragment.this);
+                    tvAddmPic.setVisibility(View.GONE);
+                    rlAddPic.setVisibility(View.GONE);
+                    final   String  fUrl = event.getPath();
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            commonEditPicView.setmImageView(getActivity(),fUrl);
+                        }
+                    }, 100);
+                }
+            }
+        }
+    }
 
 
     @Override
@@ -505,13 +567,15 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                         try {
                             String text = new String(txValue, "UTF-8");
                             String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                            LogUtils.show("MeasureFragment--"+ useCheckOption.getRulerOptions().getOptionsName()+" 收到蓝牙数据："+text);
-                            LogUtils.show("Fragment-----收到垂直度数据,进入数据处理之前："+text);
+//                            LogUtils.show("MeasureFragment--"+ useCheckOption.getRulerOptions().getOptionsName()+" 收到蓝牙数据："+text);
+//                            LogUtils.show("Fragment-----收到垂直度数据,进入数据处理之前："+text);
                             if (uuid.equalsIgnoreCase(ConnectDeviceService.VERTICALITY_TX_CHAR_UUID.toString()) && verticalMeasureView != null) {
-                                LogUtils.show("Fragment----收到垂直度数据，进入判断后。");
+                                LogUtils.show("Fragment----收到垂直度数据，进入判断后:"+text);
                                 dealData(verticalMeasureView, text);
                             }
                             if (uuid.equalsIgnoreCase(ConnectDeviceService.LEVELNESS_TX_CHAR_UUID.toString()) && levelMeausreView != null) {
+                                LogUtils.show("Fragment----收到平整度数据，进入判断后:"+text);
+
                                 dealData(levelMeausreView, text);
                             }
 
@@ -532,18 +596,24 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
 
     private void dealData(MeasureDataView measureDataView, String text) {
         if (measureDataView.getRealDataCount() < measureDataView.getUsingCheckOptionsDataList().size()) {
+            int index = measureDataView.getCurcor();
+            measureDataView.getUsingCheckOptionsDataList().get(measureDataView.getRealDataCount()).setNumber(index);
             measureDataView.getUsingCheckOptionsDataList().get(measureDataView.getRealDataCount()).setData(text.trim());
             measureDataView.getUsingCheckOptionsDataList().get(measureDataView.getRealDataCount()).setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
             measureDataView.getUsingCheckOptionsDataList().get(measureDataView.getRealDataCount()).setUpdateFlag(0);
+            measureDataView.setCurcor(index+1);
 //            uploadOptionsDataList.add(checkOptionsDataList.get(currentDataNum));
         } else {
+            int index = measureDataView.getCurcor();
             RulerCheckOptionsData data = new RulerCheckOptionsData();
             data.setData(text.trim());
             data.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
             data.setUpdateFlag(0);
+            data.setNumber(index);
             data.setRulerCheckOptions(measureDataView.getRulerCheckOptions());
             data.setQualified(true);
             measureDataView.getUsingCheckOptionsDataList().add(data);
+            measureDataView.setCurcor(index + 1);
 //            uploadOptionsDataList.add(data);
         }
         measureDataView.setRealDataCount(measureDataView.getRealDataCount() + 1);
@@ -588,7 +658,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                             String where = " id = ?";
                             String[] whereValues = new String[]{String.valueOf(rulerCheck.getId())};
                             int result = dataDbHelper.updateDataToSqlite(DataBaseParams.measure_table_name, values, where, whereValues);
-                            LogUtils.show("完成测量，更新数据是否成功："+useCheckOption.getRulerCheck().getProjectName()+",更新状态："+result);
+                            LogUtils.show("完成测量，更新数据是否成功："+useCheckOption.getRulerCheck().getProject().getProjectName()+",更新状态："+result);
 //                            更新完成后，更新集合中的状态，接下来向服务器发起更新的时候会用到状态标志
                             if (result > 0) {
                                 Toast.makeText(getActivity(),"测量已结束",Toast.LENGTH_SHORT).show();
@@ -614,6 +684,10 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                         if (isAlive) {
                             HandleBleMeasureDataReceiverService.stopHandleService(getActivity());
                         }
+                        Intent mainIntent = new Intent(getActivity(), MainActivity.class);
+                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(mainIntent);
+
 //                        更新列表
 //                        getUnFinishServerCheckData();
 //                        updateAdapterData();
@@ -630,6 +704,10 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                 if (isAlive) {
                     HandleBleMeasureDataReceiverService.stopHandleService(getActivity());
                 }
+                Intent mainIntent = new Intent(getActivity(), MainActivity.class);
+                mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(mainIntent);
+                Toast.makeText(getActivity(), "测量暂停", Toast.LENGTH_SHORT).show();
                 break;
         }
     }

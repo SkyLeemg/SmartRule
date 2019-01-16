@@ -184,6 +184,8 @@ public class ConnectDeviceService extends Service {
             Log.e(TAG, "disconnect: BluetoothAdapter not initialized" );
             return;
         }
+        VERTICAL_DISCOVER_FLAG = 0;
+        LEVEL_DISCOVER_FLAG = 0;
         current_connecting_mac_address = "";
         mBluetoothGatt.disconnect();
 
@@ -219,6 +221,8 @@ public class ConnectDeviceService extends Service {
                 current_connecting_mac_address = "";
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STAAE_DISCONNECTED;
+                VERTICAL_DISCOVER_FLAG = 0;
+                LEVEL_DISCOVER_FLAG = 0;
                 Log.e(TAG, "vitec 蓝牙断开连接onConnectionStateChange: Disconnect from gatt server" );
                 broadcastUpdate(intentAction);
 //                EventBus.getDefault().post(false);
@@ -238,17 +242,12 @@ public class ConnectDeviceService extends Service {
                 for (BluetoothGattService service : services) {
                     if (service.getUuid().equals(SYSTEM_RX_SERVICE_UUID)) {
                         LogUtils.show("onServicesDiscovered----发现一个x系统服务："+mBluetoothGatt.getService(SYSTEM_RX_SERVICE_UUID).getUuid().toString());
-                        for (BluetoothGattDescriptor descriptor : mBluetoothGatt.getService(SYSTEM_RX_SERVICE_UUID).getCharacteristic(SYSTEM_TX_CHAR_UUID).getDescriptors()) {
-                            LogUtils.show("onServicesDiscovered----发现系统服务的描述值："+descriptor.getUuid().toString());
-                        }
-
-
                     } else if (service.getUuid().equals(VERTICALITY_SERVICE_UUID)) {
                         LogUtils.show("onServicesDiscovered----发现一个垂直度服务："+mBluetoothGatt.getService(VERTICALITY_SERVICE_UUID));
-                        for (BluetoothGattDescriptor descriptor : mBluetoothGatt.getService(VERTICALITY_SERVICE_UUID).getCharacteristic(VERTICALITY_TX_CHAR_UUID).getDescriptors()) {
-                            LogUtils.show("onServicesDiscovered----发现垂直度服务的描述值："+descriptor.getUuid().toString());
-                        }
+                        VERTICAL_DISCOVER_FLAG = 0;
+
                     } else if (service.getUuid().equals(LEVELNESS_SERVICE_UUID)) {
+                        LEVEL_DISCOVER_FLAG = 0;
                         LogUtils.show("onServicesDiscovered----发现一个水平度服务："+mBluetoothGatt.getService(LEVELNESS_SERVICE_UUID));
                     }
                 }
@@ -358,7 +357,7 @@ public class ConnectDeviceService extends Service {
 //    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void enableTXNotification(UUID serverUUID,UUID txUUid)
     {
-        LogUtils.show("enableTXNotification: 设置可以接收到通知："+serverUUID);
+//        LogUtils.show("enableTXNotification: 设置可以接收到通知："+serverUUID);
         if (mBluetoothGatt == null) {
 
             broadcastUpdate(DEVICE_DOES_NOT_SUPPORT_UART);
@@ -380,15 +379,17 @@ public class ConnectDeviceService extends Service {
         boolean result = mBluetoothGatt.setCharacteristicNotification(TxChar, true);
         if (result) {
             if (serverUUID.equals(LEVELNESS_SERVICE_UUID)) {
+                LogUtils.show("ConnectDeviceService------水平度服务监听成功");
                 LEVEL_DISCOVER_FLAG = 1;
             } else if (serverUUID.equals(VERTICALITY_SERVICE_UUID)) {
                 VERTICAL_DISCOVER_FLAG = 1;
+                LogUtils.show("ConnectDeviceService------垂直度服务监听成功");
             }
         }
 
 
 //            Log.e(TAG, "enableTXNotification: 查看TxChar值："+TxChar.getValue().length);
-        Log.e(TAG, "enableTXNotification: 通知" );
+//        Log.e(TAG, "enableTXNotification: 通知" );
         BluetoothGattDescriptor descriptor = TxChar.getDescriptor(CCCD);
         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         mBluetoothGatt.writeDescriptor(descriptor);

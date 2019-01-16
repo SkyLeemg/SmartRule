@@ -120,7 +120,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dp"
         android:layout_marginTop="10dp"
-        android:text="用户密码登录"
+        android:text="手机号密码登录"
         android:textColor="@color/color_word"
         android:textSize="15sp"
         app:layout_constraintStart_toStartOf="parent"

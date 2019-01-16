@@ -89,6 +89,7 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
     private View layoutEditPic;
     private RelativeLayout rlEditPic;//图纸编辑的占位RL
     private CommonEditPicView commonEditPicView;
+    private RelativeLayout rlAddPic;
 
     private TextView tvAddmPic;//添加图纸按钮
     private LinearLayout llDisplayData;//显示测量数据的占位LL，
@@ -144,6 +145,7 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
 //        llFloorHeight = view.findViewById(R.id.ll_floor_height);
 //        imgAdd = view.findViewById(R.id.img_add);
         tvAddmPic = view.findViewById(R.id.tv_add_mpic);
+        rlAddPic = view.findViewById(R.id.rl_add_pic);
 
 //        layoutEditPic = view.findViewById(R.id.layout_edit_pic);
         rlEditPic = view.findViewById(R.id.rl_edit_pic);
@@ -381,7 +383,7 @@ public class MeasureFragmentOthers extends Fragment implements View.OnClickListe
             fq = qualifiedNum;
             qualifiedRate = (fq / frealnum);
             Log.e(TAG, "completeResult: 查看计算出来的实测点数："+realNum+",合格点数："+qualifiedNum+",合格率："+qualifiedRate );
-            checkOptions.setFloorHeight(floodHeight);
+//            checkOptions.setFloorHeight(floodHeight);
             checkOptions.setMeasuredNum(realNum);
             checkOptions.setQualifiedNum(qualifiedNum);
             checkOptions.setQualifiedRate(Float.parseFloat(String.format("%.2f",qualifiedRate*100)));

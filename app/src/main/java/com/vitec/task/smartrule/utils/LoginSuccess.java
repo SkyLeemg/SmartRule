@@ -3,6 +3,9 @@ package com.vitec.task.smartrule.utils;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -12,11 +15,18 @@ import com.vitec.task.smartrule.activity.DeviceManagerActivity;
 import com.vitec.task.smartrule.activity.MainActivity;
 import com.vitec.task.smartrule.bean.User;
 import com.vitec.task.smartrule.db.DataBaseParams;
+import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.db.UserDbHelper;
+import com.vitec.task.smartrule.net.FileOkHttpUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,58 +70,52 @@ public class LoginSuccess {
                 String token = dataJson.optString("token");
 //                获取user_info的json
                 String user_info = dataJson.optString("user_info");
+//                user_info字段的JSON
                 JSONObject userInfoJson = new JSONObject(user_info);
-//                获取user_info中的wUser和userBaseInfo字段
-                String wUser = userInfoJson.optString("wUser");
-                String userBaseInfo = userInfoJson.optString("userBaseInfo");
+                String realName =userInfoJson.optString("name");
+                int userId = userInfoJson.optInt("id");
+                int childId = userInfoJson.optInt("cid");
+                String position = userInfoJson.optString("position");
+                String imgUrl = userInfoJson.optString("avatar");//用户头像
                 //初始化需要用到的字段
-                String loginName = "";
                 String mobile = "";
-                String realName = "";
-                String userId = "0";
-                String wid = "0";
                 String unionID = "0";
-                String job = "测量员";
                 String wNickName = "";
                 String headImgUrl = "";//微信头像
                 String openid = "";
-                String imgUrl = "";//用户头像
-                /**
-                 * 如果该账号没绑定微信，则wUser字段就不是一个json字符串，而是null，或者是空的等
-                 *  为了保险起见，还加了一个长度限制的判断
-                 *  下面的用户名密码之类的同理
-                 */
+                int user_type = 0;////账号类型，1-手机号码，2-微信号，3两者都有
                 UserDbHelper userDbHelper = new UserDbHelper(context);
-                if (wUser != null && !wUser.equalsIgnoreCase("null") && wUser.length() > 10) {
+                /***判断是否有手机号***/
+                String user_main_string = userInfoJson.optString("user_main");
+                if (user_main_string != null && !user_main_string.equals("null") && user_main_string.length() > 10) {
+                    JSONObject userMainJson = new JSONObject(user_main_string);
+                    mobile = userMainJson.optString("mobile");
+                    user_type = 1;
+                }
 
-                    JSONObject wUserJson = new JSONObject(wUser);
-                    wid = wUserJson.optString("id");
-                    unionID = wUserJson.optString("UnionID");
-                    wNickName = wUserJson.optString("nickName");
-                    headImgUrl = wUserJson.optString("headImgUrl");
-                    openid = wUserJson.optString("openid");
-                    userId = wUserJson.optString("userid");
+                /****判断是否有绑定微信****/
+                String user_wechat_string = userInfoJson.optString("user_wechat");
+                if (user_wechat_string != null && !user_wechat_string.equals("null") && user_wechat_string.length() > 10) {
+                    JSONObject wechatJson = new JSONObject(user_wechat_string);
+                    unionID = wechatJson.optString("UnionID");
+                    wNickName = wechatJson.optString("nickname");
+                    headImgUrl = wechatJson.optString("headImgUrl");
                     ContentValues values = new ContentValues();
-                    values.put(DataBaseParams.user_wid, wid);
+//                    values.put(DataBaseParams.user_wid, wid);
                     values.put(DataBaseParams.user_wx_unionid, unionID);
                     values.put(DataBaseParams.user_wx_headImgUrl, headImgUrl);
                     values.put(DataBaseParams.user_wx_nick_name, wNickName);
                     values.put(DataBaseParams.user_wx_openid, openid);
                     values.put(DataBaseParams.user_user_id,userId);
                     userDbHelper.insertUserToSqlite(DataBaseParams.user_wx_table_name, values);
-                    LogUtils.show("该账号有绑定微信---添加到数据库的数据内容："+values.toString());
+                    if (user_type == 1) {
+                        user_type = 3;
+                    } else {
+                        user_type = 2;
+                    }
                 }
 
-                if (userBaseInfo != null && !userBaseInfo.equalsIgnoreCase("null") && userBaseInfo.length() > 10) {
-                    JSONObject userBaseInfoJson = new JSONObject(userBaseInfo);
-                    userId = userBaseInfoJson.optString("id");
-                    loginName = userBaseInfoJson.optString("userName");
-                    realName = userBaseInfoJson.optString("name");
-                    mobile = userBaseInfoJson.optString("mobile");
-                    openid = userBaseInfoJson.optString("openid");
-                    unionID = userBaseInfoJson.optString("UnionID");
-                    imgUrl = userBaseInfoJson.optString("file");
-                }
+
 
                 /**
                  * 将刚登录成功的用户数据保存到sharePreference中
@@ -119,13 +123,11 @@ public class LoginSuccess {
                  * 下次就可以直接自动跳转
                  */
                 Map<String, String> map = new HashMap<>();
-                map.put(SharePreferenceUtils.user_wid, wid);
-                map.put(SharePreferenceUtils.user_id, userId);
-                map.put(SharePreferenceUtils.user_login_name, loginName);
+                map.put(SharePreferenceUtils.user_id, String.valueOf(userId));
                 map.put(SharePreferenceUtils.user_mobile, mobile);
                 map.put(SharePreferenceUtils.user_real_name, realName);
                 map.put(SharePreferenceUtils.user_token, token);
-
+                map.put(SharePreferenceUtils.user_type, String.valueOf(user_type));
                 for (OkHttpUtils.Param param:params) {
                     if (param.key.equals(SharePreferenceUtils.user_pwd)) {
                         // 给密码加密
@@ -134,6 +136,7 @@ public class LoginSuccess {
                         map.put(param.key, param.value);
                     }
                 }
+                LogUtils.show("保存前的数据SharePreferenceUtils："+map);
                 SharePreferenceUtils.savaData(context,map,SharePreferenceUtils.user_table);
 
 
@@ -143,18 +146,17 @@ public class LoginSuccess {
                  *      如果没有保存，则插入到数据库中
                  */
 
-                String where = " where " + DataBaseParams.user_user_id + " = \"" + userId + "\"  OR "+DataBaseParams.user_wid +" = \"" +wid+"\" ;";
+                String where = " where " + DataBaseParams.user_user_id + " = " + userId +" ;";
                 Log.e(TAG, "onSuccess: 查看where语句："+where );
                 List<User> userList = userDbHelper.queryUserDataFromSqlite(where);
-                ContentValues values = new ContentValues();
-                values.put(DataBaseParams.user_login_name, loginName);
+                final ContentValues values = new ContentValues();
                 values.put(DataBaseParams.user_user_name, realName);
+                values.put(DataBaseParams.user_child_id,childId);
+                values.put(DataBaseParams.user_position,position);
                 values.put(DataBaseParams.user_token, token);
                 values.put(DataBaseParams.user_user_id, userId);
                 values.put(DataBaseParams.user_wx_unionid,unionID);
                 values.put(DataBaseParams.user_mobile,mobile);
-                values.put(DataBaseParams.user_wid,wid);
-                values.put(DataBaseParams.user_job,job);
                 values.put(DataBaseParams.user_img_url,imgUrl);
                 for (OkHttpUtils.Param param:params) {
                     if (param.key.equals(SharePreferenceUtils.user_pwd)) {
@@ -164,14 +166,29 @@ public class LoginSuccess {
                         values.put(param.key, param.value);
                     }
                 }
+
+                LogUtils.show("查看保存到数据库之前的数据："+values);
+                /**
+                 * 查看数据库是否已经存有一条记录
+                 */
                 if (userList.size() == 0) {
-//                                        请求成功则将用户数据保存到数据库
+//                 无记录则新增一条记录
                     boolean resultFlag = userDbHelper.insertUserToSqlite(DataBaseParams.user_table_name, values);
                     Log.e(TAG, "onSuccess: 查看插入数据库的用户数据：" + values);
                 } else {
+//                    有记录则更新记录信息
                     User user = userList.get(0);
                     userDbHelper.updateUserData(values, new String[]{String.valueOf(user.getId())});
                 }
+
+                /***加载网络头像部分****/
+                String localImg = headImgUrl;
+                if (imgUrl != null && imgUrl.length() > 10) {
+                    localImg = imgUrl;
+                }
+                String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + DateFormatUtil.transForMilliSecond(new Date()) + ".jpg";
+                FileOkHttpUtils.downloadFile(localImg,path,userId,context);
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -210,4 +227,17 @@ public class LoginSuccess {
             });
         }
     }
+//
+//     private OkHttpUtils.ResultCallback resultCallback = new OkHttpUtils.ResultCallback() {
+//        @Override
+//        public void onSuccess(Object response) {
+//            byte[] picture_bts = (byte[]) response;
+//
+//        }
+//
+//        @Override
+//        public void onFailure(Exception e) {
+//            LogUtils.show("头像加载失败");
+//        }
+//    };
 }

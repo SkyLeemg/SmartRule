@@ -17,12 +17,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.db.CopyDbFileFromAsset;
+import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.fragment.HomePageFragment;
 import com.vitec.task.smartrule.fragment.UserCenterFragment;
 import com.vitec.task.smartrule.service.intentservice.GetMudelIntentService;
 import com.vitec.task.smartrule.service.intentservice.ReplenishDataToServerIntentService;
 import com.vitec.task.smartrule.utils.LogUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,11 +46,23 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         requestLocationPermissions();
+        CopyDbFileFromAsset copyDbFileFromAsset = new CopyDbFileFromAsset(getApplicationContext());
+        try {
+            copyDbFileFromAsset.CopySqliteFileFromRawToDatabases(DataBaseParams.databaseName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         initView();
         initData();
     }
 
     private void initData() {
+
+
+
+        /**
+         * 获取模板信息
+         */
         Intent intent = new Intent(this, GetMudelIntentService.class);
         startService(intent);
 
@@ -74,7 +89,28 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     }
 
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        int flag = intent.getIntExtra("closeType", 0);
+        LogUtils.show("onNewIntent---查看收到的值："+flag);
+        if (flag == 1) {
+            Intent loginIntent = new Intent(this, LoginActivity.class);
+            loginIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(loginIntent);
+            this.finish();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+    }
+
     private void initView() {
+
         llHome = findViewById(R.id.ll_home);
         llMe = findViewById(R.id.ll_me);
         tvHome = findViewById(R.id.tv_home);

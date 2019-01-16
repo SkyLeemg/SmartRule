@@ -154,11 +154,14 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
         engineerSpinnerAdapter.setDataList(selectEnginnerList);
         checkPositionAdapter.setDataList(selectPositionList);
         projectListAdapter.setRulerCheckList(selectCurrentPageCheckList);
+
         spinnerEngineer.setSelection(engineerIndex);
         spinnerCheckPosition.setSelection(positionIndex);
+
         engineerSpinnerAdapter.notifyDataSetChanged();
         checkPositionAdapter.notifyDataSetChanged();
         projectListAdapter.notifyDataSetChanged();
+
         HeightUtils.setListViewHeighBaseOnChildren(lvRecordList);
     }
 
@@ -270,8 +273,8 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
         if (allRulerCheckList.size() > 0) {
             for (int i = 0; i < allRulerCheckList.size(); i++) {
                 RulerCheck rulerCheck = allRulerCheckList.get(i);
-                if (projectNameSet.add(rulerCheck.getProjectName())) {
-                    selectProjectNameList.add(rulerCheck.getProjectName());
+                if (projectNameSet.add(rulerCheck.getProject().getProjectName())) {
+                    selectProjectNameList.add(rulerCheck.getProject().getProjectName());
                 }
             }
             selectRulerCheckList.addAll(allRulerCheckList);
@@ -326,6 +329,10 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 projectIndex = i;
+//                if (i == 0) {
+//                    positionIndex = 0;
+//                    engineerIndex = 0;
+//                }
                 filtCheckList();
             }
 
@@ -338,17 +345,18 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
         spinnerCheckPosition.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                LogUtils.show("点击了检查位置-----查看数据源个数："+selectPositionList.size()+",当前选择的序号："+i);
                 positionIndex = i;
-                if (i > 0) {
-                    /**
-                     * 从已经筛选后的rulercheck集合中再次筛选，
-                     */
-                } else {
-                    /**
-                     * 如果选中的全部，则从所有的rulercheck中 根据另外两个条件筛选
-                     */
-                }
-                filtCheckList();
+//                if (i > 0) {
+//                    /**
+//                     * 从已经筛选后的rulercheck集合中再次筛选，
+//                     */
+//                } else {
+//                    /**
+//                     * 如果选中的全部，则从所有的rulercheck中 根据另外两个条件筛选
+//                     */
+//                }
+//                filtCheckList();
 
             }
 
@@ -361,6 +369,7 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
         spinnerEngineer.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                LogUtils.show("点击了工程类型-----查看数据源个数："+selectEnginnerList.size()+",当前选择的序号："+i);
                 engineerIndex = i;
                 filtCheckList();
             }
@@ -377,12 +386,12 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
             @Override
             public void onCheckedChanged(int position, boolean ishChecked) {
                 if (ishChecked) {
-                    LogUtils.show(selectCurrentPageCheckList.get(position).getProjectName() + "==被选中了，选中的position为：" + position);
+                    LogUtils.show(selectCurrentPageCheckList.get(position).getProject().getProjectName() + "==被选中了，选中的position为：" + position);
                     checkedRulerCheckList.add(selectCurrentPageCheckList.get(position));
                     tvHasChoose.setText("已选：" + checkedRulerCheckList.size());
 
                 } else {
-                    LogUtils.show(selectCurrentPageCheckList.get(position).getProjectName() + "==被取消了，取消的position为：" + position);
+                    LogUtils.show(selectCurrentPageCheckList.get(position).getProject().getProjectName() + "==被取消了，取消的position为：" + position);
                     checkedRulerCheckList.remove(selectCurrentPageCheckList.get(position));
                     tvHasChoose.setText("已选：" + checkedRulerCheckList.size());
                 }
@@ -404,6 +413,13 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
         List<RulerCheck> firstFiltList = new ArrayList<>();
 //        第二次筛选结果的集合
         List<RulerCheck> sencondFiltList = new ArrayList<>();
+        if (positionIndex >= selectPositionList.size()) {
+            return;
+        }
+        if (engineerIndex >= selectEnginnerList.size()) {
+            return;
+        }
+        LogUtils.show("filtCheckList-----查看已经选择的检查位置的个数：" + selectPositionList.size() + ",定位：" + positionIndex + "，打印数据源：" + selectPositionList);
         String choosePosition = selectPositionList.get(positionIndex);
         String chooseEnginner = selectEnginnerList.get(engineerIndex);
         Set<String> projectNameSet = new HashSet<>();
@@ -412,17 +428,16 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
 //        1.每次有搜索响应事件发生的时候，都先筛选projectName
         if (projectIndex != 0) {
             for (int j = 0; j < allRulerCheckList.size(); j++) {
-                if (allRulerCheckList.get(j).getProjectName().equals(selectProjectNameList.get(projectIndex))) {
+                if (allRulerCheckList.get(j).getProject().getProjectName().equals(selectProjectNameList.get(projectIndex))) {
                     firstFiltList.add(allRulerCheckList.get(j));
                 }
-
             }
         } else {
             selectProjectNameList.clear();
             selectProjectNameList.add("全部");
             for (int j = 0; j < allRulerCheckList.size(); j++) {
-                if (projectNameSet.add(allRulerCheckList.get(j).getProjectName())) {
-                    selectProjectNameList.add(allRulerCheckList.get(j).getProjectName());
+                if (projectNameSet.add(allRulerCheckList.get(j).getProject().getProjectName())) {
+                    selectProjectNameList.add(allRulerCheckList.get(j).getProject().getProjectName());
                 }
             }
             firstFiltList.addAll(allRulerCheckList);
@@ -467,7 +482,7 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
                 selectEnginnerList.add(selectRulerCheckList.get(n).getEngineer().getEngineerName());
             }
             if (positonSet.add(selectRulerCheckList.get(n).getCheckFloor())) {
-                selectPositionList.add(selectRulerCheckList.get(n).getCheckFloor());
+                selectPositionList.add(selectRulerCheckList.get(n).getUnitEngineer().getLocation());
             }
         }
         for (int i = 0; i < selectEnginnerList.size(); i++) {
@@ -479,6 +494,7 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
         for (int i = 0; i < selectPositionList.size(); i++) {
             if (selectPositionList.get(i).equals(choosePosition)) {
                 positionIndex = i;
+//                spinnerCheckPosition.setSelection(i);
             }
         }
         currentPage = 1;
@@ -498,20 +514,24 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
              * 选择按钮
              */
             case R.id.tv_choose:
-                if (chooseBtnStatus == 0) {
-                    projectListAdapter.setShowCheckBox(true);
-                    projectListAdapter.notifyDataSetChanged();
-                    tvChoose.setText("取消");
-                    chooseBtnStatus = 1;
-                    rlSelectable.setVisibility(View.VISIBLE);
-                } else if (chooseBtnStatus == 1) {
-                    projectListAdapter.setShowCheckBox(false);
-                    projectListAdapter.setAllChecked(false);
-                    projectListAdapter.notifyDataSetChanged();
-                    tvChoose.setText("选择");
-                    chooseBtnStatus = 0;
-                    rlSelectable.setVisibility(View.GONE);
+                if (selectRulerCheckList.size() != 0) {
+                    if (chooseBtnStatus == 0) {
+                        projectListAdapter.setShowCheckBox(true);
+                        projectListAdapter.notifyDataSetChanged();
+                        tvChoose.setText("取消");
+                        chooseBtnStatus = 1;
+                        rlSelectable.setVisibility(View.VISIBLE);
+                    } else if (chooseBtnStatus == 1) {
+                        projectListAdapter.setShowCheckBox(false);
+                        projectListAdapter.setAllChecked(false);
+                        projectListAdapter.notifyDataSetChanged();
+                        tvChoose.setText("选择");
+                        chooseBtnStatus = 0;
+                        rlSelectable.setVisibility(View.GONE);
 
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(),"无可选择项目",Toast.LENGTH_SHORT).show();
                 }
 
                 break;
@@ -570,7 +590,7 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
                     if (!dir.exists() || !dir.isDirectory()) {
                         dir.mkdir();
                     }
-                    String fileName = DateFormatUtil.stampToDateString(checkedRulerCheckList.get(0).getCreateTime(), "yyyyMMddHHmm") + checkedRulerCheckList.get(0).getProjectName();
+                    String fileName = DateFormatUtil.stampToDateString(checkedRulerCheckList.get(0).getCreateTime(), "yyyyMMddHHmm") + checkedRulerCheckList.get(0).getProject().getProjectName();
                     File file = new File(ExportMeaureDataHelper.path, fileName + ".xls");
                     if (file.exists()) {
                         int random = (int) (Math.random() * 100);
@@ -595,6 +615,7 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
                                 tipBulder.setPositiveButton("是", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int p) {
+                                        mkLoader.setVisibility(View.VISIBLE);
                                         //                    2-导出文件时请求请求类型
                                         //
                                         data_status = 2;
@@ -618,6 +639,7 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
                                 });
                                 tipBulder.show();
                             } else {
+                                mkLoader.setVisibility(View.VISIBLE);
                                 data_status = 2;
                                 /**
                                  * 从服务器获取测量数据
@@ -833,6 +855,7 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
             builder.setNegativeButton("否", null);
             builder.show();
         }
+        mkLoader.setVisibility(View.GONE);
     }
 
 //    private void initViewData() {
