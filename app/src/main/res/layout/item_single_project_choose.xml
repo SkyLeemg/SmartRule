@@ -32,6 +32,8 @@
             android:textColor="@color/word_color"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
             />
 
         <View
@@ -39,7 +41,7 @@
             android:layout_height="0.5dp"
             android:background="@color/word_color"
             android:layout_below="@+id/tv_project_type"
-            android:layout_marginTop="20dp"
+
             />
 
     </RelativeLayout>
@@ -52,7 +54,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="检查部位"
+            android:text="单位工程"
             style="@style/Text"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
@@ -68,6 +70,8 @@
             android:textColor="@color/word_color"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
             />
 
 
@@ -76,7 +80,6 @@
             android:layout_height="0.5dp"
             android:background="@color/word_color"
             android:layout_below="@+id/tv_check_position"
-            android:layout_marginTop="20dp"
             />
     </RelativeLayout>
 
@@ -107,6 +110,8 @@
             android:textSize="16sp"
             android:gravity="right"
             style="@style/Text"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
             />
 
 
@@ -115,7 +120,7 @@
             android:layout_height="0.5dp"
             android:background="@color/word_color"
             android:layout_below="@+id/tv_sencond_position"
-            android:layout_marginTop="20dp"
+
             />
     </RelativeLayout>
 
@@ -144,13 +149,15 @@
         <TextView
             android:id="@+id/tv_engineer_choose"
             android:layout_width="match_parent"
-            android:layout_height="30dp"
+            android:layout_height="wrap_content"
             android:text="请选择  >"
             android:gravity="right|center_vertical"
             style="@style/Text"
             android:textColor="@color/word_color"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
             />
 
 
@@ -159,7 +166,7 @@
             android:layout_height="0.5dp"
             android:background="@color/word_color"
             android:layout_below="@+id/tv_engineer_choose"
-            android:layout_marginTop="20dp"
+
             />
     </RelativeLayout>
 
@@ -186,6 +193,8 @@
             android:gravity="right"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
             />
 
         <View
@@ -193,7 +202,7 @@
             android:layout_height="0.5dp"
             android:background="@color/word_color"
             android:layout_below="@+id/tv_floor_height"
-            android:layout_marginTop="20dp"
+
             />
     </RelativeLayout>
 

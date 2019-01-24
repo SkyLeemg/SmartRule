@@ -218,8 +218,14 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
 //                    zoomMoveFrameLayout.setInitX();
                 }
             }, 100);
+            if (editPicControler != null && editPicControler.getCheckOptions()!=null) {
+                for (int i=0;i<editPicControler.getCheckOptions().size();i++) {
+                    if (editPicControler.getCheckOptions().get(i).getImgPath() == null || editPicControler.getCheckOptions().get(i).getImgPath().equals("")) {
+                        saveBitmapToFile(imgBitmap);
+                    }
+                }
+            }
 
-           saveBitmapToFile(imgBitmap);
 
         }
 
@@ -499,6 +505,11 @@ public class CommonEditPicView extends RelativeLayout implements View.OnClickLis
             values.put(DataBaseParams.measure_option_img_upload_flag, 0);
             for (RulerCheckOptions options : optionsList) {
                 OperateDbUtil.updateOptionsDataToSqlite(getContext(), DataBaseParams.measure_option_table_name, values, new String[]{String.valueOf(options.getId())});
+            }
+            if (editPicControler != null && editPicControler.getCheckOptions()!=null) {
+                for (int i=0;i<editPicControler.getCheckOptions().size();i++) {
+                    editPicControler.getCheckOptions().get(i).setImgPath(imgFile.getPath());
+                }
             }
             fos.flush();
             fos.close();

@@ -19,8 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/color_measure_data_gv_title"
-            android:textStyle="bold"
-            android:textSize="17sp"
+            android:textSize="14sp"
             android:text="1"
             />
 
@@ -49,7 +48,8 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:textColor="@color/title_color"
-            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textSize="17sp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
             android:text="11"

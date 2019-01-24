@@ -12,6 +12,7 @@ import android.text.format.DateUtils;
 
 import com.vitec.task.smartrule.bean.DownloadedImg;
 import com.vitec.task.smartrule.bean.OptionMeasure;
+import com.vitec.task.smartrule.bean.ProjectUser;
 import com.vitec.task.smartrule.bean.RulerCheckProject;
 import com.vitec.task.smartrule.bean.RulerUnitEngineer;
 import com.vitec.task.smartrule.bean.event.DelMeasureRecordMsgEvent;
@@ -128,7 +129,8 @@ public class PerformMeasureNetIntentService extends IntentService {
              * 修改记录表的标志
              */
             case FLAG_UPDATE_RECORD:
-
+                RulerCheck rulerCheck1 = (RulerCheck) intent.getSerializableExtra(GET_CREATE_RULER_DATA_KEY);
+                updateRulerCheckRecord(rulerCheck1);
                 break;
 
             /**
@@ -194,12 +196,133 @@ public class PerformMeasureNetIntentService extends IntentService {
         }
     }
 
+    /*********************修改记录表开始***************************/
+    private void updateRulerCheckRecord(final RulerCheck rulerCheck1) {
+        LogUtils.show("打印接受到的rucheck:"+rulerCheck1);
+        OkHttpUtils.Param idParam = new OkHttpUtils.Param(DataBaseParams.measure_id,String.valueOf(rulerCheck1.getServerId()));
+        final OkHttpUtils.Param checkFloor = new OkHttpUtils.Param(DataBaseParams.measure_check_floor, rulerCheck1.getCheckFloor());
+//        OkHttpUtils.Param engin_idParam = new OkHttpUtils.Param(DataBaseParams.measure_engin_id, String.valueOf(rulerCheck1.getEngineer().getServerID()));
+        OkHttpUtils.Param userParam = new OkHttpUtils.Param(DataBaseParams.user_user_id, String.valueOf(rulerCheck1.getUser().getUserID()));
+        List<OkHttpUtils.Param> paramList = new ArrayList<>();
+        paramList.add(idParam);
+        paramList.add(checkFloor);
+//        paramList.add(engin_idParam);
+        paramList.add(userParam);
+        if (rulerCheck1.getProject().getServer_id() > 0) {
+            OkHttpUtils.Param projectParam = new OkHttpUtils.Param("project", String.valueOf(rulerCheck1.getProject().getServer_id()));
+            paramList.add(projectParam);
+        } else {
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put(DataBaseParams.local_id, rulerCheck1.getProject().getId());
+                jsonObject.put(DataBaseParams.check_project_name, rulerCheck1.getProject().getProjectName());
+                jsonObject.put(DataBaseParams.user_user_id, rulerCheck1.getUser().getUserID());
+                jsonObject.put(DataBaseParams.measure_create_time, rulerCheck1.getUpdateTime());
+                jsonObject.put(DataBaseParams.measure_update_time, rulerCheck1.getUpdateTime());
+                OkHttpUtils.Param projecP = new OkHttpUtils.Param("project", jsonObject.toString());
+                paramList.add(projecP);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (rulerCheck1.getUnitEngineer().getServer_id() > 0) {
+            OkHttpUtils.Param uP = new OkHttpUtils.Param("unit", String.valueOf(rulerCheck1.getUnitEngineer().getServer_id()));
+            paramList.add(uP);
+        } else {
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put(DataBaseParams.local_id, rulerCheck1.getUnitEngineer().getId());
+                jsonObject.put(DataBaseParams.unit_engineer_location, rulerCheck1.getUnitEngineer().getLocation());
+                jsonObject.put(DataBaseParams.measure_create_time, rulerCheck1.getUpdateTime());
+                jsonObject.put(DataBaseParams.measure_update_time, rulerCheck1.getUpdateTime());
+                OkHttpUtils.Param projecP = new OkHttpUtils.Param("unit", jsonObject.toString());
+                paramList.add(projecP);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        String url = NetConstant.baseUrl + NetConstant.update_record_url;
+        LogUtils.show("更新测量记录接口----查看连接：" + url + ",参数：" + paramList);
+        OkHttpUtils.post(url, new OkHttpUtils.ResultCallback<String>() {
+            @Override
+            public void onSuccess(String response) {
+                /**
+                 * {"status":"success","code":200,
+                 * "data":{
+                 *  "project":{"local_id":11,"project_name":"新项目","user_id":9,"create_time":1548137780,"update_time":1548137780,"id":"48"},
+                 *  "unit":{"local_id":18,"location":"看咯","create_time":1548137780,"update_time":1548137780,"id":"63"}
+                 *  },
+                 *  "msg":"更新记录表成功"}
+                 */
+                try {
+                    LogUtils.show("更新测量记录接口----打印查看返回的信息："+response);
+                    JSONObject jsonObject = new JSONObject(response);
+                    int code = jsonObject.optInt("code");
+                    if (code == 200) {
+                        ContentValues contentValues = new ContentValues();
+                        contentValues.put(DataBaseParams.upload_flag, 1);
+                        String where = DataBaseParams.measure_id + "=?";
+                        int resutl = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.measure_table_name, where, contentValues, new String[]{String.valueOf(rulerCheck1.getId())});
+                        LogUtils.show("更新测量记录接口---更新标志到数据库是否成功："+resutl);
+                        String data = jsonObject.optString("data");
+                        if (data.length() > 5 && data.contains("{") && data.contains("}")) {
+                            JSONObject dataJson = new JSONObject(data);
+                            /******更新项目名到数据库*******/
+                            if (dataJson.has("project")) {
+                                JSONObject projectJson = dataJson.getJSONObject("project");
+                                int p_local_id = projectJson.getInt(DataBaseParams.local_id);
+                                int server_id = projectJson.optInt(DataBaseParams.measure_id);
+                                ContentValues values = new ContentValues();
+                                values.put(DataBaseParams.server_id, server_id);
+                                int r = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.check_project_table_name, where, values, new String[]{String.valueOf(p_local_id)});
+                                LogUtils.show("更新测量记录接口---查看更新项目ID到数据库是否成功：" + r);
+
+                                //更新成员表的数据
+//                                User user = OperateDbUtil.getUser(getApplicationContext());
+                                String mWhere = " where " + DataBaseParams.user_user_id + "=" + projectJson.optInt(DataBaseParams.user_user_id) + " and " + DataBaseParams.measure_project_id + "=" + p_local_id;
+                                List<ProjectUser> projectUserList = OperateDbUtil.queryProjectUserFromSqlite(getApplicationContext(), mWhere);
+                                if (projectUserList.size() > 0) {
+                                    ContentValues contentValues1 = new ContentValues();
+                                    contentValues1.put(DataBaseParams.project_server_id, server_id);
+                                    int p_r = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.project_user_table_name, "id=?", contentValues1, new String[]{String.valueOf(projectUserList.get(0).getId())});
+                                    LogUtils.show("更新测量记录接口---更新项目ID到成员表，查看是否更新成功：" + p_r);
+                                }
+                            }
+
+                            /****更新单位工程到数据库*******/
+                            if (dataJson.has("unit")) {
+                                JSONObject unitJson = dataJson.getJSONObject("unit");
+                                int u_local_id = unitJson.getInt(DataBaseParams.local_id);
+                                int server_id = unitJson.optInt(DataBaseParams.measure_id);
+                                ContentValues values = new ContentValues();
+                                values.put(DataBaseParams.server_id, server_id);
+                                int r = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.unit_engineer_table_name, where, values, new String[]{String.valueOf(u_local_id)});
+                                LogUtils.show("更新测量记录接口---查看更新单位工程ID到数据库是否成功：" + r);
+                            }
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+
+            }
+        }, paramList);
+    }
+    /*********************修改记录表结束***************************/
+
+
     /************************上传图纸接口开始**************************************/
     private void requestUploadOptionPic(Bundle bundle) {
         final String url = bundle.getString(NetConstant.upload_option_pic_url_key,"");
         final String ids = bundle.getString(NetConstant.upload_option_pic_check_options_list,"");
         String number_list = bundle.getString(NetConstant.upload_option_pic_number_list,"");
-        int createTime = bundle.getInt(DataBaseParams.options_create_time, DateFormatUtil.transForMilliSecond(new Date()));
+//        int createTime = bundle.getInt(DataBaseParams.options_create_time, DateFormatUtil.transForMilliSecond(new Date()));
         OkHttpUtils.Param urlParam = new OkHttpUtils.Param(NetConstant.upload_option_pic_url_key, url);
         OkHttpUtils.Param idsParam = new OkHttpUtils.Param(NetConstant.upload_option_pic_check_options_list, ids);
         OkHttpUtils.Param numberParam = new OkHttpUtils.Param(NetConstant.upload_option_pic_number_list, number_list);
@@ -485,6 +608,8 @@ public class PerformMeasureNetIntentService extends IntentService {
                                     List<RulerOptions> rulerOptionsList = bleDataDbHelper.queryOptionsAllDataFromSqlite(optionWhere);
                                     if (rulerOptionsList.size() > 0) {
                                         rulerCheckOptions.setRulerOptions(rulerOptionsList.get(0));
+                                    } else {
+                                        rulerCheckOptions.setRulerOptions(new RulerOptions());
                                     }
                                     bleDataDbHelper.close();
                                     int index=OperateDbUtil.addMeasureOptionsDataToSqlite(getApplicationContext(), rulerCheckOptions);
@@ -627,6 +752,7 @@ public class PerformMeasureNetIntentService extends IntentService {
                         JSONArray dataArray = object.getJSONArray("data");
                         BleDataDbHelper dataDbHelper = new BleDataDbHelper(getApplicationContext());
                         List<RulerCheck> checkList = new ArrayList<>();
+                        LogUtils.show("获取记录表接口------查看总共有"+dataArray.length()+"条记录");
                         if (dataArray.length() > 0) {
                             for (int i = 0; i < dataArray.length(); i++) {
                                 JSONObject dataJson = dataArray.getJSONObject(i);
@@ -652,25 +778,30 @@ public class PerformMeasureNetIntentService extends IntentService {
 //                                LogUtils.show("查找记录表----最终的项目信息："+check.getProject());
 
                                 /*************设置UnitEngineer*************/
-                                JSONObject unitJson = dataJson.getJSONObject("unit_id");
-                                int unit_server_id = unitJson.optInt(DataBaseParams.measure_id);
-                                String unitWhere = " where " + DataBaseParams.server_id + "=" + unit_server_id;
-                                List<RulerUnitEngineer> unitList = OperateDbUtil.queryUnitEngineerDataFromSqlite(getApplicationContext(), unitWhere);
+                                String s_u_id = dataJson.getString("unit_id");
                                 RulerUnitEngineer unitEngineer = new RulerUnitEngineer();
-                                if (unitList.size() > 0) {
-                                    unitEngineer = unitList.get(0);
-                                } else {
-                                    RulerUnitEngineer unit = new RulerUnitEngineer();
-                                    unit.setServer_id(unit_server_id);
-                                    unit.setUpdateTime(unitJson.optInt(DataBaseParams.measure_update_time));
-                                    unit.setLocation(unitJson.getString(DataBaseParams.unit_engineer_location));
-                                    unit.setCreateTime(unitJson.getInt(DataBaseParams.measure_create_time));
-                                    unit.setProject_id(project.getId());
-                                    unit.setProject_server_id(project.getServer_id());
-                                    int index = OperateDbUtil.addUnitPositionDataToSqlite(getApplicationContext(), unit);
-                                    unit.setId(index);
-                                    unitEngineer = unit;
+                                if (s_u_id != null && s_u_id.contains("{") && s_u_id.contains("}")) {
+                                    JSONObject unitJson = dataJson.getJSONObject("unit_id");
+                                    int unit_server_id = unitJson.optInt(DataBaseParams.measure_id);
+                                    String unitWhere = " where " + DataBaseParams.server_id + "=" + unit_server_id;
+                                    List<RulerUnitEngineer> unitList = OperateDbUtil.queryUnitEngineerDataFromSqlite(getApplicationContext(), unitWhere);
+
+                                    if (unitList.size() > 0) {
+                                        unitEngineer = unitList.get(0);
+                                    } else {
+                                        RulerUnitEngineer unit = new RulerUnitEngineer();
+                                        unit.setServer_id(unit_server_id);
+                                        unit.setUpdateTime(unitJson.optInt(DataBaseParams.measure_update_time));
+                                        unit.setLocation(unitJson.getString(DataBaseParams.unit_engineer_location));
+                                        unit.setCreateTime(unitJson.getInt(DataBaseParams.measure_create_time));
+                                        unit.setProject_id(project.getId());
+                                        unit.setProject_server_id(project.getServer_id());
+                                        int index = OperateDbUtil.addUnitPositionDataToSqlite(getApplicationContext(), unit);
+                                        unit.setId(index);
+                                        unitEngineer = unit;
+                                    }
                                 }
+
 
 
 //                                取出ruler_check的server_id
@@ -709,15 +840,18 @@ public class PerformMeasureNetIntentService extends IntentService {
                                         LogUtils.show("查询记录表接口-----项目名有改变----查看更新后的项目id：" + projectJson.optInt(DataBaseParams.measure_id) + ",更新标志：" + res);
                                     }
 
-                                    //判断单位工程是否有修改
-
-                                    if (unitJson.optInt("id") != rulerCheckList.get(0).getUnitEngineer().getServer_id()) {
-                                        ContentValues values = new ContentValues();
-                                        values.put(DataBaseParams.measure_unit_id, unitEngineer.getId());
-                                        String upwhere = DataBaseParams.server_id + "=?";
-                                        int res = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.measure_table_name, upwhere, values, new String[]{String.valueOf(server_id)});
-                                        LogUtils.show("查询记录表接口-----项目名有改变----查看更新后的项目id：" + unitJson.optInt(DataBaseParams.measure_id) + ",更新标志：" + res);
+                                    if (s_u_id != null && s_u_id.contains("{") && s_u_id.contains("}")) {
+                                        //判断单位工程是否有修改
+                                        JSONObject unitJson = dataJson.getJSONObject("unit_id");
+                                        if (unitJson.optInt("id") != rulerCheckList.get(0).getUnitEngineer().getServer_id()) {
+                                            ContentValues values = new ContentValues();
+                                            values.put(DataBaseParams.measure_unit_id, unitEngineer.getId());
+                                            String upwhere = DataBaseParams.server_id + "=?";
+                                            int res = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.measure_table_name, upwhere, values, new String[]{String.valueOf(server_id)});
+                                            LogUtils.show("查询记录表接口-----单位工程名有改变----查看更新后的单位工程名id：" + unitJson.optInt(DataBaseParams.measure_id) + ",更新标志：" + res);
+                                        }
                                     }
+
 
                                 } else {
                                     /**
@@ -745,6 +879,16 @@ public class PerformMeasureNetIntentService extends IntentService {
                                     List<RulerEngineer> engineerList = dataDbHelper.queryEnginDataFromSqlite(engin_where);
                                     if (engineerList.size() > 0) {
                                         check.setEngineer(engineerList.get(0));
+                                    } else {
+                                        /**
+                                         * 获取模板信息
+                                         */
+                                        Intent intent = new Intent(getApplicationContext(), GetMudelIntentService.class);
+                                        startService(intent);
+
+                                        RulerEngineer engineer = new RulerEngineer();
+                                        engineer.setServerID(engin_id);
+                                        check.setEngineer(engineer);
                                     }
                                     /*********设置用户信息user************/
                                     check.setUser(user);
@@ -1029,6 +1173,7 @@ public class PerformMeasureNetIntentService extends IntentService {
         List<OkHttpUtils.Param> dataList = new ArrayList<>();
         dataList.add(param);
         String url = NetConstant.baseUrl + NetConstant.update_data_url;
+        LogUtils.show("更新测量数据接口，查看连接："+url+",参数："+dataList);
         OkHttpUtils.post(url, new OkHttpUtils.ResultCallback<String>() {
             @Override
             public void onSuccess(String response) {
@@ -1171,8 +1316,7 @@ public class PerformMeasureNetIntentService extends IntentService {
             }
 
             @Override
-            public void onFailure(Exception e) {
-
+            public void onFailure(Exception e) {LogUtils.show("requestUpdateMeasureData----网络请求失败");
             }
         },dataList);
 
@@ -1340,22 +1484,44 @@ public class PerformMeasureNetIntentService extends IntentService {
                             LogUtils.show("requestCreateRecord---查看服务id："+check_options_server_id+",本地id："+check_options_local_id+",ruler_check_options更新状态：" + result);
                         }
                         /**************解析保存单位工程的数据****************/
-                        JSONObject unitJson = dataJson.getJSONObject("unit_id");
-                        int unit_local_id = unitJson.optInt(DataBaseParams.local_id);
-                        int unit_server_id = unitJson.optInt(DataBaseParams.measure_id);
-                        ContentValues unitValues = new ContentValues();
-                        unitValues.put(DataBaseParams.server_id, unit_server_id);
-                        int ur = bleDataDbHelper.updateDataToSqlite(DataBaseParams.unit_engineer_table_name, unitValues, "id=?", new String[]{String.valueOf(unit_local_id)});
-                        LogUtils.show("requestCreateRecord---查看单位工程的数据id："+unit_server_id+",本地id："+unit_local_id+",更新状态：" + ur);
+                        if (dataJson.has("unit_engineer")) {
+                            JSONObject unitJson = dataJson.getJSONObject("unit_engineer");
+                            int unit_local_id = unitJson.optInt(DataBaseParams.local_id);
+                            int unit_server_id = unitJson.optInt(DataBaseParams.measure_id);
+                            ContentValues unitValues = new ContentValues();
+                            unitValues.put(DataBaseParams.server_id, unit_server_id);
+                            int ur = bleDataDbHelper.updateDataToSqlite(DataBaseParams.unit_engineer_table_name, unitValues, "id=?", new String[]{String.valueOf(unit_local_id)});
+                            LogUtils.show("requestCreateRecord---查看单位工程的数据id："+unit_server_id+",本地id："+unit_local_id+",更新状态：" + ur);
+                        }
+
 
                         /**************解析保存项目名称**************/
-                        JSONObject projectJson = dataJson.getJSONObject("check_project");
-                        int project_local_id = projectJson.optInt(DataBaseParams.local_id);
-                        int project_server_id = projectJson.optInt(DataBaseParams.measure_id);
-                        ContentValues projectValues = new ContentValues();
-                        projectValues.put(DataBaseParams.server_id, project_server_id);
-                        int pr=bleDataDbHelper.updateDataToSqlite(DataBaseParams.check_project_table_name, projectValues, "id=?", new String[]{String.valueOf(project_local_id)});
-                        LogUtils.show("requestCreateRecord---查看解析保存项目名称的数据id："+project_server_id+",本地id："+project_local_id+",更新状态：" + pr);
+                        if (dataJson.has("check_project")) {
+                            JSONObject projectJson = dataJson.getJSONObject("check_project");
+                            int project_local_id = projectJson.optInt(DataBaseParams.local_id);
+                            int project_server_id = projectJson.optInt(DataBaseParams.measure_id);
+                            ContentValues projectValues = new ContentValues();
+                            projectValues.put(DataBaseParams.server_id, project_server_id);
+                            int pr=bleDataDbHelper.updateDataToSqlite(DataBaseParams.check_project_table_name, projectValues, "id=?", new String[]{String.valueOf(project_local_id)});
+                            LogUtils.show("requestCreateRecord---查看解析保存项目名称的数据id："+project_server_id+",本地id："+project_local_id+",更新状态：" + pr);
+                            //更新成员表的数据
+                            User user = OperateDbUtil.getUser(getApplicationContext());
+                            String mWhere = " where " + DataBaseParams.user_user_id + "=" + user.getUserID() + " and " + DataBaseParams.measure_project_id + "=" + project_local_id;
+                            List<ProjectUser> projectUserList = OperateDbUtil.queryProjectUserFromSqlite(getApplicationContext(), mWhere);
+                            if (projectUserList.size() > 0) {
+                                ContentValues values = new ContentValues();
+                                values.put(DataBaseParams.project_server_id, project_server_id);
+                                int user_r = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.project_user_table_name, "id=?", values, new String[]{String.valueOf(projectUserList.get(0).getId())});
+                                LogUtils.show("创建记录表接口------更新成员表的project_server_id是否成功：" + user_r);
+                                ///向服务器更新该成员ID到数据库
+                                Bundle b = new Bundle();
+                                b.putInt(DataBaseParams.measure_project_id, project_server_id);
+                                Intent intent = new Intent(getApplicationContext(), ProjectManageRequestIntentService.class);
+                                intent.putExtra(ProjectManageRequestIntentService.REQUEST_FLAG, ProjectManageRequestIntentService.flag_group_get_member_and_unit);
+                                intent.putExtra(ProjectManageRequestIntentService.key_get_value, b);
+                                startService(intent);
+                            }
+                        }
                         if (result > 0) {
                             EventBus.getDefault().post("1");
                         }

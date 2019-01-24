@@ -8,6 +8,8 @@ public class ExportMsgEvent {
     private boolean isSuccess;//是否导出成功
 
     private String msg;//信息
+    private String filePath;
+    private Object object;
 
     public ExportMsgEvent(boolean isSuccess) {
         this.isSuccess = isSuccess;
@@ -27,6 +29,22 @@ public class ExportMsgEvent {
 
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public Object getObject() {
+        return object;
+    }
+
+    public void setObject(Object object) {
+        this.object = object;
     }
 
     @Override

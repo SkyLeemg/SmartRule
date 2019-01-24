@@ -10,7 +10,7 @@ public class ProjectUser {
     private int cId;
     private String mobile;
     private String userName;
-    private String position;
+//    private String position;
     private int projectId;
     private int projectServerId;
 
@@ -46,13 +46,13 @@ public class ProjectUser {
         this.userName = userName;
     }
 
-    public String getPosition() {
-        return position;
-    }
-
-    public void setPosition(String position) {
-        this.position = position;
-    }
+//    public /*String getPosition() {
+//        return position;
+//    }
+//
+//    public void setPosition(String position) {
+//        this.position = position;
+//    }*/
 
     public int getProjectId() {
         return projectId;
@@ -95,7 +95,7 @@ public class ProjectUser {
                 ", cId=" + cId +
                 ", mobile='" + mobile + '\'' +
                 ", userName='" + userName + '\'' +
-                ", position='" + position + '\'' +
+//                ", position='" + position + '\'' +
                 ", projectId=" + projectId +
                 ", projectServerId=" + projectServerId +
                 '}';

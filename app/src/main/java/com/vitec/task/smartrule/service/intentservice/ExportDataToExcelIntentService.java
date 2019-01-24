@@ -2,8 +2,11 @@ package com.vitec.task.smartrule.service.intentservice;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.Nullable;
 
+import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.MeasureData;
 import com.vitec.task.smartrule.bean.MeasureTable;
 import com.vitec.task.smartrule.bean.MeasureTableRow;
@@ -21,6 +24,11 @@ import com.vitec.task.smartrule.utils.LogUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +62,8 @@ public class ExportDataToExcelIntentService extends IntentService {
                     exportMeaureData.close();
                     ExportMsgEvent exportMsgEvent = new ExportMsgEvent(true);
                     exportMsgEvent.setMsg(title);
+                    exportMsgEvent.setFilePath(title);
+
                     EventBus.getDefault().post(exportMsgEvent);
                     LogUtils.show("导出成功:"+title);
                 }
@@ -101,6 +111,9 @@ public class ExportDataToExcelIntentService extends IntentService {
             if (checkOptionsList.size() > 0) {
 //                循环遍历管控要点
                 for (int j=0;j<checkOptionsList.size();j++) {
+                    if (checkOptionsList.get(i).getRulerOptions().getType() > 2) {
+                        continue;
+                    }
                     RulerCheckOptions checkOptions = checkOptionsList.get(j);
                     /**
                      * 创建一个管控要点对象，即表格中的一大行
@@ -112,10 +125,27 @@ public class ExportDataToExcelIntentService extends IntentService {
                     row.setQualifiedNum(checkOptions.getQualifiedNum());
                     row.setOptionName(checkOptions.getRulerOptions().getOptionsName());
                     row.setCheckMethod(checkOptions.getRulerOptions().getMethods());
+                    String picPath = checkOptions.getImgPath();
+                    LogUtils.show("导出表格===查看管控要点的图纸地址：" + checkOptions.getImgPath());
                     if (checkOptions.getRulerOptions().getType() == 1) {
-                        table.setPicPath(checkOptions.getImgPath());
+                        picPath = checkOptions.getImgPath();
+                        table.setPicPath(picPath);
+                    } else if (checkOptions.getRulerOptions().getType() == 2) {
+                        if (picPath == null) {
+                            picPath = checkOptions.getImgPath();
+                            table.setPicPath(picPath);
+                        }
                     }
 
+                    if (checkOptions.getRulerOptions().getType() == 2) {
+                        File targetFile = getLogoFile("icon_measure_lever.png");
+                        row.setLogoFile(targetFile);
+                    } else {
+                        File targetFile = getLogoFile("ico_m_vertical.png");
+                        row.setLogoFile(targetFile);
+                    }
+
+                    row.setOptionType(checkOptions.getRulerOptions().getType());
 //                    设置表格中显示的管控要点序号，不是数据库的id
                     row.setId(j + 1);
 //                    从数据库中取出该管控要点对应的测量数据
@@ -151,5 +181,23 @@ public class ExportDataToExcelIntentService extends IntentService {
 
         return tableList;
 
+    }
+
+    private File getLogoFile(String fileName) {
+        InputStream  inputStream = null;
+        try {
+            inputStream = getAssets().open(fileName);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            File targetFile = new File(ExportMeaureDataHelper.path, fileName);
+            if (!targetFile.exists()) {
+                targetFile.createNewFile();
+                FileOutputStream fos = new FileOutputStream(targetFile);
+                bitmap.compress(Bitmap.CompressFormat.PNG, 90, fos);
+            }
+            return targetFile;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

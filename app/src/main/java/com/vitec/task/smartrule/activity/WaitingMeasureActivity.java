@@ -33,6 +33,7 @@ import com.vitec.task.smartrule.interfaces.IClickable;
 import com.vitec.task.smartrule.net.NetConstant;
 import com.vitec.task.smartrule.service.HandleBleMeasureDataReceiverService;
 import com.vitec.task.smartrule.service.intentservice.PerformMeasureNetIntentService;
+import com.vitec.task.smartrule.service.intentservice.ProjectManageRequestIntentService;
 import com.vitec.task.smartrule.service.intentservice.ReplenishDataToServerIntentService;
 import com.vitec.task.smartrule.utils.HeightUtils;
 import com.vitec.task.smartrule.utils.LogUtils;
@@ -69,8 +70,11 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
     private int stopTotalNum = 0;//记录点击停止/结束/完成测量按钮时总的rulerCheck数目
     private int currentSuccessStopNum = 0;//因为停止测量服务器响应是一条条响应反馈的，这里记录当前响应的是第几条，直达最后一条我们才做结束成功的提示
 
-    private int chooseIndex = 0;//用户点击需要跳转的item的序号
+    private int chooseIndex = -1;//用户点击需要跳转到测量页面的item的序号
+    private int chooseEditIndex = -1;//用户点击需要跳转到编辑页面的item的序号
     private RulerCheck delRulerCheck;//用户点击删除的Rulercheck
+
+    private final int request_flag_edit_msg = 13;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -126,6 +130,17 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
 //                startActivity(intent);
             }
         });
+
+        /*****请求查询测量组*****/
+        User user = OperateDbUtil.getUser(getApplicationContext());
+        Intent queryIntent = new Intent(getApplicationContext(), ProjectManageRequestIntentService.class);
+        Bundle bundle = new Bundle();
+        bundle.putInt(DataBaseParams.user_user_id, user.getUserID());
+        bundle.putInt(NetConstant.page_size, 50);
+        bundle.putInt(NetConstant.current_Page, 1);
+        queryIntent.putExtra(ProjectManageRequestIntentService.REQUEST_FLAG, ProjectManageRequestIntentService.flag_group_get_project_list);
+        queryIntent.putExtra(ProjectManageRequestIntentService.key_get_value, bundle);
+        startService(queryIntent);
     }
 
     /**
@@ -148,7 +163,7 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
     private void getUnFinishLocalCheck() {
         mkLoader.setVisibility(View.VISIBLE);
         User user = OperateDbUtil.getUser(getApplicationContext());
-        String where = " where " + DataBaseParams.user_user_id + " = " + user.getUserID() + " and " + DataBaseParams.measure_is_finish + "=0 ORDER BY "+ DataBaseParams.measure_id+" DESC;" ;
+        String where = " where " + DataBaseParams.user_user_id + " = " + user.getUserID() + " and " + DataBaseParams.measure_is_finish + "=0 ORDER BY "+ DataBaseParams.measure_create_time+" DESC;" ;
         BleDataDbHelper dataDbHelper = new BleDataDbHelper(getApplicationContext());
         rulerCheckList.clear();
         rulerCheckList = dataDbHelper.queryRulerCheckTableDataFromSqlite(where);
@@ -203,6 +218,8 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
         updateAdapterData();
     }
 
+
+
     /**
      * 接受请求服务器记录表响应的数据
      * @param event
@@ -228,6 +245,11 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
                     tvTip.setVisibility(View.VISIBLE);
                 }
                 updateAdapterData();
+                /**
+                 * 补上传服务启动
+                 */
+                Intent replenishIntent = new Intent(getApplicationContext(), ReplenishDataToServerIntentService.class);
+                startService(replenishIntent);
             }
 
 //            updatePageData();
@@ -267,13 +289,52 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getMeasureDataCallBack(MeasureDataMsgEvent event) {
+        if (chooseIndex >= 0) {
+
+            Intent intent = new Intent(WaitingMeasureActivity.this, MeasureManagerAcitivty.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra("projectMsg", rulerCheckList.get(chooseIndex));
+            OptionMeasure optionMeasure = new OptionMeasure();
+            intent.putExtra("floor_height", optionMeasure);
+            startActivity(intent);
+            chooseIndex = -1;
+        } else if (chooseEditIndex >= 0) {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("rulerCheck", rulerCheckList.get(chooseEditIndex));
+            Intent intent = new Intent(this, EditMeasureMsgActivity.class);
+            intent.putExtra("rulerCheck", bundle);
+            startActivityForResult(intent, request_flag_edit_msg);
+        }
+
         mkLoader.setVisibility(View.GONE);
-        Intent intent = new Intent(WaitingMeasureActivity.this, MeasureManagerAcitivty.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("projectMsg", rulerCheckList.get(chooseIndex));
-        OptionMeasure optionMeasure = new OptionMeasure();
-        intent.putExtra("floor_height", optionMeasure);
-        startActivity(intent);
+    }
+
+
+    /**
+     * TODO 接收返回值
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        LogUtils.show("=====收到一个编辑页面返回的通知。。。。查看返回码：" + resultCode + ",,,,查看请求码：" + requestCode);
+        if (resultCode == 11) {
+            switch (requestCode) {
+                case request_flag_edit_msg:
+                    int flag = data.getIntExtra("flag", 0);
+                    if (flag == 1) {
+                        LogUtils.show("等待测量页面------开始更新数据");
+                        measureProjectListAdapter.setClickIndex(-1);
+                        getUnFinishLocalCheck();
+                    }
+
+                    chooseEditIndex = -1;
+                    break;
+            }
+
+        }
     }
 
     private void updatePageData() {
@@ -393,13 +454,12 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
      */
     @Override
     public void onSencondClickable(int position) {
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("rulerCheck", rulerCheckList.get(position));
-        Intent intent = new Intent(this,EditMeasureMsgActivity.class);
-        intent.putExtra("rulerCheck", bundle);
-
-        startActivityForResult(intent,1);
-
+        mkLoader.setVisibility(View.VISIBLE);
+        chooseEditIndex = position;
+        Intent serviceIntent = new Intent(getApplicationContext(), PerformMeasureNetIntentService.class);
+        serviceIntent.putExtra(PerformMeasureNetIntentService.GET_FLAG_KEY, PerformMeasureNetIntentService.FLAG_GET_MEASURE_DATA);
+        serviceIntent.putExtra(PerformMeasureNetIntentService.GET_DATA_KEY, rulerCheckList.get(position));
+        startService(serviceIntent);
 
     }
 
@@ -467,7 +527,7 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
         rulerCheckList.remove(delRulerCheck);
         measureProjectListAdapter.notifyDataSetChanged();
         measureProjectListAdapter.setClickIndex(-1);
-
+        HeightUtils.setListViewHeighBaseOnChildren(lvWaitingMeasureList);
         delRulerCheck = null;
         LogUtils.show("本地数据库修改成功");
 

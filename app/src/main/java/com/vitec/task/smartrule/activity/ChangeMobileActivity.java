@@ -75,7 +75,7 @@ public class ChangeMobileActivity extends BaseActivity implements View.OnClickLi
 
     private boolean isNewRequest = false;//这个页面有三个请求发送验证码按钮，区分是否为新手机号码的发送按钮
     private StringBuffer oldPhone;
-    private boolean canGetCode;
+    private boolean canGetCode=true;
     private boolean hasUpdate = false;//用来判断个人信息是否有更新
 
     @Override
@@ -311,11 +311,13 @@ public class ChangeMobileActivity extends BaseActivity implements View.OnClickLi
                             @Override
                             public void run() {
                                 countDown--;
+                                canGetCode = false;
                                 if (countDown > 0) {
                                     btnGetCode.setText("重新获取(" + countDown + ")");
                                     handler.postDelayed(this, 1000);
                                 } else {
                                     btnGetCode.setText("重新获取");
+                                    canGetCode = true;
                                     btnGetCode.setClickable(true);
                                     btnGetCode.setBackgroundResource(R.drawable.btn_nomal);
                                 }

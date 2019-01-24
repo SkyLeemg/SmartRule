@@ -107,25 +107,25 @@ public class MeasureDataView extends RelativeLayout {
             tvTitle.setText(rulerCheckOptions.getRulerOptions().getOptionsName());
         }
 //        获取测量计算参考标准的数据
-        final String measures = rulerCheckOptions.getRulerOptions().getMeasure();
-        optionMeasures = OptionsMeasureUtils.getOptionMeasure(measures);
-        if (optionMeasures.size() > 1) {
-            int count = 0;
-            optionMeasure = optionMeasures.get(0);
-            for (int k = 0; k < optionMeasures.size(); k++) {
-                if (String.valueOf(optionMeasures.get(k).getId()).equals(rulerCheckOptions.getFloorHeight())) {
-                    optionMeasure = optionMeasures.get(k);
-                    count++;
-                }
-            }
-        } else if (optionMeasures.size() > 0) {
-            optionMeasure = optionMeasures.get(0);
-        }
+        optionMeasure = rulerCheckOptions.getFloorHeight();
+//        optionMeasures = OptionsMeasureUtils.getOptionMeasure(measures);
+//        if (optionMeasures.size() > 1) {
+//            int count = 0;
+//            optionMeasure = optionMeasures.get(0);
+//            for (int k = 0; k < optionMeasures.size(); k++) {
+//                if (String.valueOf(optionMeasures.get(k).getId()).equals(rulerCheckOptions.getFloorHeight())) {
+//                    optionMeasure = optionMeasures.get(k);
+//                    count++;
+//                }
+//            }
+//        } else if (optionMeasures.size() > 0) {
+//            optionMeasure = optionMeasures.get(0);
+//        }
         LogUtils.show("查看计算标准optionMeasure----"+optionMeasure);
 
 //        初始化测量标准提示信息
         String standard = rulerCheckOptions.getRulerOptions().getStandard();
-        tvQualifiedStandard.setText("合格标准："+standard);
+        tvQualifiedStandard.setText(""+standard);
 
 //        接下来根据rulerOptionsID去数据库查找有没有相同的数据，有则显示出来，无则新建
         usingCheckOptionsDataList= OperateDbUtil.queryMeasureDataFromSqlite(context, rulerCheckOptions);
@@ -169,6 +169,7 @@ public class MeasureDataView extends RelativeLayout {
             qualifiedNum = 0;
             float frealnum = 0.0f;
             float fq = 0.0f;
+            LogUtils.show("MeasureDataView-----查看当前计算标准：" + optionMeasure);
             for (int i=0; i<realDataCount;i++) {
                 String data = usingCheckOptionsDataList.get(i).getData().trim();
                 try {
@@ -200,7 +201,7 @@ public class MeasureDataView extends RelativeLayout {
                             break;
 
                         case 3:
-                            if ( datanum >= optionMeasure.getStandard()) {
+                            if ( datanum > optionMeasure.getStandard()) {
                                 qualifiedNum++;
 //                               设置合格
                                 usingCheckOptionsDataList.get(i).setQualified(true);

@@ -130,11 +130,13 @@
                 <!--</android.support.constraint.ConstraintLayout>-->
 
             </android.support.v7.widget.CardView>
-
+            <!--<ScrollView-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent">-->
 
             <android.support.v7.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="220dp"
                 app:cardUseCompatPadding="true"
                 app:cardPreventCornerOverlap="false"
                 app:cardCornerRadius="6dp"
@@ -142,16 +144,15 @@
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
                 >
+
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
-                    <ScrollView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent">
+
                         <EditText
                             android:id="@+id/et_suggestion"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
+                            android:layout_height="fill_parent"
                             android:background="#00000000"
                             android:gravity="top"
                             android:hint="您对靠尺使用的意见和建议"
@@ -162,7 +163,7 @@
                             android:textSize="14sp"
                             android:inputType="textMultiLine"
                             />
-                    </ScrollView>
+
 
 
                     <TextView
@@ -179,6 +180,7 @@
                 </RelativeLayout>
 
             </android.support.v7.widget.CardView>
+            <!--</ScrollView>-->
 
             <Button
                 android:id="@+id/btn_submit"

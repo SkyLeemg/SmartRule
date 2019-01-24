@@ -39,6 +39,7 @@ import com.vitec.task.smartrule.utils.DateFormatUtil;
 import com.vitec.task.smartrule.helper.ExportMeaureDataHelper;
 import com.vitec.task.smartrule.utils.HeightUtils;
 import com.vitec.task.smartrule.utils.LogUtils;
+import com.vitec.task.smartrule.view.ShareFileBottomDialog;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -90,6 +91,8 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
     private List<RulerCheck> selectRulerCheckList;
     private List<RulerCheck> selectCurrentPageCheckList;//筛选后的当前页的Rulercheck清单集合
     private List<RulerCheck> checkedRulerCheckList;//listview中的复选框中选中的集合
+    private List<RulerCheck> projectFiltCheckList;//经过项目名筛选后的结果
+    private List<RulerCheck> engineerFiltCheckList;//经过单位工程筛选后的结果
     //    过spinner筛选后的下拉框Adapter的集合
     private List<String> selectProjectNameList;
     private List<String> selectPositionList;
@@ -155,8 +158,8 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
         checkPositionAdapter.setDataList(selectPositionList);
         projectListAdapter.setRulerCheckList(selectCurrentPageCheckList);
 
-        spinnerEngineer.setSelection(engineerIndex);
-        spinnerCheckPosition.setSelection(positionIndex);
+//        spinnerEngineer.setSelection(engineerIndex);
+//        spinnerCheckPosition.setSelection(positionIndex);
 
         engineerSpinnerAdapter.notifyDataSetChanged();
         checkPositionAdapter.notifyDataSetChanged();
@@ -263,6 +266,8 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
         selectProjectNameList = new ArrayList<>();
         selectCurrentPageCheckList = new ArrayList<>();
         checkedRulerCheckList = new ArrayList<>();
+        projectFiltCheckList = new ArrayList<>();
+        engineerFiltCheckList = new ArrayList<>();
 
         selectProjectNameList.add("全部");
         selectEnginnerList.add("全部");
@@ -278,6 +283,9 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
                 }
             }
             selectRulerCheckList.addAll(allRulerCheckList);
+            projectFiltCheckList.addAll(selectRulerCheckList);
+            engineerFiltCheckList.addAll(selectRulerCheckList);
+
         }
 
         total = selectRulerCheckList.size();
@@ -329,11 +337,12 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 projectIndex = i;
+                filtProjectName();
 //                if (i == 0) {
 //                    positionIndex = 0;
 //                    engineerIndex = 0;
 //                }
-                filtCheckList();
+//                filtCheckList();
             }
 
             @Override
@@ -347,6 +356,8 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 LogUtils.show("点击了检查位置-----查看数据源个数："+selectPositionList.size()+",当前选择的序号："+i);
                 positionIndex = i;
+                filtCheckUnitName();
+//                filtProjectName();
 //                if (i > 0) {
 //                    /**
 //                     * 从已经筛选后的rulercheck集合中再次筛选，
@@ -371,7 +382,8 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 LogUtils.show("点击了工程类型-----查看数据源个数："+selectEnginnerList.size()+",当前选择的序号："+i);
                 engineerIndex = i;
-                filtCheckList();
+                filtEnginneerName();
+//                filtCheckList();
             }
 
             @Override
@@ -397,6 +409,112 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
                 }
             }
         });
+    }
+
+
+    /**
+     * 点击项目名进行过滤
+     */
+    private void filtProjectName() {
+        selectPositionList.clear();
+        selectEnginnerList.clear();
+//        selectCurrentPageCheckList.clear();
+        selectPositionList.add("全部");
+        selectEnginnerList.add("全部");
+        selectRulerCheckList.clear();
+        LogUtils.show("测量记录---筛选项目名---查看集合个数："+selectProjectNameList.size()+",点击中的序号："+projectIndex+",名字："+selectProjectNameList.get(projectIndex));
+        LogUtils.show("测量记录---筛选项目名---查看集合个数："+selectProjectNameList.toString());
+
+        if (projectIndex > 0) {
+            for (int j = 0; j < allRulerCheckList.size(); j++) {
+                if (allRulerCheckList.get(j).getProject().getProjectName().equals(selectProjectNameList.get(projectIndex))) {
+                    selectRulerCheckList.add(allRulerCheckList.get(j));
+                }
+            }
+        } else {
+            selectRulerCheckList.addAll(allRulerCheckList);
+        }
+
+
+        Set<String> positonSet = new HashSet<>();
+        Set<String> engineerSet = new HashSet<>();
+//                更新spinner的数据
+        for (int n = 0; n < selectRulerCheckList.size(); n++) {
+            if (engineerSet.add(selectRulerCheckList.get(n).getEngineer().getEngineerName())) {
+                selectEnginnerList.add(selectRulerCheckList.get(n).getEngineer().getEngineerName());
+            }
+            if (positonSet.add(selectRulerCheckList.get(n).getUnitEngineer().getLocation())) {
+                selectPositionList.add(selectRulerCheckList.get(n).getUnitEngineer().getLocation());
+            }
+        }
+        projectFiltCheckList.clear();
+        engineerFiltCheckList.clear();
+
+        projectFiltCheckList.addAll(selectRulerCheckList);
+        engineerFiltCheckList.addAll(selectRulerCheckList);
+
+        spinnerCheckPosition.setSelection(0);
+        spinnerEngineer.setSelection(0);
+        engineerIndex = 0;
+        positionIndex = 0;
+        updatePageData();
+        updateAdapterData();
+    }
+
+    /**
+     * 点击单位工程进行过滤
+     */
+    private void filtCheckUnitName() {
+        selectRulerCheckList.clear();
+        if (positionIndex > 0) {
+            LogUtils.show("测量记录---过滤单位工程---查看所有单位工程："+selectPositionList.toString());
+            LogUtils.show("测量记录---过滤单位工程---查看当前选择的单位工程："+selectPositionList.get(positionIndex));
+            for (int i = 0; i < engineerFiltCheckList.size(); i++) {
+                LogUtils.show("测量记录---过滤单位工程---查看当前选择的单位工程："+engineerFiltCheckList.get(i).getUnitEngineer().getLocation());
+                if (engineerFiltCheckList.get(i).getUnitEngineer().getLocation().equals(selectPositionList.get(positionIndex))) {
+                    selectRulerCheckList.add(engineerFiltCheckList.get(i));
+                }
+            }
+        } else {
+            selectRulerCheckList.addAll(engineerFiltCheckList);
+        }
+        updatePageData();
+        updateAdapterData();
+    }
+
+
+    /**
+     * 点击工程类型进行过滤
+     */
+    private void filtEnginneerName() {
+        selectPositionList.clear();
+        selectPositionList.add("全部");
+        selectRulerCheckList.clear();
+        if (engineerIndex > 0) {
+            for (int i=0;i<projectFiltCheckList.size();i++) {
+                if (projectFiltCheckList.get(i).getEngineer().getEngineerName().equals(selectEnginnerList.get(engineerIndex))) {
+                    selectRulerCheckList.add(projectFiltCheckList.get(i));
+                }
+            }
+        } else {
+            selectRulerCheckList.addAll(projectFiltCheckList);
+        }
+
+        Set<String> positonSet = new HashSet<>();
+//                更新spinner的数据
+        for (int n = 0; n < selectRulerCheckList.size(); n++) {
+            if (positonSet.add(selectRulerCheckList.get(n).getUnitEngineer().getLocation())) {
+                selectPositionList.add(selectRulerCheckList.get(n).getUnitEngineer().getLocation());
+            }
+        }
+
+        engineerFiltCheckList.clear();
+        engineerFiltCheckList.addAll(selectRulerCheckList);
+
+        spinnerCheckPosition.setSelection(0);
+        positionIndex = 0;
+        updatePageData();
+        updateAdapterData();
     }
 
 
@@ -481,7 +599,7 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
             if (engineerSet.add(selectRulerCheckList.get(n).getEngineer().getEngineerName())) {
                 selectEnginnerList.add(selectRulerCheckList.get(n).getEngineer().getEngineerName());
             }
-            if (positonSet.add(selectRulerCheckList.get(n).getCheckFloor())) {
+            if (positonSet.add(selectRulerCheckList.get(n).getUnitEngineer().getLocation())) {
                 selectPositionList.add(selectRulerCheckList.get(n).getUnitEngineer().getLocation());
             }
         }
@@ -590,7 +708,19 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
                     if (!dir.exists() || !dir.isDirectory()) {
                         dir.mkdir();
                     }
-                    String fileName = DateFormatUtil.stampToDateString(checkedRulerCheckList.get(0).getCreateTime(), "yyyyMMddHHmm") + checkedRulerCheckList.get(0).getProject().getProjectName();
+                    StringBuffer stringBuffer = new StringBuffer();
+                    stringBuffer.append(checkedRulerCheckList.get(0).getProject().getProjectName());
+                    stringBuffer.append("-");
+                    stringBuffer.append(checkedRulerCheckList.get(0).getUnitEngineer().getLocation());
+                    stringBuffer.append("-");
+                    stringBuffer.append(checkedRulerCheckList.get(0).getCheckFloor());
+                    stringBuffer.append("-");
+                    stringBuffer.append(DateFormatUtil.stampToDateString(checkedRulerCheckList.get(0).getCreateTime(), "MM-dd"));
+//                    stringBuffer.append(".xls");
+//                    stringBuffer.append(checkedRulerCheckList.get(0).getEngineer().getEngineerName());
+//                    String fileName = checkedRulerCheckList.get(0).getProject().getProjectName()+"-"++"-";
+//                    String fileName = DateFormatUtil.stampToDateString(checkedRulerCheckList.get(0).getCreateTime(), "yyyyMMddHHmm") + checkedRulerCheckList.get(0).getProject().getProjectName();
+                    String fileName = stringBuffer.toString();
                     File file = new File(ExportMeaureDataHelper.path, fileName + ".xls");
                     if (file.exists()) {
                         int random = (int) (Math.random() * 100);
@@ -841,14 +971,28 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void exportToExcelCallBack(ExportMsgEvent exportMsgEvent) {
+    public void exportToExcelCallBack(final ExportMsgEvent exportMsgEvent) {
         LogUtils.show("收到导出成功的响应："+exportMsgEvent.toString());
         if (exportMsgEvent.isSuccess()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(MeasureRecordActivity.this);
             builder.setTitle("导出成功");
-            builder.setMessage("是否立即发送文件给微信好友？\n 您也可以在【文件管理】中查看所有导出的文件");
-            builder.setNegativeButton("否", null);
+            builder.setMessage(" 您可以在【测量文件】中查看所有导出的文件");
+//            builder.setPositiveButton("立即分享", new DialogInterface.OnClickListener() {
+//                @Override
+//                public void onClick(DialogInterface dialogInterface, int i) {
+//                    File file = new File(exportMsgEvent.getFilePath());
+//                    ShareFileBottomDialog shareFileBottomDialog = new ShareFileBottomDialog(MeasureRecordActivity.this, R.style.BottomDialog, file);
+//                    shareFileBottomDialog.show();
+//                }
+//            });
+            builder.setNegativeButton("知道了", null);
             builder.show();
+            projectListAdapter.setShowCheckBox(false);
+            projectListAdapter.setAllChecked(false);
+            projectListAdapter.notifyDataSetChanged();
+            tvChoose.setText("选择");
+            chooseBtnStatus = 0;
+            rlSelectable.setVisibility(View.GONE);
         } else {
             AlertDialog.Builder builder = new AlertDialog.Builder(MeasureRecordActivity.this);
             builder.setTitle("导出失败");

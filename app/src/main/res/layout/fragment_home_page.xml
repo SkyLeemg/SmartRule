@@ -6,7 +6,6 @@
     >
 
 
-
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -76,42 +75,6 @@
                     android:layout_marginTop="2dp"
                     />
             </LinearLayout>
-            <!--测量记录-->
-            <LinearLayout
-                android:id="@+id/ll_meausre_record"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/selector_main_home_item_click"
-                android:layout_weight="1"
-
-                android:layout_marginRight="15dp"
-                android:orientation="vertical"
-                android:gravity="center"
-                >
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@mipmap/ico_record_3x"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="测量记录"
-                    android:textColor="@color/title_color"
-                    android:textSize="15sp"
-                    android:layout_marginTop="2dp"
-                    />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!--菜单第二行：等待测量和测量文件-->
-        <LinearLayout
-            android:id="@+id/ll_sencond_row"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_below="@+id/ll_first_row"
-            android:layout_marginTop="12dp"
-            >
             <!--等待测量-->
             <LinearLayout
                 android:id="@+id/ll_waiting_measure"
@@ -119,7 +82,6 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/selector_main_home_item_click"
                 android:layout_weight="1"
-                android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
                 android:orientation="vertical"
                 android:gravity="center"
@@ -137,6 +99,44 @@
                     android:layout_marginTop="2dp"
                     />
             </LinearLayout>
+
+        </LinearLayout>
+
+        <!--菜单第二行：等待测量和测量文件-->
+        <LinearLayout
+            android:id="@+id/ll_sencond_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_below="@+id/ll_first_row"
+            android:layout_marginTop="12dp"
+            >
+            <!--测量记录-->
+            <LinearLayout
+                android:id="@+id/ll_meausre_record"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/selector_main_home_item_click"
+                android:layout_weight="1"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                >
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/ico_record_3x"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="测量记录"
+                    android:textColor="@color/title_color"
+                    android:textSize="15sp"
+                    android:layout_marginTop="2dp"
+                    />
+            </LinearLayout>
+
             <!--测量文件-->
             <LinearLayout
                 android:id="@+id/ll_measure_file"

@@ -14,6 +14,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -24,6 +25,7 @@ import com.vitec.task.smartrule.helper.ServiceConnecteHelper;
 import com.vitec.task.smartrule.interfaces.IDialogCommunicableWithDevice;
 import com.vitec.task.smartrule.service.BleScanService;
 import com.vitec.task.smartrule.service.ConnectDeviceService;
+import com.vitec.task.smartrule.utils.LogUtils;
 
 import org.altbeacon.beacon.Beacon;
 import org.greenrobot.eventbus.EventBus;
@@ -41,11 +43,13 @@ public class ConnectDialog extends Dialog {
     private BleDeviceAdapter mBleDeviceAdapter;
     private List<Beacon> devices;
     private MKLoader mkLoader;
+    private Button btnCancle;
     private TextView tvloaderTip;
     public   static ServiceConnecteHelper serviceConnecteHelper;
 
     private ConnectDeviceService mService = null;
     private IDialogCommunicableWithDevice communicableWithDevice;
+    private boolean isBound = false;
 
     public ConnectDialog(@NonNull Context context, IDialogCommunicableWithDevice communicable) {
         super(context);
@@ -69,11 +73,18 @@ public class ConnectDialog extends Dialog {
         mkLoader = findViewById(R.id.mkloader);
         tvloaderTip = findViewById(R.id.tv_loading_tip);
         mkLoader.setVisibility(View.VISIBLE);
+        btnCancle = findViewById(R.id.btn_cancel);
+        btnCancle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dismiss();
+            }
+        });
     }
 
     private void initData() {
         Intent bindIntent = new Intent(getContext(), BleScanService.class);
-        getContext().bindService(bindIntent, scanServiceConnection, Context.BIND_AUTO_CREATE);
+        isBound = getContext().bindService(bindIntent, scanServiceConnection, Context.BIND_AUTO_CREATE);
         devices = new ArrayList<>();
         mBleDeviceAdapter = new BleDeviceAdapter(devices, getContext());
         listView.setAdapter(mBleDeviceAdapter);
@@ -104,11 +115,7 @@ public class ConnectDialog extends Dialog {
         }
     };
 
-    @Override
-    public void setOnDismissListener(@Nullable OnDismissListener listener) {
-        super.setOnDismissListener(listener);
-        unBindConnectService();
-    }
+
 
     /**
      * 接收从搜索服务里发送过来的数据
@@ -140,6 +147,8 @@ public class ConnectDialog extends Dialog {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+//        LogUtils.show("连接对话框---断开了");
+//        unBindConnectService();
         BleScanService.stopScanService(getContext());
 
     }
@@ -147,14 +156,19 @@ public class ConnectDialog extends Dialog {
     @Override
     protected void onStop() {
         super.onStop();
-        Log.e(TAG, "vitec onStop: 连接对话框断开");
+//        Log.e(TAG, "vitec onStop: 连接对话框断开");
 //        BleScanService.stopScanService(getContext());
 //        getContext().unbindService(scanServiceConnection);
 //        serviceConnecteHelper.stopServiceConnection();
     }
 
     public void unBindConnectService() {
-        getContext().unbindService(scanServiceConnection);
+        if (isBound) {
+            LogUtils.show("连接对话框----解绑了服务");
+            getContext().unbindService(scanServiceConnection);
+            isBound = false;
+        }
+
         if (serviceConnecteHelper != null) {
             serviceConnecteHelper.stopServiceConnection();
         }

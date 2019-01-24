@@ -192,6 +192,7 @@ public class UserDatumActivity extends BaseActivity implements View.OnClickListe
             intent.putExtra("flag", 0);
         }
         setResult(RESULT_OK, intent);
+        //下面这行代码一定要放在下面，不然resultcode会返回0
         super.onBackPressed();
 
     }

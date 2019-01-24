@@ -305,7 +305,7 @@ public class RegisterActivity extends BaseActivity implements OnClickListener{
                                                 @Override
                                                 public void run() {
                                                     mkLoader.setVisibility(View.GONE);
-                                                    Intent intent = new Intent(getApplicationContext(), UnuseMainActivity.class);
+                                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                                                     startActivity(intent);
                                                     RegisterActivity.this.finish();
                                                 }

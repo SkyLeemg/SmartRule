@@ -120,19 +120,20 @@ public class HandleBleMeasureDataReceiverService extends Service {
                     if (options.getRulerOptions().getType() == 1) {//type---1代表的立面垂直度的管控要点
                         LogUtils.show("打印查看Type");
                         verticalOption = options;
-                        List<OptionMeasure> optionMeasureList = OptionsMeasureUtils.getOptionMeasure(verticalOption.getRulerOptions().getMeasure());
-                        verticalOptionMeasure = new OptionMeasure();
-                        if (optionMeasureList.size() > 1) {
-                            int count = 0;
-                            for (int k = 0; k < optionMeasureList.size(); k++) {
-                                if (optionMeasureList.get(k).getData().equals(verticalOption.getFloorHeight())) {
-                                    verticalOptionMeasure = optionMeasureList.get(k);
-                                    count++;
-                                }
-                            }
-                        } else if (optionMeasureList.size() > 0) {
-                            verticalOptionMeasure = optionMeasureList.get(0);
-                        }
+                        verticalOptionMeasure = options.getFloorHeight();
+//                        List<OptionMeasure> optionMeasureList = OptionsMeasureUtils.getOptionMeasure(verticalOption.getRulerOptions().getMeasure());
+//                        verticalOptionMeasure = new OptionMeasure();
+//                        if (optionMeasureList.size() > 1) {
+//                            int count = 0;
+//                            for (int k = 0; k < optionMeasureList.size(); k++) {
+//                                if (optionMeasureList.get(k).getData().equals(verticalOption.getFloorHeight())) {
+//                                    verticalOptionMeasure = optionMeasureList.get(k);
+//                                    count++;
+//                                }
+//                            }
+//                        } else if (optionMeasureList.size() > 0) {
+//                            verticalOptionMeasure = optionMeasureList.get(0);
+//                        }
 //                        if (optionMeasureList.size() > 0) {
 //                            verticalOptionMeasure = optionMeasureList.get(0);
 //                        } else {
@@ -144,19 +145,20 @@ public class HandleBleMeasureDataReceiverService extends Service {
                         verticalIndex = initIndexCurcor( verticalOption);
                     } else if (options.getRulerOptions().getType() == 2) {//type---2代表的是表面平整度的管控要点
                         levelOption = options;
-                        List<OptionMeasure> optionMeasureList = OptionsMeasureUtils.getOptionMeasure(levelOption.getRulerOptions().getMeasure());
-                        levelOptionMeasure = new OptionMeasure();
-                        if (optionMeasureList.size() > 1) {
-                            int count = 0;
-                            for (int k = 0; k < optionMeasureList.size(); k++) {
-                                if (optionMeasureList.get(k).getData().equals(levelOption.getFloorHeight())) {
-                                    levelOptionMeasure = optionMeasureList.get(k);
-                                    count++;
-                                }
-                            }
-                        } else if (optionMeasureList.size() > 0) {
-                            levelOptionMeasure = optionMeasureList.get(0);
-                        }
+                        levelOptionMeasure = options.getFloorHeight();
+//                        List<OptionMeasure> optionMeasureList = OptionsMeasureUtils.getOptionMeasure(levelOption.getRulerOptions().getMeasure());
+//                        levelOptionMeasure = new OptionMeasure();
+//                        if (optionMeasureList.size() > 1) {
+//                            int count = 0;
+//                            for (int k = 0; k < optionMeasureList.size(); k++) {
+//                                if (optionMeasureList.get(k).getData().equals(levelOption.getFloorHeight())) {
+//                                    levelOptionMeasure = optionMeasureList.get(k);
+//                                    count++;
+//                                }
+//                            }
+//                        } else if (optionMeasureList.size() > 0) {
+//                            levelOptionMeasure = optionMeasureList.get(0);
+//                        }
                         levelIndex = initIndexCurcor( levelOption);
 
 
@@ -535,11 +537,15 @@ public class HandleBleMeasureDataReceiverService extends Service {
                         levelIndex++;
                         levelOptionsDataList.add(optionsData);
                         LogUtils.show("查看收到水平度数据，保存到数据库后的对象："+optionsData);
-                        if (levelOptionsDataList.size() >= 5 && levelOptionsDataList.size()%2==1) {
-                            completeResult(levelOptionsDataList,levelOption,levelOptionMeasure);
-                            uploadDataToServer(levelOptionsDataList,levelOption);
+                        if (levelOptionsDataList.size() > 0) {
+                            vQualifiedNum = levelOption.getQualifiedNum();
+                            vRealNum = levelOption.getMeasuredNum();
+                            completeResult(levelOptionsDataList, levelOption, levelOptionMeasure);
+                            uploadDataToServer(levelOptionsDataList, levelOption);
                         }
                         if (verticalOptinsDataList.size() >0 ) {
+                            vQualifiedNum = verticalOption.getQualifiedNum();
+                            vRealNum = verticalOption.getMeasuredNum();
                             completeResult(verticalOptinsDataList,verticalOption,verticalOptionMeasure);
                             uploadDataToServer(verticalOptinsDataList,verticalOption);
                         }
@@ -558,12 +564,16 @@ public class HandleBleMeasureDataReceiverService extends Service {
                         verticalIndex++;
                         verticalOptinsDataList.add(optionsData);
                         LogUtils.show("查看收到垂直度数据，保存到数据库后的对象："+optionsData);
-                        if (verticalOptinsDataList.size() >= 5 && verticalOptinsDataList.size()%2==1) {
-                            completeResult(verticalOptinsDataList,verticalOption,verticalOptionMeasure);
-                            uploadDataToServer(verticalOptinsDataList,verticalOption);
+                        if (verticalOptinsDataList.size() > 0) {
+                            vQualifiedNum = verticalOption.getQualifiedNum();
+                            vRealNum = verticalOption.getMeasuredNum();
+                            completeResult(verticalOptinsDataList, verticalOption, verticalOptionMeasure);
+                            uploadDataToServer(verticalOptinsDataList, verticalOption);
                         }
 
                         if (levelOptionsDataList.size() >0 ) {
+                            vQualifiedNum = levelOption.getQualifiedNum();
+                            vRealNum = levelOption.getMeasuredNum();
                             completeResult(levelOptionsDataList,levelOption,levelOptionMeasure);
                             uploadDataToServer(levelOptionsDataList,levelOption);
                         }
@@ -607,13 +617,14 @@ public class HandleBleMeasureDataReceiverService extends Service {
            int qualifiedNum = 0;
             float frealnum = 0.0f;
             float fq = 0.0f;
+            LogUtils.show("服务端-----completeResult----查看当前计算标准：" + optionMeasure);
             for (int i=0; i<dataList.size();i++) {
                 String data = dataList.get(i).getData().trim();
                 try {
                     float datanum = Float.valueOf(data);
                     /**
                      * 根据操作标志来计算结果，
-                     * 1 =, 2 <=, 3 >=, 4 +, 5 -, 6 普通, 7 高级
+                     * 1 =, 2 <=, 3 >, 4 +, 5 -, 6 普通, 7 高级
                      */
                     switch (optionMeasure.getOperate()) {
                         case 1:
@@ -627,7 +638,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
                             }
                             break;
                         case 3:
-                            if (datanum > optionMeasure.getStandard() || datanum == optionMeasure.getStandard()) {
+                            if (datanum > optionMeasure.getStandard()) {
                                 qualifiedNum++;
                             }
                             break;
@@ -646,7 +657,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
                 fq = lQualifiedNum + qualifiedNum;
             }
             float qualifiedRate = (fq / frealnum);
-            LogUtils.show("completeResult: 查看计算出来的实测点数："+ realNum +",合格点数："+ qualifiedNum +",合格率："+qualifiedRate );
+            LogUtils.show("服务端-----completeResult: 查看计算出来的实测点数："+ frealnum +",合格点数："+ fq +",合格率："+qualifiedRate );
             checkOptions.setFloorHeight(optionMeasure);
             checkOptions.setMeasuredNum((int) frealnum);
             checkOptions.setQualifiedNum((int) fq);
@@ -660,6 +671,12 @@ public class HandleBleMeasureDataReceiverService extends Service {
 //            values.put(DataBaseParams.measure_option_floor_height, checkOptions.getFloorHeight().getId());
             String[] ids = new String[]{String.valueOf(checkOptions.getId())};
             OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(),DataBaseParams.measure_option_table_name, values, ids);
+
+            //更新日期到记录表
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(DataBaseParams.measure_update_time,DateFormatUtil.transForMilliSecond(new Date()));
+            String[] rIds = new String[]{String.valueOf(checkOptions.getRulerCheck().getId())};
+            OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.measure_table_name, " id=?" , contentValues, rIds);
 
         }
 

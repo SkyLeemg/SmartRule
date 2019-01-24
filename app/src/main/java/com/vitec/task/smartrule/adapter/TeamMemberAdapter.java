@@ -18,6 +18,7 @@ import com.vitec.task.smartrule.activity.BaseActivity;
 import com.vitec.task.smartrule.bean.ProjectUser;
 import com.vitec.task.smartrule.bean.RulerCheckProject;
 import com.vitec.task.smartrule.bean.User;
+import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.net.NetConstant;
 import com.vitec.task.smartrule.service.intentservice.ProjectManageRequestIntentService;
@@ -124,6 +125,7 @@ public class TeamMemberAdapter extends BaseAdapter{
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Bundle bundle = new Bundle();
                         bundle.putString(NetConstant.group_group_list, String.valueOf(member.getServer_id()));
+                        bundle.putInt(DataBaseParams.user_user_id, member.getUser_id());
                         Intent delUnitIntent = new Intent(context, ProjectManageRequestIntentService.class);
                         delUnitIntent.putExtra(ProjectManageRequestIntentService.REQUEST_FLAG, ProjectManageRequestIntentService.flag_group_del_member);
                         delUnitIntent.putExtra(ProjectManageRequestIntentService.key_get_value, bundle);

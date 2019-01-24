@@ -85,10 +85,10 @@ public class RulerCheckProject implements Serializable{
                 ", server_id=" + server_id +
                 ", projectName='" + projectName + '\'' +
                 ", qrCode='" + qrCode + '\'' +
-                ", createTime=" + createTime +
-                ", updateTime=" + updateTime +
-                ", user=" + user +
-
+//                ", createTime=" + createTime +
+//                ", updateTime=" + updateTime +
+//                ", user=" + user +
+                ", unitList=" + unitList +
                 '}';
     }
 }

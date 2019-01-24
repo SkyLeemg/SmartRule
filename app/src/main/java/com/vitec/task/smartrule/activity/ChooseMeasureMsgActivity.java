@@ -27,6 +27,7 @@ import com.vitec.task.smartrule.service.intentservice.ReplenishDataToServerInten
 import com.vitec.task.smartrule.utils.HeightUtils;
 import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.utils.LogUtils;
+import com.vitec.task.smartrule.utils.OkHttpUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -62,6 +63,7 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
     private List<RulerCheckProject> projectList;
     private List<ChooseMeasureMsg> chooseMeasureMsgList;//所有item的数据集合，集合engineerlist模板和optionsList模板的信息
     private ChooseMeasureMsg chooseMeasureMsg;//一个item模板
+    private boolean hasUpdate = false;
 
 
     @Override
@@ -96,7 +98,7 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
         requestProjectData();
 //        String projectWhere = " where " + DataBaseParams.user_user_id + " = " + user.getUserID();
         projectList = new ArrayList<>();
-
+        projectList = OperateDbUtil.queryAllProjectOrderMember(getApplicationContext(), user.getUserID());
         fileOkHttpUtils = new FileOkHttpUtils();
 //        旧数据对象初始化
 //        初始化数据库helper
@@ -105,13 +107,13 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
         optionsList = dataDbHelper.queryOptionsAllDataFromSqlite("");
         engineerList = dataDbHelper.queryEnginDataFromSqlite("");
 //        如果engineers的个数为0，则说明数据库中没有数据，则向服务器发起请求
-        if (optionsList.size() == 0 || engineerList.size() == 0) {
+//        if (optionsList.size() == 0 || engineerList.size() == 0) {
             /**获取工程的Json字符串
              */
             Intent intent = new Intent(this, GetMudelIntentService.class);
             startService(intent);
 
-        }
+//        }
         initItemModel();
         projectAdapter = new ChooseMeasureProjectAdapter(this, this);
         lvChoose.setAdapter(projectAdapter);
@@ -138,10 +140,11 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void projectGroupEventCallBack(QueryProjectGroupMsgEvent event) {
-        LogUtils.show("projectGroupEventCallBack---接收到项目更新的返回");
+        LogUtils.show("projectGroupEventCallBack---接收到项目更新的返回:"+event.isSuccess());
         if (event.isSuccess()) {
-            String where = " where " + DataBaseParams.user_user_id + '=' + user.getUserID()+" ORDER BY id DESC";
-            List<RulerCheckProject> projectList = OperateDbUtil.queryProjectDataFromSqlite(getApplicationContext(), where);
+//            String where = " where " + DataBaseParams.user_user_id + '=' + user.getUserID()+" ORDER BY id DESC";
+          List<RulerCheckProject>  projectList = OperateDbUtil.queryAllProjectOrderMember(getApplicationContext(), user.getUserID());
+            hasUpdate = true;
             for (RulerCheckProject project : projectList) {
                 /************向服务器请求当前测量组的成员信息和单位工程信息*****************/
                 Bundle b = new Bundle();
@@ -346,16 +349,29 @@ public class ChooseMeasureMsgActivity extends BaseActivity implements View.OnCli
 
     @Override
     public List<RulerCheckProject> getCheckProjectList() {
-        if (projectList.size() == 0) {
-            String where = " where " + DataBaseParams.user_user_id + '=' + user.getUserID()+" ORDER BY id DESC";
-            projectList = OperateDbUtil.queryProjectDataFromSqlite(getApplicationContext(), where);
-
+        if (hasUpdate) {
+//            String where = " where " + DataBaseParams.user_user_id + '=' + user.getUserID()+" ORDER BY id DESC";
+            projectList = OperateDbUtil.queryAllProjectOrderMember(getApplicationContext(), user.getUserID());
+            hasUpdate = false;
         }
         return projectList;
+    }
+
+    /**
+     * 跳转页面后。结束改页面
+     */
+    @Override
+    public void finishActivity() {
+        this.finish();
     }
 
     @Override
     public void updateChooseMeasureMsgList(int index, ChooseMeasureMsg chooseMeasureMsg) {
         chooseMeasureMsgList.set(index, chooseMeasureMsg);
+    }
+
+    @Override
+    public void updateProjectList() {
+        projectList = OperateDbUtil.queryAllProjectOrderMember(getApplicationContext(), user.getUserID());
     }
 }

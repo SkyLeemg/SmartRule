@@ -133,7 +133,7 @@ public final class ViewfinderView extends View {
       // 绘制边角
       drawCorner(canvas, frame);
       //绘制提示信息
-      drawTextInfo(canvas, frame);
+//      drawTextInfo(canvas, frame);
       // Draw a red "laser scanner" line through the middle to show decoding is active
       drawLaserScanner(canvas, frame);
 

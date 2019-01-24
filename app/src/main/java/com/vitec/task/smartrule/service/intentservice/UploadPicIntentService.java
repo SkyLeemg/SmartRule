@@ -61,6 +61,7 @@ public class UploadPicIntentService extends IntentService {
         switch (flag) {
             /*****上传头像*****/
             case FLAG_UPLOAD_HEAD_IMG:
+//                String path = intent.getStringExtra(VALUE_IMG_PATH);
                 uploadHeadPic(path);
                 break;
 

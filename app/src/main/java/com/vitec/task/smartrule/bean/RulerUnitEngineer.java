@@ -77,8 +77,8 @@ public class RulerUnitEngineer implements Serializable {
                 ", project_id=" + project_id +
                 ", project_server_id=" + project_server_id +
                 ", location='" + location + '\'' +
-                ", createTime=" + createTime +
-                ", updateTime=" + updateTime +
+//                ", createTime=" + createTime +
+//                ", updateTime=" + updateTime +
                 '}';
     }
 

@@ -9,6 +9,7 @@ public class ProjectGroupAnyMsgEvent {
      * 4-删除单位工程
      * 5-删除成员
      * 6-删除测量组
+     * 7-更新单位工程名
      */
     private int requst_flag;//
     private boolean isSuccess;

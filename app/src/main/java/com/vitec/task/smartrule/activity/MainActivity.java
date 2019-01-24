@@ -101,6 +101,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
             startActivity(loginIntent);
             this.finish();
         }
+        /**
+         * 补上传服务启动
+         */
+        Intent replenishIntent = new Intent(getApplicationContext(), ReplenishDataToServerIntentService.class);
+        startService(replenishIntent);
     }
 
     @Override

@@ -32,25 +32,51 @@
         android:layout_marginTop="10dp"
         android:layout_below="@+id/view"
         android:paddingLeft="10dp"
+        android:layout_above="@+id/view2"
         ></ListView>
 
     <TextView
         android:id="@+id/tv_loading_tip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="正在搜索设备"
-        android:textColor="@color/white_bar_word_color"
+        android:text="正在搜索设备..."
+        android:textColor="@color/title_color"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/mkloader"
         />
     <com.tuyenmonkey.mkloader.MKLoader
         android:id="@+id/mkloader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/tv_loading_tip"
-        android:layout_centerHorizontal="true"
         app:mk_type="Worm"
-        app:mk_color="#aaa"
+        app:mk_color="@color/title_color"
+        android:layout_below="@+id/view"
+        android:layout_marginTop="30dp"
+        android:layout_centerHorizontal="true"
         />
+    <View
+        android:id="@+id/view2"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/color_gv_border"
+        android:layout_above="@+id/btn_cancel"
+        />
+    <Button
+        android:id="@+id/btn_cancel"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="#FFFFFF"
+        android:gravity="center"
+        android:text="取消"
+        android:textStyle="bold"
+        android:textColor="@color/color_word"
+        android:textSize="@dimen/text_size"
+        android:layout_alignParentBottom="true"
+        />
+
+
+
+
     <!--Sharingan
 TwinFishesSpinner
 ClassicSpinner

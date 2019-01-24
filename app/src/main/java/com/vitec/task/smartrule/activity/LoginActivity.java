@@ -136,8 +136,11 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
 
             case R.id.btn_login://登陆按钮
                 final String loginName = etUser.getText().toString().trim();
-                final String pwd = etPwd.getText().toString().trim();
+                final String pwd = etPwd.getText().toString();
                 if (loginName.equals("")) {
+                    if (etUser.getText().toString().length() > 3) {
+                        Toast.makeText(getApplicationContext(), "用户名不能是空格", Toast.LENGTH_SHORT).show();
+                    }
                     Toast.makeText(getApplicationContext(), "用户名不能为空", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -282,9 +285,9 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     protected void onStop() {
         super.onStop();
         LogUtils.show("登录界面---stop");
-//        if (isLoginSuccess) {
-//            this.finish();
-//        }
+        if (isLoginSuccess) {
+            this.finish();
+        }
     }
 
     @Override

@@ -103,12 +103,14 @@ public class BaseActivity extends FragmentActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
             // Android M Permission check
-            if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            boolean location = this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED;
+            LogUtils.show("基础Activity---------查看是否有定位权限："+location);
+            if (location) {
 
                 final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
                 builder.setTitle("请求位置权限");
-                builder.setMessage("该APP需要定位权限");
+                builder.setMessage("该APP连接靠尺需要定位权限");
                 builder.setPositiveButton(android.R.string.ok, null);
 
                 builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
@@ -130,7 +132,7 @@ public class BaseActivity extends FragmentActivity {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
                 builder.setTitle("请求读写权限");
-                builder.setMessage("该读写文件");
+                builder.setMessage("该APP导出测量文件需要读写权限");
                 builder.setPositiveButton(android.R.string.ok, null);
 
                 builder.setOnDismissListener(new DialogInterface.OnDismissListener() {

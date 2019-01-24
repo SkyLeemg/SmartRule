@@ -39,6 +39,7 @@ import com.vitec.task.smartrule.utils.OptionsMeasureUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class MeasureManagerAcitivty extends BaseFragmentActivity {
@@ -112,16 +113,17 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
             Log.e(TAG, "initData: 打印根据ID搜出来RulerOptions模板:" + optionsList.size() + ",内容：" + optionsList.toString());
             for (RulerOptions rulerOption : optionsList) {
                 RulerCheckOptions rulerCheckOption = new RulerCheckOptions();
-                rulerCheckOption.setCreateTime((int) System.currentTimeMillis());
+                rulerCheckOption.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
                 rulerCheckOption.setRulerCheck(rulerCheck);
                 rulerCheckOption.setRulerOptions(rulerOption);
                 rulerCheckOption.setUpload_flag(0);
+                rulerCheckOption.setUpdateTime(DateFormatUtil.transForMilliSecond(new Date()));
 //                rulerCheckOption.setFloorHeight(chooseFloorHeight);
                 List<OptionMeasure> measureList = OptionsMeasureUtils.getOptionMeasure(rulerOption.getMeasure());
                 if (measureList.size() > 0) {
                     for (OptionMeasure measure : measureList) {
                         rulerCheckOption.setFloorHeight(measure);
-                        if (measure.getId() == chooseFloorHeight.getId()) {
+                        if (measure.getId() == chooseFloorHeight.getId() || measure.getData().equals(chooseFloorHeight.getData())) {
                             break;
                         }
                     }
@@ -134,7 +136,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
             }
             if (optionsList.size() == 0) {
                 RulerCheckOptions rulerCheckOption = new RulerCheckOptions();
-                rulerCheckOption.setCreateTime((int) System.currentTimeMillis());
+                rulerCheckOption.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
                 rulerCheckOption.setRulerCheck(rulerCheck);
                 rulerCheckOption.setFloorHeight(chooseFloorHeight);
                 checkOptionsList.add(rulerCheckOption);
@@ -170,7 +172,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
 
             if (checkOptionsList.get(i).getRulerOptions().getType() == 1 || checkOptionsList.get(i).getRulerOptions().getType() == 2) {
                 optionsList.add(checkOptionsList.get(i));
-                LogUtils.show("initFragmentData----打印查看管控要点的值：" + optionsList.get(i));
+//                LogUtils.show("initFragmentData----打印查看管控要点的值：" + optionsList.get(i));
                 continue;
             }
 //            MeasureFragmentOthers fragment = new MeasureFragmentOthers();
@@ -247,7 +249,13 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
                 checkOption.setCreateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_create_time)));
                 checkOption.setUpdateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_update_time)));
                 checkOption.setId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id)));
-
+                //实测点数
+                checkOption.setMeasuredNum(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_measured_points)));
+                //合格点数
+                checkOption.setQualifiedNum(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_qualified_points)));
+                //合格率
+                checkOption.setQualifiedRate(cursor.getFloat(cursor.getColumnIndex(DataBaseParams.measure_option_percent_pass)));
+                //图片相关
                 checkOption.setImgPath(cursor.getString(cursor.getColumnIndex(DataBaseParams.measure_option_img_path)));
                 checkOption.setImgUpdateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_time)));
                 checkOption.setImg_upload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_option_img_upload_flag)));

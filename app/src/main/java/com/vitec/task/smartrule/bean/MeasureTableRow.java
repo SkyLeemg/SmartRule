@@ -1,5 +1,6 @@
 package com.vitec.task.smartrule.bean;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 
@@ -11,6 +12,8 @@ public class MeasureTableRow implements Serializable {
 
     private int id;
     private String optionName;
+    private int optionType;
+    private File logoFile;
     private String standard;
     private String checkMethod;
     private List<MeasureData> datalist;
@@ -82,14 +85,32 @@ public class MeasureTableRow implements Serializable {
         this.qualifiedRate = qualifiedRate;
     }
 
+    public int getOptionType() {
+        return optionType;
+    }
+
+    public void setOptionType(int optionType) {
+        this.optionType = optionType;
+    }
+
+    public File getLogoFile() {
+        return logoFile;
+    }
+
+    public void setLogoFile(File logoFile) {
+        this.logoFile = logoFile;
+    }
+
     @Override
     public String toString() {
         return "MeasureTableRow{" +
                 "id=" + id +
                 ", optionName='" + optionName + '\'' +
+                ", optionType=" + optionType +
+//                ", logoFile=" + logoFile.getPath() +
                 ", standard='" + standard + '\'' +
-                ", checkMethod='" + checkMethod + '\'' +
-                ", datalist=" + datalist +
+//                ", checkMethod='" + checkMethod + '\'' +
+//                ", datalist=" + datalist +
                 ", realMeasureNum=" + realMeasureNum +
                 ", qualifiedNum=" + qualifiedNum +
                 ", qualifiedRate='" + qualifiedRate + '\'' +

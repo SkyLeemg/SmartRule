@@ -106,7 +106,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
     private DisplayMeasureDataAdapter measureDataAdapter;
     private Bundle bundle;
     private int mState = UART_PROFILE_DISCONNECTED;
-    private TextToSpeechHelper mTextToSpeechHelper;
+//    private TextToSpeechHelper mTextToSpeechHelper;
     private ConnectDeviceService mService = null;
     private int currentDataNum = 0;
 
@@ -145,7 +145,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
     }
 
     private void initView() {
-        mTextToSpeechHelper = new TextToSpeechHelper(getActivity(),"");
+//        mTextToSpeechHelper = new TextToSpeechHelper(getActivity(),"");
         tvAddmPic = view.findViewById(R.id.tv_add_mpic);
         rlAddPic = view.findViewById(R.id.rl_add_pic);
 
@@ -228,6 +228,16 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
 
     @Override
     public List<RulerCheckOptions> getCheckOptions() {
+        for (int i=0;i<accessOptions.size();i++) {
+//            LogUtils.show("");
+            if (!(accessOptions.get(i).getServerId() > 0)) {
+                String where = " where " + DataBaseParams.measure_id + "=" + accessOptions.get(i).getId();
+                List<RulerCheckOptions> optionsList = OperateDbUtil.queryCheckOptionFromSqlite(getActivity(), accessOptions.get(i).getRulerCheck(), where);
+                if (optionsList.size() > 0) {
+                    accessOptions.set(i, optionsList.get(0));
+                }
+            }
+        }
         return accessOptions;
     }
 
@@ -501,7 +511,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(getActivity());
         bleDataDbHelper.updateMeasureOptonsToSqlite(useCheckOption);
         getActivity().unbindService(mServiceConnection);
-        mTextToSpeechHelper.stopSpeech();
+//        mTextToSpeechHelper.stopSpeech();
         EventBus.getDefault().unregister(this);
     }
 
@@ -519,7 +529,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                     public void run() {
                         String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                         Log.e(TAG, "广播收到了UART_CONNECT_MSG");
-                        mTextToSpeechHelper.speakChinese("蓝牙连接成功");
+//                        mTextToSpeechHelper.speakChinese("蓝牙连接成功");
                         mState = UART_PROFILE_CONNECTED;
                     }
                 });
@@ -535,7 +545,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener,IE
                         String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                         Log.e(TAG, "广播收到了UART_DISCONNECT_MSG");
                         mState = UART_PROFILE_DISCONNECTED;
-                        mTextToSpeechHelper.speakChinese("蓝牙连接断开");
+//                        mTextToSpeechHelper.speakChinese("蓝牙连接断开");
 //                        mService.connect();
 //                        mService.close();
                         //setUiState();

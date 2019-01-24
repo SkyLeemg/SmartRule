@@ -14,6 +14,7 @@ public class DataBaseParams {
     public static final String check_options = "check_options";
     public static final String upload_flag = "upload_flag";
     public static final String cid = "cid";
+    public static final String delete_flag = "delete_flag";
 
     /**
      * iot_ruler_ble_device的表名和列名
@@ -151,7 +152,7 @@ public class DataBaseParams {
     public static final String project_server_id = "project_server_id";
 
     /**
-     * iot_ruler_project_user  项目组的用户表
+     * iot_ruler_project_user  项目组的用户表- 项目组里的成员表
      */
     public static final String project_user_table_name = "iot_ruler_project_user";
 
@@ -161,6 +162,11 @@ public class DataBaseParams {
     public static final String iot_company_table_name = "iot_company";
     public static final String iot_company_content = "content";
     public static final String iot_company_title = "title";
+
+    /**
+     * iot_ruler_check_group 用户项目表，该用户所在的项目
+     */
+    public static final String iot_ruler_check_group_table_name = "iot_ruler_check_group";
 
 
 

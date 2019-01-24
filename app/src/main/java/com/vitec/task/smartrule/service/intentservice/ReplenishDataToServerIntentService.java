@@ -3,16 +3,21 @@ package com.vitec.task.smartrule.service.intentservice;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.OperationApplicationException;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.widget.LinearLayout;
 
 import com.vitec.task.smartrule.activity.MeasureRecordActivity;
 import com.vitec.task.smartrule.activity.WaitingMeasureActivity;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckOptions;
 import com.vitec.task.smartrule.bean.RulerCheckOptionsData;
+import com.vitec.task.smartrule.bean.RulerCheckProject;
+import com.vitec.task.smartrule.bean.User;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.OperateDbUtil;
+import com.vitec.task.smartrule.net.NetConstant;
 import com.vitec.task.smartrule.utils.LogUtils;
 
 import java.io.Serializable;
@@ -98,11 +103,11 @@ public class ReplenishDataToServerIntentService extends IntentService{
         }
 
         /*********************请求图纸上传失败的***************************/
-//        String imgWhere = " where " + DataBaseParams.measure_option_img_upload_flag + "= 0";
-//        List<RulerCheckOptions> imgOptions = OperateDbUtil.queryCheckOptionFromSqlite(getApplicationContext(), imgWhere);
-//        for (RulerCheckOptions options : imgOptions) {
-//            uploadOptionsPic(options);
-//        }
+        String imgWhere = " where " + DataBaseParams.measure_option_img_upload_flag + "= 0";
+        List<RulerCheckOptions> imgOptions = OperateDbUtil.queryCheckOptionFromSqlite(getApplicationContext(), imgWhere);
+        for (RulerCheckOptions options : imgOptions) {
+            uploadOptionsPic(options);
+        }
 
 
         /***************************请求之前删除失败的记录表和数据********************************/
@@ -136,6 +141,42 @@ public class ReplenishDataToServerIntentService extends IntentService{
             startService(serviceIntent);
             LogUtils.show("请求以前未结束测量的开始啦，。，。，。，。，。，。，。，。，。，。");
         }
+
+        /********************请求之前修改失败的记录表和数据**************************/
+        /**
+         * upload_flag为5的记录，代表之前用户在本地修改了的数据，但因为网络问题还没请求到服务器
+         */
+        String editcheckWhere = " where " + DataBaseParams.upload_flag + "= 5";
+        List<RulerCheck> editCheckList = bleDataDbHelper.queryRulerCheckTableDataFromSqlite(editcheckWhere);
+        if (editCheckList.size() > 0) {
+            LogUtils.show("补上传服务-----发型有修改了信息的rulercheck没有上传："+editCheckList.size());
+            for (int i = 0; i < editCheckList.size(); i++) {
+                Intent editintent = new Intent(getApplicationContext(),PerformMeasureNetIntentService.class);
+                editintent.putExtra(PerformMeasureNetIntentService.GET_FLAG_KEY, PerformMeasureNetIntentService.FLAG_UPDATE_RECORD);
+                editintent.putExtra(PerformMeasureNetIntentService.GET_CREATE_RULER_DATA_KEY, editCheckList.get(i));
+                startService(editintent);
+            }
+        }
+
+
+        /*************************请求创建记录表失败的部分*******************************/
+        String projectWhere = " where " + DataBaseParams.server_id + "=0";
+        List<RulerCheckProject> projectList = OperateDbUtil.queryProjectDataFromSqlite(getApplicationContext(), projectWhere);
+        if (projectList.size() > 0) {
+            for (RulerCheckProject project : projectList) {
+                Intent pintent = new Intent(getApplicationContext(), ProjectManageRequestIntentService.class);
+                Bundle bundle = new Bundle();
+                bundle.putString(DataBaseParams.check_project_name, project.getProjectName());
+                bundle.putString(DataBaseParams.user_user_id, String.valueOf(project.getUser().getUserID()));
+                bundle.putInt(DataBaseParams.measure_project_id, project.getId());
+//                bundle.putSerializable(NetConstant.group_project_list, project);
+                pintent.putExtra(ProjectManageRequestIntentService.REQUEST_FLAG, ProjectManageRequestIntentService.flag_group_create_project);
+                pintent.putExtra(ProjectManageRequestIntentService.key_get_value, bundle);
+                startService(pintent);
+            }
+            LogUtils.show("补上传服务-----有创建失败的测量组："+projectList.size());
+        }
+
     }
 
     /**
@@ -151,7 +192,13 @@ public class ReplenishDataToServerIntentService extends IntentService{
              uploadIntent.putExtra(UploadPicIntentService.UPLOAD_FLAG, UploadPicIntentService.FLAG_UPLOAD_OPTION_IMG);
              uploadIntent.putExtra(UploadPicIntentService.VALUE_IMG_PATH, options.getImgPath());
              uploadIntent.putExtra(UploadPicIntentService.VALUE_OPTION_LIST, server_id);
-             startService(uploadIntent);
+            Bundle bundle = new Bundle();
+            bundle.putString(NetConstant.upload_option_pic_check_options_list, server_id);
+            bundle.putString(NetConstant.upload_option_pic_number_list, String.valueOf(options.getImgNumber()));
+            uploadIntent.putExtra(UploadPicIntentService.VALUE_OPTION_BUNDLE, bundle);
+            startService(uploadIntent);
+
+
         }
     }
 }

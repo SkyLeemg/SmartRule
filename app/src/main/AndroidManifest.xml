@@ -101,7 +101,9 @@
         <!--新建测量组页面-->
         <activity android:name=".activity.CreateMeasureTeamActivity"/>
         <!--测量组管理页面-->
-        <activity android:name=".activity.MeasureTeamManagerActivity"/>
+        <activity android:name=".activity.MeasureTeamManagerActivity"
+            android:launchMode="singleTop"
+            />
         <!--添加团队成员页面-->
         <activity android:name=".activity.AddMemberActivity"/>
         <!--编辑项目信息页面-->

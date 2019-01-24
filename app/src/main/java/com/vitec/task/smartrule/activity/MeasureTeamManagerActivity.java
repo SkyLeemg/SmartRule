@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -117,14 +118,15 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
         if (bundle != null) {
             projectList.addAll((Collection<? extends RulerCheckProject>) bundle.getSerializable(DataBaseParams.check_project_name));
         } else {
-            String where = " where " + DataBaseParams.user_user_id + "=" + user.getUserID();
-            projectList = OperateDbUtil.queryProjectDataFromSqlite(getApplicationContext(), where);
+//            String where = " where " + DataBaseParams.user_user_id + "=" + user.getUserID();
+            projectList = OperateDbUtil.queryAllProjectOrderMember(getApplicationContext(), user.getUserID());
         }
         projectSet.addAll(projectList);
         LogUtils.show("查看初始化的项目：" + projectList.toString());
         cProject = projectList.get(0);
         tvFirstProjectName.setText(cProject.getProjectName());
         etProjectName.setText(cProject.getProjectName());
+        projectDataList = new ArrayList<>();
         //更新项目切换的数据源
         updateProjectViewData();
 
@@ -152,6 +154,7 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
         memberAdapter = new TeamMemberAdapter(this, memberList);
         memberAdapter.setProject(cProject);
         lvMen.setAdapter(memberAdapter);
+
         searchProjectUserFromSqlite();
 
 
@@ -160,6 +163,16 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
         unitAdapter = new GroupUnitAdapter(this, unitEngineerList);
         lvUnit.setAdapter(unitAdapter);
         searchUnitEngineerFromSqlite();
+
+        //点击单位工程的条目
+        lvUnit.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                unitAdapter.setClickIndex(i);
+                unitAdapter.setShowEditIndex(-1);
+                unitAdapter.notifyDataSetChanged();
+            }
+        });
 
     }
 
@@ -257,16 +270,16 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
      * 从数据库中搜索单位工程信息，并显示到界面
      */
     private void searchUnitEngineerFromSqlite() {
-        String unitWhere= " where " + DataBaseParams.project_server_id + " = " + cProject.getServer_id();
+        String unitWhere;
+        if (cProject.getServer_id() != 0) {
+            unitWhere = " where (" + DataBaseParams.project_server_id + " = " + cProject.getServer_id() + " or " + DataBaseParams.measure_project_id + " = " + cProject.getId()
+                    + ") and " + DataBaseParams.delete_flag + "=0";
+        } else {
+            unitWhere = " where (" + DataBaseParams.measure_project_id + " = " + cProject.getId() + ") and " + DataBaseParams.delete_flag + "=0";
+        }
         unitEngineerList.clear();
+        LogUtils.show("测量组页面----搜索单位工程-----，查看where语句：" + unitWhere);
         unitEngineerList = OperateDbUtil.queryUnitEngineerDataFromSqlite(getApplicationContext(), unitWhere);
-//        if (unitEngineerList.size() > 0) {
-//            for (int i = 0; i < unitEngineerList.size(); i++) {
-//                if (unitSet.add(unitEngineerList.get(i))) {
-//                    this.unitEngineerList.add(unitEngineerList.get(i));
-//                }
-//            }
-//        }
         unitAdapter.setUnitEngineerList(this.unitEngineerList);
         unitAdapter.notifyDataSetChanged();
         LogUtils.show("searchUnitEngineerFromSqlite---查看搜索到的单位工程信息：" + unitEngineerList);
@@ -299,6 +312,23 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
 //        }
 //        LogUtils.show("查看第一个人员："+memberList);
         updateMemberViewData();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Bundle bundle = intent.getExtras();
+        LogUtils.show("查看收到的bundle："+bundle.toString());
+        if (bundle != null) {
+            projectList.clear();
+            projectList.addAll((Collection<? extends RulerCheckProject>) bundle.getSerializable(DataBaseParams.check_project_name));
+            if (projectList.size() > 0) {
+                changeProject(projectList.get(0));
+                //更新项目切换的数据源
+                updateProjectViewData();
+            }
+
+        }
     }
 
     /**
@@ -369,15 +399,24 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
                     ProjectUser user = (ProjectUser) event.getObject();
                     //如果它删除的是自己，则退出测量组。并删除测量组
                    if (this.user.getUserID()==user.getUser_id()){
-                       String where = DataBaseParams.server_id + "=?";
-                       OperateDbUtil.delData(getApplicationContext(), DataBaseParams.check_project_table_name, where, new String[]{String.valueOf(cProject.getServer_id())});
+                       if (cProject.getServer_id() > 0) {
+                           String where = DataBaseParams.user_user_id + "=? and " + DataBaseParams.project_server_id + "=?";
+                           OperateDbUtil.delData(getApplicationContext(), DataBaseParams.project_user_table_name, where, new String[]{String.valueOf(user.getUser_id()), String.valueOf(cProject.getServer_id())});
+                       } else {
+                           String where = DataBaseParams.user_user_id + "=? and " + DataBaseParams.measure_project_id + "=?";
+                           OperateDbUtil.delData(getApplicationContext(), DataBaseParams.project_user_table_name, where, new String[]{String.valueOf(user.getUser_id()), String.valueOf(cProject.getId())});
+                       }
+                       Toast.makeText(getApplicationContext(),"您已退出"+cProject.getProjectName()+"测量组",Toast.LENGTH_SHORT).show();
                        projectList.remove(cProject);
                        if (projectList.size() == 0) {
                            startActivity(new Intent(this, CreateMeasureTeamActivity.class));
                            this.finish();
                        } else {
+                           LogUtils.show("删除成员-----切换到其他项目----");
                            changeProject(projectList.get(0));
+                           updateProjectViewData();
                        }
+                       LogUtils.show("删除成员----");
 
                    }else{
                        for (int i=0;i<memberList.size();i++) {
@@ -406,7 +445,24 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
                         startActivity(new Intent(this, CreateMeasureTeamActivity.class));
                         this.finish();
                     } else {
+//                        LogUtils.show("");
                         changeProject(projectList.get(0));
+                    }
+                    break;
+
+                    /*****************7-修改单位工程名*****************/
+                case 7:
+                    RulerUnitEngineer unitEngineer = (RulerUnitEngineer) event.getObject();
+                    for (int i=0;i<unitEngineerList.size();i++) {
+                        if (unitEngineer.getServer_id() == unitEngineerList.get(i).getServer_id()) {
+                            unitEngineerList.get(i).setLocation(unitEngineer.getLocation());
+                            unitAdapter.setUnitEngineerList(unitEngineerList);
+                            unitAdapter.setShowEditIndex(-1);
+                            unitAdapter.setClickIndex(-1);
+                            unitAdapter.setShowDel(true);
+                            unitAdapter.notifyDataSetChanged();
+                            Toast.makeText(getApplicationContext(),"修改成功",Toast.LENGTH_SHORT).show();
+                        }
                     }
                     break;
             }
@@ -474,7 +530,9 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
                         startService(addUnitIntent);
 
                     }
-
+                    unitAdapter.setClickIndex(-1);
+                    unitAdapter.setShowEditIndex(-1);
+                    unitAdapter.notifyDataSetChanged();
 
                 }
                 break;
@@ -494,6 +552,7 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
              */
             case R.id.img_qr_code:
                 LogUtils.show("查看当前测量组:"+cProject);
+
                 QrCodeDialog dialog = new QrCodeDialog(MeasureTeamManagerActivity.this,R.style.BottomDialog,cProject.getQrCode(), ScreenUtils.getScreenWidth(this));
                 dialog.show();
                 break;
@@ -541,7 +600,7 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
     }
 
     private void updateProjectViewData() {
-        projectDataList = new ArrayList<>();
+        projectDataList.clear();
         for (RulerCheckProject project : projectList) {
             SelectorBottomDialog.DataRes dataRes = new SelectorBottomDialog.DataRes();
             dataRes.setId(project.getId());

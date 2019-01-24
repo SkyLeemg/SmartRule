@@ -69,7 +69,7 @@ public class BottomSelectorDialog extends Dialog implements View.OnClickListener
         lp.width = WindowManager.LayoutParams.MATCH_PARENT;
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
 //        lp.x = 0;
-        lp.y = 20;
+//        lp.y = 20;
         //设置Dialog距离底部的距离
         // 将属性设置给窗体
         dialogWindow.setAttributes(lp);

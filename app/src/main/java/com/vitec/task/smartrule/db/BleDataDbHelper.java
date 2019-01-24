@@ -65,6 +65,7 @@ public class BleDataDbHelper {
         if (cursor.moveToFirst()) {
             do {
                 RulerEngineer engineer = new RulerEngineer();
+                engineer.setId(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_id)));
                 engineer.setServerID(cursor.getInt(cursor.getColumnIndex(DataBaseParams.server_id)));
                 engineer.setEngineerName(cursor.getString(cursor.getColumnIndex(DataBaseParams.enginer_name)));
                 engineer.setChooseOptions(cursor.getString(cursor.getColumnIndex(DataBaseParams.enineer_options_choose)));
@@ -75,13 +76,15 @@ public class BleDataDbHelper {
                 for (int i = 0; i < options_id.length; i++) {
                     whereSb.append(DataBaseParams.server_id);
                     whereSb.append(" = ");
+                    whereSb.append(options_id[i]);
                     if (i < (options_id.length - 1)) {
                         whereSb.append(" or ");
                     }
-
                 }
+
 //                LogUtils.show("在查询所有的工程模板中查看查询管控要点模板的where语句：" + whereSb.toString());
-                List<RulerOptions> optionsList = queryOptionsAllDataFromSqlite(where);
+                List<RulerOptions> optionsList = queryOptionsAllDataFromSqlite(whereSb.toString());
+//                LogUtils.show("打印查看工程名：" + engineer.getEngineerName() + "----工程ID：" + engineer.getId()+"-搜索的条件：" + whereSb.toString() + "--查看对应的管控要点：" + optionsList);
                 engineer.setOptionsList(optionsList);
                 engineerList.add(engineer);
             } while (cursor.moveToNext());
@@ -114,7 +117,7 @@ public class BleDataDbHelper {
                 optionsList.add(option);
             } while (cursor.moveToNext());
         }
-        Log.e(TAG, "queryOptionsAllDataFromSqlite: 查看本地数据库中查询到的所有管控要点：\n"+optionsList.toString() );
+//        LogUtils.show( "queryOptionsAllDataFromSqlite: 查看本地数据库中查询到的所有管控要点：\n"+optionsList.toString() );
         return optionsList;
     }
 
@@ -141,11 +144,22 @@ public class BleDataDbHelper {
                 rulerCheck.setUpload_flag(cursor.getInt(cursor.getColumnIndex(DataBaseParams.upload_flag)));
                 rulerCheck.setStatus(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_is_finish)));
 //                获取项目组
-                String projectWhere = " where " + DataBaseParams.measure_id + "=" + cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_project_id)) +
-                        " or " + DataBaseParams.server_id + "=" + cursor.getInt(cursor.getColumnIndex(DataBaseParams.project_server_id));
+                String projectWhere;
+                int project_server_id = cursor.getInt(cursor.getColumnIndex(DataBaseParams.project_server_id));
+                if (project_server_id != 0) {
+                    projectWhere = " where "  + DataBaseParams.server_id + "=" + project_server_id;
+                } else {
+                    projectWhere = " where " + DataBaseParams.measure_id + "=" + cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_project_id));
+                }
                 List<RulerCheckProject> projectList = OperateDbUtil.queryProjectDataFromSqlite(context, projectWhere);
                 if (projectList.size() > 0) {
-                    rulerCheck.setProject(projectList.get(0));
+                    for (RulerCheckProject project : projectList) {
+                        rulerCheck.setProject(project);
+                        if (project.getServer_id() == cursor.getInt(cursor.getColumnIndex(DataBaseParams.project_server_id))) {
+                            break;
+                        }
+                    }
+
                 } else {
                     rulerCheck.setProject(new RulerCheckProject());
                 }

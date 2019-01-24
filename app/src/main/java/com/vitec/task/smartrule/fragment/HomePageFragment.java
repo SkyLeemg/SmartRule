@@ -52,6 +52,7 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     //扫描成功返回码
     private int RESULT_OK = 0xA1;
     private boolean isCurrentPage = false;
+    private boolean isRegister = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -155,7 +156,11 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                 /******打开扫一扫******/
             case R.id.img_scan_qr:
                 //打开二维码扫描界面
-                EventBus.getDefault().register(this);
+                if (!isRegister) {
+                    EventBus.getDefault().register(this);
+                    isRegister = true;
+                }
+
                 Intent arIntent = new Intent(getActivity(), CaptureActivity.class);
                 startActivityForResult(arIntent,REQUEST_CODE);
                 break;
@@ -171,7 +176,10 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
                 Toast.makeText(getContext(),event.getMsg(),Toast.LENGTH_SHORT).show();
             }
         }
-        EventBus.getDefault().unregister(this);
+        if (isRegister) {
+            EventBus.getDefault().unregister(this);
+        }
+
     }
 
 
@@ -181,8 +189,8 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
     private int queryProjectGroupData() {
         LogUtils.show("首页-------收到更新测量组消息；");
         User user = OperateDbUtil.getUser(getContext());
-        String where = " where " + DataBaseParams.user_user_id + '=' + user.getUserID()+" ORDER BY id DESC";
-        List<RulerCheckProject> projectList = OperateDbUtil.queryProjectDataFromSqlite(getContext(), where);
+//        String where = " where " + DataBaseParams.user_user_id + '=' + user.getUserID()+" ORDER BY id DESC";
+        List<RulerCheckProject> projectList = OperateDbUtil.queryAllProjectOrderMember(getContext(),user.getUserID());
         if (isCurrentPage && projectList.size() > 0) {
             Bundle bundle = new Bundle();
             bundle.putSerializable(DataBaseParams.check_project_name, (Serializable) projectList);
@@ -202,20 +210,25 @@ public class HomePageFragment extends Fragment implements View.OnClickListener {
             Bundle bundle = data.getExtras();
             String scanResult = bundle.getString(CaptureActivity.INTENT_EXTRA_KEY_QR_SCAN);
             //http://iot-test.vkforest.com/api/ruler/addGroupMemberByQRCode?project_id=25
-            User user = OperateDbUtil.getUser(getContext());
-            StringBuffer sb = new StringBuffer();
-            sb.append(scanResult);
-            sb.append("&");
-            sb.append(DataBaseParams.user_user_id);
-            sb.append("=");
-            sb.append(user.getUserID());
-            LogUtils.show("打印扫码出来的字符串:" + sb.toString());
-            Bundle bundle1 = new Bundle();
-            bundle1.putString(DataBaseParams.check_project_qrcode, sb.toString());
-            Intent enterIntent = new Intent(getActivity(), ProjectManageRequestIntentService.class);
-            enterIntent.putExtra(ProjectManageRequestIntentService.key_get_value, bundle1);
-            enterIntent.putExtra(ProjectManageRequestIntentService.REQUEST_FLAG, ProjectManageRequestIntentService.flag_group_scan_qr_enter_project);
-            getActivity().startService(enterIntent);
+            if (scanResult.contains("http://") && scanResult.contains("project_id")) {
+                User user = OperateDbUtil.getUser(getContext());
+                StringBuffer sb = new StringBuffer();
+                sb.append(scanResult);
+                sb.append("&");
+                sb.append(DataBaseParams.user_user_id);
+                sb.append("=");
+                sb.append(user.getUserID());
+                LogUtils.show("打印扫码出来的字符串:" + sb.toString());
+                Bundle bundle1 = new Bundle();
+                bundle1.putString(DataBaseParams.check_project_qrcode, sb.toString());
+                Intent enterIntent = new Intent(getActivity(), ProjectManageRequestIntentService.class);
+                enterIntent.putExtra(ProjectManageRequestIntentService.key_get_value, bundle1);
+                enterIntent.putExtra(ProjectManageRequestIntentService.REQUEST_FLAG, ProjectManageRequestIntentService.flag_group_scan_qr_enter_project);
+                getActivity().startService(enterIntent);
+            } else {
+                Toast.makeText(getContext(),"进组失败",Toast.LENGTH_SHORT).show();
+            }
+
         }
     }
 }

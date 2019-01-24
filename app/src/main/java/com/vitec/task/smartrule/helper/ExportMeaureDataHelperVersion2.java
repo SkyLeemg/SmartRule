@@ -1,9 +1,13 @@
 package com.vitec.task.smartrule.helper;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
 
+import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.MeasureData;
 import com.vitec.task.smartrule.bean.MeasureTable;
 import com.vitec.task.smartrule.bean.MeasureTableRow;
@@ -50,7 +54,9 @@ public class ExportMeaureDataHelperVersion2 {
     private WritableFont contentFont;
     private WritableCellFormat contentFormat;
     public static final String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
-//    public static final String path = Environment.getExternalStorageDirectory() + "/excel";
+    private WritableFont optionTitleFont;
+    private WritableCellFormat optionsTitleFormat;
+    //    public static final String path = Environment.getExternalStorageDirectory() + "/excel";
 
     public ExportMeaureDataHelperVersion2(Context context, String fileName) {
         createExcelFile(context,fileName);
@@ -108,6 +114,20 @@ public class ExportMeaureDataHelperVersion2 {
             titleFormat.setVerticalAlignment(VerticalAlignment.CENTRE);
 //            设置边框线条
             titleFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
+
+            /***
+             * 管控要点标题
+             */
+
+            optionTitleFont = new WritableFont(WritableFont.ARIAL, 15, WritableFont.NO_BOLD);
+            optionsTitleFormat = new WritableCellFormat(optionTitleFont);
+//            设置格式为居中
+            optionsTitleFormat.setAlignment(Alignment.LEFT);
+            optionsTitleFormat.setVerticalAlignment(VerticalAlignment.CENTRE);
+//            设置边框线条
+            optionsTitleFormat.setBorder(Border.TOP, BorderLineStyle.THIN);
+            optionsTitleFormat.setBorder(Border.RIGHT, BorderLineStyle.THIN);
+            optionsTitleFormat.setBorder(Border.BOTTOM, BorderLineStyle.THIN);
 
             /**
              * 表格的标题用的格式，
@@ -208,20 +228,32 @@ public class ExportMeaureDataHelperVersion2 {
             /**
              * 6.开始写入图片：
              */
-            //设置图片的单元格
-            mWritableSheet.mergeCells(0, rowCucor, 9, (rowCucor+27));
-            File imgFile = new File(measureTable.getPicPath());
-            if (!imgFile.exists()) {
-                try {
-                    imgFile.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            WritableImage image = new WritableImage(1, rowCucor, 8,rowCucor+23,imgFile);
-            mWritableSheet.addImage(image);
 
-            rowCucor += 28;
+            if (measureTable.getPicPath() != null && !measureTable.getPicPath().equals("")) {
+                //设置图片的单元格
+                mWritableSheet.mergeCells(0, rowCucor, 9, (rowCucor + 27));
+                File imgFile = new File(measureTable.getPicPath());
+                if (!imgFile.exists()) {
+                    try {
+                        imgFile.createNewFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getPath());
+                double width = bitmap.getWidth();
+                double height = bitmap.getHeight();
+                double imgW = (width / height) * 27 / 3.8;
+                double startX = (9 - imgW) / 2;
+                WritableImage image = new WritableImage(startX, rowCucor+0.5, imgW, 27, imgFile);
+                mWritableSheet.addImage(image);
+                rowCucor += 28;
+            } else {
+                //设置图片的单元格
+                mWritableSheet.mergeCells(0, rowCucor, 9, rowCucor);
+                rowCucor++;
+            }
+
             /*======================图片写入完成===============================*/
             /**
              * 7.循环写入管控要点
@@ -229,11 +261,47 @@ public class ExportMeaureDataHelperVersion2 {
             List<MeasureTableRow> rowList = measureTable.getRowList();
             for (int i=0;i<rowList.size();i++) {
                 MeasureTableRow row = rowList.get(i);
-                //标题: 垂直度
-                mWritableSheet.mergeCells(0, rowCucor, 9, rowCucor);
-                Label label11 = new Label(0, rowCucor, rowList.get(i).getOptionName(),titleFormat);
-                mWritableSheet.addCell(label11);
+                if (row.getOptionType() >2) {
+                    continue;
+                }
                 rowCucor++;
+//                mWritableSheet.mergeCells(0, rowCucor, 9, rowCucor);
+//                LogUtils.show("导出文件工具类---查看logo图片路径：" + row.getLogoFile().getPath());
+//                LogUtils.show("导出文件工具类---查看文件名：" + row.getOptionName());
+
+                //标题: 垂直度
+//                Label label11 = new Label(1, rowCucor, row.getOptionName()+"",contentFormat);
+//                mWritableSheet.addCell(label11);
+//                mWritableSheet.setRowView(rowCucor,500);
+//                LogUtils.show("导出文件工具类---打印当前信息："+row.toString());
+//
+//                File file = row.getLogoFile();
+//                LogUtils.show("打印文件相关信息-----是否存在："+file.exists());
+//                WritableImage image = new WritableImage(0, rowCucor, 1, rowCucor, row.getLogoFile());
+//
+//                mWritableSheet.addImage(image);
+//                rowCucor++;
+                File file = row.getLogoFile();
+                if (file != null) {
+                    mWritableSheet.mergeCells(0, rowCucor, 0, rowCucor+1);
+                    LogUtils.show("导出文件---查看logo文件是否存在："+file.exists()+",查看路径："+file.getPath());
+                    WritableImage writableImage = new WritableImage(0.3, rowCucor, 0.6, 2, file);
+                    WritableCellFormat  optionsTitleFormat = new WritableCellFormat(optionTitleFont);
+//            设置边框线条
+                    optionsTitleFormat.setBorder(Border.TOP, BorderLineStyle.THIN);
+                    optionsTitleFormat.setBorder(Border.LEFT, BorderLineStyle.THIN);
+                    optionsTitleFormat.setBorder(Border.BOTTOM, BorderLineStyle.THIN);
+                    Label lab = new Label(0, rowCucor, "",optionsTitleFormat);
+                    mWritableSheet.addCell(lab);
+                    mWritableSheet.addImage(writableImage);
+                }
+
+
+                mWritableSheet.mergeCells(1, rowCucor, 9, rowCucor+1);
+                Label tL = new Label(1, rowCucor, row.getOptionName(), optionsTitleFormat);
+                mWritableSheet.addCell(tL);
+//                mWritableSheet.setRowView(rowCucor, 500);
+                rowCucor+=2;
 
                 //统计行,合并单元格
                 mWritableSheet.mergeCells(0, rowCucor, 1, rowCucor);//检查点数

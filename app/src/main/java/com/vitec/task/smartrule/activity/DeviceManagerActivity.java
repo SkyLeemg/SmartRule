@@ -1,6 +1,7 @@
 package com.vitec.task.smartrule.activity;
 
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentValues;
@@ -69,6 +70,7 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
 
     private ConnectDeviceService mService;
     private ConnectionService connectionService;
+    private BluetoothAdapter bluetoothAdapter;
 
 
     @Override
@@ -139,6 +141,7 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
                         serviceConnecteHelper = new ServiceConnecteHelper(getApplicationContext(), rules.get(i).getBleMac());
                     }
                 } else {
+
                     mDialog = new ConnectDialog(DeviceManagerActivity.this,DeviceManagerActivity.this);
                     mDialog.show();
                 }
@@ -146,8 +149,41 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
             }
         });
 
+        /*******判断蓝牙是否连接********/
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter == null) {
+            Toast.makeText(this,"本机未能找到蓝牙功能",Toast.LENGTH_SHORT).show();
+        }
+        //判断蓝牙是否打开
+        if (!bluetoothAdapter.isEnabled()) {
+            AlertDialog dialog = new AlertDialog.Builder(this).setTitle("提示")
+                    .setMessage("是否打开蓝牙？")
+                    .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            Intent mIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                            startActivityForResult(mIntent, 1);
+                        }
+                    })
+                    .setNegativeButton("取消",null)
+                    .create();
+            dialog.show();
+        }
+
+
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (mDialog != null) {
+            if (mDialog.isShowing()) {
+                mDialog.dismiss();
+            }
+            mDialog.unBindConnectService();
+        }
+
+    }
 
     private ServiceConnection mServiceConnection=new ServiceConnection() {
         //        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)

@@ -21,6 +21,7 @@ public class ServiceConnecteHelper {
     private ConnectDeviceService mService = null;
     private String macAddress;
     private IDialogCommunicableWithDevice communicable;
+    private boolean isbound = false;
 
     public ServiceConnecteHelper(Context context,String macAddress) {
         mContext = context;
@@ -44,8 +45,8 @@ public class ServiceConnecteHelper {
 
     public void service_init() {
         Intent bindIntent = new Intent(mContext, ConnectDeviceService.class);
-        boolean isSuccess=mContext.bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-        Log.e(TAG, "service_init: 查看是发绑定成功："+isSuccess );
+        isbound=mContext.bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        Log.e(TAG, "service_init: 查看是发绑定成功："+isbound );
         ConnectDeviceService.startDeviceService(mContext.getApplicationContext());
     }
 
@@ -74,6 +75,10 @@ public class ServiceConnecteHelper {
 
 
     public void stopServiceConnection() {
-        mContext.unbindService(mServiceConnection);
+        if (isbound) {
+            mContext.unbindService(mServiceConnection);
+            isbound = false;
+        }
+
     }
 }

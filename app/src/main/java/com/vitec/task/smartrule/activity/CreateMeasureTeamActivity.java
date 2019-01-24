@@ -69,7 +69,9 @@ public class CreateMeasureTeamActivity extends BaseActivity implements View.OnCl
             }
             Intent intent = new Intent(this, MeasureTeamManagerActivity.class);
             intent.putExtras(bundle);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
+            this.finish();
             mkLoader.setVisibility(View.GONE);
         } else {
             mkLoader.setVisibility(View.GONE);

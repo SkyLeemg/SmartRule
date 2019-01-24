@@ -100,10 +100,10 @@ public class RulerOptions implements Serializable{
                 ", serverID=" + serverID +
                 ", optionsName='" + optionsName + '\'' +
                 ", Standard='" + Standard + '\'' +
-                ", methods='" + methods + '\'' +
+//                ", methods='" + methods + '\'' +
                 ", type=" + type +
-                ", createTime=" + createTime +
-                ", updateTime=" + updateTime +
+//                ", createTime=" + createTime +
+//                ", updateTime=" + updateTime +
                 ", measure='" + measure + '\'' +
                 '}';
     }

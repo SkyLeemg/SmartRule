@@ -23,11 +23,13 @@ import com.vitec.task.smartrule.activity.MeasureManagerAcitivty;
 import com.vitec.task.smartrule.bean.ChooseMeasureMsg;
 import com.vitec.task.smartrule.bean.MeasureData;
 import com.vitec.task.smartrule.bean.OptionMeasure;
+import com.vitec.task.smartrule.bean.ProjectUser;
 import com.vitec.task.smartrule.bean.RulerCheck;
 import com.vitec.task.smartrule.bean.RulerCheckProject;
 import com.vitec.task.smartrule.bean.RulerEngineer;
 import com.vitec.task.smartrule.bean.RulerOptions;
 import com.vitec.task.smartrule.bean.RulerUnitEngineer;
+import com.vitec.task.smartrule.bean.User;
 import com.vitec.task.smartrule.db.BleDataDbHelper;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.interfaces.IChooseGetter;
@@ -120,13 +122,18 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
 //            checkFloorList.add(checkList.get(i).getCheckFloor());
 ////            projectNameList.add(checkList.get(i).getProjectName());
 //        }
-        for (RulerCheckProject project : projectList) {
-            projectNameList.add(project.getProjectName());
-        }
+       initProjectName();
 
 //        projectNameAdapter = new ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, projectNameList);
 //        checkFloorAdapter = new ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, checkFloorList);
 
+    }
+
+    private void initProjectName() {
+        projectList = getter.getCheckProjectList();
+        for (RulerCheckProject project : projectList) {
+            projectNameList.add(project.getProjectName());
+        }
     }
 
 
@@ -173,6 +180,9 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
             @Override
             public void onClick(View view) {
                 final BottomSelectorAndInputDialog inputDialog = new BottomSelectorAndInputDialog(context, R.style.BottomDialog);
+                if (projectNameList.size() == 0) {
+                    initProjectName();
+                }
                 inputDialog.setDatalist(projectNameList);
                 inputDialog.setSelectorResultCallBack(new ISelectorResultCallBack() {
                     @Override
@@ -271,6 +281,12 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                                     }
                                 }
 
+                                if (!floorHeightDatalist.contains(holder.tvFloorHeight.getText().toString())) {
+                                    chooseIndex = -2;
+                                    holder.tvFloorHeight.setText("请选择  >");
+                                    holder.tvFloorHeight.setTextColor(Color.rgb(201,201,201));
+                                }
+
                             } else {
                                 /*********小于0说明是新建的***********/
                                 chooseEngineerName = item;
@@ -318,7 +334,7 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
 //                datalist.add(context.getString(R.string.floor_height_1));
 //                datalist.add(context.getString(R.string.floor_height_2));
                 selectorDialog.setDatalist(floorHeightDatalist);
-                selectorDialog.show();
+
                 selectorDialog.setSelectorResultCallBack(new ISelectorResultCallBack() {
                     @Override
                     public void onSelectCallBack(String item, int index) {
@@ -328,6 +344,7 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                         selectorDialog.dismiss();
                     }
                 });
+                selectorDialog.show();
 
             }
         });
@@ -393,6 +410,14 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                         Toast.makeText(context, "信息填写不完整", Toast.LENGTH_SHORT).show();
                         return;
                     }
+                    if (holder.sencondPosition.getText().toString().trim().equals("")) {
+                        if (holder.sencondPosition.getText().toString().length() > 0) {
+                            Toast.makeText(context, "具体位置不能为是空格",Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(context, "具体位置不能为空",Toast.LENGTH_SHORT).show();
+                        }
+                        return;
+                    }
 
 //                    无则说明是需要新添加的,把数据添加到对象中
                     Log.e("aaa", "onClick: 新添加的,项目名："+ holder.autoTvProjectName.getText().toString().trim()+
@@ -430,6 +455,7 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                     rulerCheck.setUser(chooseMeasureMsgList.get(i).getUser());
                     rulerCheck.setCreateDate(String.valueOf(DateFormatUtil.getDate()));
                     rulerCheck.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
+                    rulerCheck.setUpdateTime(DateFormatUtil.transForMilliSecond(new Date()));
 //                    LogUtils.show("保存下来的createtime时间戳："+DateFormatUtil.transForMilliSecond(new Date()));
                     rulerCheck.setServerId(0);
                     rulerCheck.setUpload_flag(0);
@@ -446,7 +472,7 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                         }
                     }
 //                   把数据更新到iot_ruler_check表格中,返回表格的表头ID
-                    Log.e("aaa", "onClick: 查看adapter这里收到的rulerCheck:"+rulerCheck.toString() );
+//                    Log.e("aaa", "onClick: 查看adapter这里收到的rulerCheck:"+rulerCheck.toString() );
                     int checkid = OperateDbUtil.addMeasureDataToSqlite(context, rulerCheck);
                     rulerCheck.setId(checkid);
                     //新添加的需要更新数据，做备份，测量页面返回时会用到。同时将此item的数据更新，返回到此界面时需要记录数据
@@ -473,7 +499,9 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startIntent.putExtra("projectMsg", rulerCheck);
                 startIntent.putExtra("floor_height", (Serializable) chooseM);
-                Log.e("chakabiaozhi", "onClick: 查看准备发给另外一个界面的数据信息："+rulerCheck.toString() );
+                getter.finishActivity();
+//                Log.e("chakabiaozhi", "onClick: 查看准备发给另外一个界面的数据信息："+rulerCheck.toString() );
+
                 context.startActivity(startIntent);
             }
         });
@@ -496,6 +524,7 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
         unit.setUpdateTime(DateFormatUtil.transForMilliSecond(new Date()));
         unit.setServer_id(0);
         int index = OperateDbUtil.addUnitPositionDataToSqlite(context, unit);
+        LogUtils.show("测量选择页面----查看新建单位工程是否成功："+index);
         unit.setId(index);
         return unit;
     }
@@ -514,6 +543,19 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
         project.setUser(OperateDbUtil.getUser(context));
         int index = OperateDbUtil.addProjectNameDataToSqlite(context, project);
         project.setId(index);
+        //还要在成员表中添加一条数据
+        ProjectUser projectUser = new ProjectUser();
+        User user = OperateDbUtil.getUser(context);
+        projectUser.setUser_id(user.getUserID());
+        projectUser.setUserName(user.getUserName());
+        projectUser.setcId(user.getChildId());
+        projectUser.setMobile(user.getMobile());
+        projectUser.setProjectId(project.getId());
+        projectUser.setProjectServerId(project.getServer_id());
+        int u_result = OperateDbUtil.addProjectUserToSqlite(context, projectUser);
+        projectUser.setId(u_result);
+
+        LogUtils.show("测量选择页面----查看新建项目名是否成功：" + index + "------查看成员表是否添加成功：" + u_result);
         return project;
     }
 
@@ -547,6 +589,15 @@ public class ChooseMeasureProjectAdapter extends BaseAdapter {
      */
     private List<String> getUnitData(RulerCheckProject project) {
         List<RulerUnitEngineer> unitEngineerList = project.getUnitList();
+        if (unitEngineerList.size() == 0) {
+            String where = " where " + DataBaseParams.project_server_id + "=" + project.getServer_id() + " and " + DataBaseParams.delete_flag + "=0";
+            unitEngineerList = OperateDbUtil.queryUnitEngineerDataFromSqlite(context, where);
+            if (unitEngineerList.size() > 0) {
+                getter.updateProjectList();
+                initProjectName();
+            }
+
+        }
         List<String> unitNameList = new ArrayList<>();
         for (RulerUnitEngineer unit : unitEngineerList) {
             unitNameList.add(unit.getLocation());

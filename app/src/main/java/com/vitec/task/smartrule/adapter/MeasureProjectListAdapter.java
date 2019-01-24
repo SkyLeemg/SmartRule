@@ -116,10 +116,17 @@ public class MeasureProjectListAdapter extends BaseAdapter {
         }
 
         String endTime = "";
+        StringBuffer time = new StringBuffer();
+        time.append("检查时间：");
+        time.append(startTime);
         if (rulerCheckList.get(i).getUpdateTime() != 0) {
-            endTime = DateFormatUtil.stampToDateString(rulerCheckList.get(i).getUpdateTime());
+            endTime = DateFormatUtil.stampToDateString(rulerCheckList.get(i).getUpdateTime(),"dd HH:mm");
+            if (!endTime.equals("")) {
+                time.append(" - ");
+                time.append(endTime);
+            }
         }
-        holder.tvCheckTime.setText("检查时间："+startTime+" - "+endTime);
+        holder.tvCheckTime.setText(time.toString());
         if (current_id < 0) {
             holder.tvProjectStatus.setVisibility(View.GONE);
         } else if (current_id == 0) {

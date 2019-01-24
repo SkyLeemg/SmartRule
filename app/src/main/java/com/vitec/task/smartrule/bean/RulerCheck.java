@@ -120,23 +120,6 @@ public class RulerCheck implements Serializable{
         this.unitEngineer = unitEngineer;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        RulerCheck that = (RulerCheck) o;
-        return id == that.id &&
-                createTime == that.createTime &&
-                updateTime == that.updateTime &&
-                serverId == that.serverId &&
-                upload_flag == that.upload_flag &&
-                status == that.status &&
-                Objects.equals(checkFloor, that.checkFloor) &&
-                Objects.equals(engineer, that.engineer) &&
-                Objects.equals(user, that.user) &&
-                Objects.equals(createDate, that.createDate);
-    }
-
 
     @Override
     public String toString() {
@@ -151,17 +134,27 @@ public class RulerCheck implements Serializable{
                 ", upload_flag=" + upload_flag +
                 ", status=" + status +
                 "\n"+
-//                ", project=" + project +
-//                "\n"+
-//                ", unitEngineer=" + unitEngineer +
-//                "\n"+
-//                ", engineer=" + engineer +
+                ", project=" + project +
+                "\n"+
+                ", unitEngineer=" + unitEngineer +
+                "\n"+
+                ", engineer=" + engineer +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RulerCheck that = (RulerCheck) o;
+        return id == that.id &&
+                serverId == that.serverId
+               ;
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(id,  checkFloor, engineer, user, createTime, updateTime, createDate, serverId, upload_flag, status);
+        return Objects.hash(id, serverId);
     }
 }

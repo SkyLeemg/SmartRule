@@ -74,8 +74,9 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
             dir.mkdir();
         }
         File[] files =  dir.listFiles();
+        int i = files.length-1;
         if (files != null && files.length > 0) {
-            for (int i = 0; i < files.length; i++) {
+            for (; i > 0; i--) {
                 LogUtils.show("打印查看文件路径：" + files[i].getPath());
                 LogUtils.show("打印查看当前文件：" + i + ",文件名：" + files[i].getName());
                 if (files[i].getName().endsWith(".xls")) {
@@ -206,6 +207,7 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
                             tip.setMessage("删除成功");
                             tip.setNegativeButton("知道了", null);
                             tip.show();
+                            rlSelectable.setVisibility(View.GONE);
                         } else {
                             AlertDialog.Builder tip = new AlertDialog.Builder(MeasureFileActivity.this);
                             tip.setMessage("删除失败");

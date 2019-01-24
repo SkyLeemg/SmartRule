@@ -61,10 +61,10 @@ public class NetConstant {
 
 
     //获取所有工程信息的get请求地址
-    public static final String getEngineerInfoUrl = "http://iot.vkforest.com/api/ruler/showEngineerInfo";
+    public static final String getEngineerInfoUrl = "/api/ruler/showEngineerInfo";
 
     //    获取 工程id为1的所有管控要点
-    public static final String getOptionInfoUrl = "http://iot.vkforest.com/api/ruler/showOptionsInfo";
+    public static final String getOptionInfoUrl = "/api/ruler/showOptionsInfo";
 
     /**
      * 很多网络请求都需要用到userid和wid

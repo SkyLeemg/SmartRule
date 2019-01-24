@@ -12,6 +12,7 @@ public class TextToSpeechHelper {
     private TextToSpeech mCnTextToSpeech;
     private Context mContext;
     private final String TAG = "TextToSpeechHelper";
+    private String lastContent;
 
     public TextToSpeechHelper(Context mContext) {
         this.mContext = mContext;
@@ -44,7 +45,7 @@ public class TextToSpeechHelper {
                 } else {
                     Log.e(TAG, "onInit: 中文设置成功");
                     mCnTextToSpeech.speak(content, TextToSpeech.QUEUE_ADD, null);
-
+                    mCnTextToSpeech.setPitch(1f);
                 }
             }
         });
@@ -65,14 +66,19 @@ public class TextToSpeechHelper {
          KEY_PARAM_VOLUME：音量大小，0-1f
          返回值：int SUCCESS = 0，int ERROR = -1。
          */
+        if (content.contains("蓝牙连接") && content.equals(lastContent)) {
+//            lastContent = content;
+            return;
+        }
 
         int result = mCnTextToSpeech.speak(content, TextToSpeech.QUEUE_ADD, null);
         if (result == -1) {
             stopSpeech();
             initSpeech(content);
-
         }
         Log.e(TAG, "speakChinese: 要说中文："+content +",结果返回值："+result);
+        lastContent = content;
+
     }
 
     public void stopSpeech() {

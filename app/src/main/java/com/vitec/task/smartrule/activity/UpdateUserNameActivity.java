@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -86,7 +87,7 @@ public class UpdateUserNameActivity extends BaseActivity implements OnClickListe
 
         @Override
         public void afterTextChanged(Editable editable) {
-            if (etUserName.length() > 1) {
+            if (etUserName.getText().toString().trim().length() > 1) {
                 btnSubmit.setClickable(true);
                 btnSubmit.setBackgroundResource(R.drawable.selector_login_btn_click);
             } else {
@@ -140,6 +141,10 @@ public class UpdateUserNameActivity extends BaseActivity implements OnClickListe
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_submit:
+                if (TextUtils.isEmpty(etUserName.getText().toString().trim())) {
+                    Toast.makeText(getApplicationContext(),"用户名不能为空",Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 List<OkHttpUtils.Param> paramList = new ArrayList<>();
                 OkHttpUtils.Param param = new OkHttpUtils.Param(NetConstant.register_name, etUserName.getText().toString().trim());
                 paramList.add(param);

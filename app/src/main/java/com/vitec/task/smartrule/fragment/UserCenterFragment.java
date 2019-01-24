@@ -283,6 +283,7 @@ public class UserCenterFragment extends Fragment implements View.OnClickListener
                 if (!EventBus.getDefault().isRegistered(this)) {
                     EventBus.getDefault().register(this);
                 }
+                /*****请求查询测量组*****/
                 Intent queryIntent = new Intent(getActivity(), ProjectManageRequestIntentService.class);
                 Bundle bundle = new Bundle();
                 bundle.putInt(DataBaseParams.user_user_id, user.getUserID());
@@ -315,8 +316,8 @@ public class UserCenterFragment extends Fragment implements View.OnClickListener
      * 查找数据库中的项目组
      */
     private int queryProjectGroupData() {
-        String where = " where " + DataBaseParams.user_user_id + '=' + user.getUserID()+" ORDER BY id DESC";
-        List<RulerCheckProject> projectList = OperateDbUtil.queryProjectDataFromSqlite(getContext(), where);
+//        String where = " where " + DataBaseParams.user_user_id + '=' + user.getUserID()+" ORDER BY id DESC";
+        List<RulerCheckProject> projectList = OperateDbUtil.queryAllProjectOrderMember(getActivity(), user.getUserID());
         if (projectList.size() > 0) {
             Bundle bundle = new Bundle();
             bundle.putSerializable(DataBaseParams.check_project_name, (Serializable) projectList);

@@ -17,6 +17,10 @@ public interface IChooseGetter {
 
     List<RulerCheckProject> getCheckProjectList();
 
+    void finishActivity();
+
     void updateChooseMeasureMsgList(int index, ChooseMeasureMsg chooseMeasureMsg);
+
+    void updateProjectList();
 
 }

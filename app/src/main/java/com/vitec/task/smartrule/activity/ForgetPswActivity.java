@@ -320,9 +320,11 @@ public class ForgetPswActivity extends BaseActivity implements View.OnClickListe
                     OkHttpUtils.Param mobileParam = new OkHttpUtils.Param(NetConstant.mobile_param, mobleString);
                     OkHttpUtils.Param codeParam = new OkHttpUtils.Param(NetConstant.register_code, mobleCodeString);
                     OkHttpUtils.Param pswParam = new OkHttpUtils.Param(NetConstant.change_pwd_password, etPsw.getText().toString());
+                    OkHttpUtils.Param confirmPswParam = new OkHttpUtils.Param("password_confirm", etRepeatPsw.getText().toString());
                     paramList.add(mobileParam);
                     paramList.add(codeParam);
                     paramList.add(pswParam);
+                    paramList.add(confirmPswParam);
                     String url = NetConstant.baseUrl + NetConstant.change_password_by_mobile_url;
                     LogUtils.show("修改密码----查看请求的链接："+url+",参数："+paramList.toString());
                     OkHttpUtils.post(url, new OkHttpUtils.ResultCallback<String>() {

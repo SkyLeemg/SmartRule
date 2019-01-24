@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.interfaces.ISelectorResultCallBack;
@@ -68,7 +69,7 @@ public class BottomSelectorAndInputDialog extends Dialog implements View.OnClick
         lp.width = WindowManager.LayoutParams.MATCH_PARENT;
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
 //        lp.x = 0;
-        lp.y = 20;
+//        lp.y = 20;
         //设置Dialog距离底部的距离
         // 将属性设置给窗体
         dialogWindow.setAttributes(lp);
@@ -143,6 +144,14 @@ public class BottomSelectorAndInputDialog extends Dialog implements View.OnClick
              */
             case R.id.tv_submit:
                 if (selectorResultCallBack != null) {
+                    if (etNewPorjectName.getText().toString().trim().equals("")) {
+                        if (etNewPorjectName.getText().toString().length() > 0) {
+                            Toast.makeText(getContext(),"内容不能是空格",Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getContext(),"内容不能为空",Toast.LENGTH_SHORT).show();
+                        }
+                        return;
+                    }
                     selectorResultCallBack.onSelectCallBack(etNewPorjectName.getText().toString(), -1);
                 }
                 break;
