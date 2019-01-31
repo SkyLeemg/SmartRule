@@ -1,6 +1,9 @@
 package com.vitec.task.smartrule.activity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.MotionEvent;
@@ -8,6 +11,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -31,11 +35,13 @@ import com.vitec.task.smartrule.db.OperateDbUtil;
 import com.vitec.task.smartrule.interfaces.ISelectorResultCallBack;
 import com.vitec.task.smartrule.net.NetConstant;
 import com.vitec.task.smartrule.service.intentservice.ProjectManageRequestIntentService;
+import com.vitec.task.smartrule.service.intentservice.ReplenishDataToServerIntentService;
 import com.vitec.task.smartrule.utils.HeightUtils;
 import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.utils.OkHttpUtils;
 import com.vitec.task.smartrule.view.QrCodeDialog;
 import com.vitec.task.smartrule.view.SelectAddMethodBottomDialog;
+import com.vitec.task.smartrule.view.SelectMemberBottomDialog;
 import com.vitec.task.smartrule.view.large_img.SelectorBottomDialog;
 
 import org.greenrobot.eventbus.EventBus;
@@ -56,6 +62,16 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
     private RelativeLayout rlEditProjectName;//编辑项目名称框
     private RelativeLayout rlMenHead;//成员头部框
     private RelativeLayout rlUnitHead;//单位工程头部框
+//    private RelativeLayout rlExitProject;//退出测量组
+    //删除测量组
+//    private RelativeLayout rlDelProject;
+    private LinearLayout llGroupHost;
+    private TextView tvTurnGroup;//转让群主
+    private TextView tvDelGroup;//删除测量组
+
+    //两个空白view，当unit为空的时候显示
+    private View memberBlackView;
+    private View unitBlackView;
 //    三个提示
     private TextView tvSencondTip;//默认隐藏
     private TextView tvThirdTip;
@@ -77,6 +93,7 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
     private ListView lvUnit;//单位工程列表
     private ListView lvMen;//组成员列表
     private MKLoader mkLoader;
+
 
     /*******数据部分********/
     private List<RulerCheckProject> projectList;//所有测量组
@@ -107,6 +124,13 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
     }
 
     private void initData() {
+        /**
+         * 补上传服务启动
+         */
+        Intent replenishIntent = new Intent(getApplicationContext(), ReplenishDataToServerIntentService.class);
+        startService(replenishIntent);
+
+
         user = OperateDbUtil.getUser(getApplicationContext());
         unitSet = new HashSet<>();
         projectSet = new HashSet<>();
@@ -168,8 +192,14 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
         lvUnit.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                unitAdapter.setClickIndex(i);
-                unitAdapter.setShowEditIndex(-1);
+                if (unitAdapter.getClickIndex() == i) {
+                    unitAdapter.setClickIndex(-1);
+
+                } else {
+                    unitAdapter.setClickIndex(i);
+                    unitAdapter.setShowEditIndex(-1);
+
+                }
                 unitAdapter.notifyDataSetChanged();
             }
         });
@@ -195,6 +225,14 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
         tvChoose.setOnClickListener(this);
         tvChoose.setVisibility(View.VISIBLE);
 
+//
+        llGroupHost = findViewById(R.id.ll_group_host);
+        tvTurnGroup = findViewById(R.id.tv_turn_group);
+        tvDelGroup = findViewById(R.id.tv_del_group);
+
+        memberBlackView = findViewById(R.id.view_member_black);
+        unitBlackView = findViewById(R.id.view_unit_black);
+
         mkLoader = findViewById(R.id.mkloader);
         rlUnitHead = findViewById(R.id.rl_add_unit_head);
         rlEditProjectName = findViewById(R.id.rl_edit_project);
@@ -215,6 +253,9 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
         lvUnit = findViewById(R.id.lv_unit);
         tvAddUnit = findViewById(R.id.tv_add_unit);
         tvFirstProjectName = findViewById(R.id.tv_change_project_name);
+//        rlExitProject = findViewById(R.id.rl_exit_project);
+
+//        rlExitProject.setVisibility(View.GONE);
 
 
         tvSubmitAndEdit.setOnClickListener(this);
@@ -223,6 +264,10 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
         imgQrCode.setOnClickListener(this);
         tvSubmitAddUnit.setOnClickListener(this);
         rlChangeProject.setOnClickListener(this);
+//        rlDelProject.setOnClickListener(this);
+        tvDelGroup.setOnClickListener(this);
+        tvTurnGroup.setOnClickListener(this);
+//        rlExitProject.setOnClickListener(this);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -281,11 +326,16 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
         LogUtils.show("测量组页面----搜索单位工程-----，查看where语句：" + unitWhere);
         unitEngineerList = OperateDbUtil.queryUnitEngineerDataFromSqlite(getApplicationContext(), unitWhere);
         unitAdapter.setUnitEngineerList(this.unitEngineerList);
+        unitAdapter.setShowEditIndex(-1);
+        unitAdapter.setClickIndex(-1);
         unitAdapter.notifyDataSetChanged();
         LogUtils.show("searchUnitEngineerFromSqlite---查看搜索到的单位工程信息：" + unitEngineerList);
         if (this.unitEngineerList.size() == 0) {
-            rlUnitHead.setVisibility(View.VISIBLE);
-            tvFourthTip.setText("添加单位工程用于统计单位工程质量统计");
+//            rlUnitHead.setVisibility(View.VISIBLE);
+//            tvFourthTip.setText("添加单位工程用于统计单位工程质量统计");
+            unitBlackView.setVisibility(View.VISIBLE);
+        }else {
+            unitBlackView.setVisibility(View.GONE);
         }
         if (unitEngineerList.size() < 5) {
             HeightUtils.setListViewHeighBaseOnChildren(lvUnit);
@@ -300,7 +350,12 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
      */
     private void searchProjectUserFromSqlite() {
         /********搜索其他成员信息***********/
-        String memWhere = " where " + DataBaseParams.project_server_id + " = " + cProject.getServer_id();
+        String memWhere ;
+        if (cProject.getServer_id() > 0) {
+            memWhere = " where " + DataBaseParams.project_server_id + " = " + cProject.getServer_id();
+        } else {
+            memWhere = " where " + DataBaseParams.measure_project_id + "=" + cProject.getId();
+        }
         memberList.clear();
          memberList = OperateDbUtil.queryProjectUserFromSqlite(getApplicationContext(), memWhere);
 
@@ -437,6 +492,7 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
                     RulerCheckProject project = (RulerCheckProject) event.getObject();
                     for (int i=0;i<projectList.size();i++) {
                         if (projectList.get(i).getServer_id() == project.getServer_id()) {
+                            Toast.makeText(getApplicationContext(),"测量组:"+projectList.get(i).getProjectName()+"删除成功",Toast.LENGTH_SHORT).show();
                             projectList.remove(i);
                             break;
                         }
@@ -447,6 +503,7 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
                     } else {
 //                        LogUtils.show("");
                         changeProject(projectList.get(0));
+                        updateProjectViewData();
                     }
                     break;
 
@@ -465,10 +522,29 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
                         }
                     }
                     break;
+
+                    /***********8-转让群主************/
+                case 8:
+                    int newUserid = (int) event.getObject();
+                    User newUser = new User();
+                    newUser.setUserID(newUserid);
+                    cProject.setUser(newUser);
+                    for (int i=0;i<projectList.size();i++) {
+                        if (cProject.getId() == projectList.get(i).getId()) {
+                            projectList.set(i, cProject);
+                            break;
+                        }
+                    }
+                    memberAdapter.setProject(cProject);
+                    memberAdapter.notifyDataSetChanged();
+                    llGroupHost.setVisibility(View.GONE);
+                    Toast.makeText(getApplicationContext(),"转让成功",Toast.LENGTH_SHORT).show();
+                    break;
             }
             mkLoader.setVisibility(View.GONE);
         } else {
             Toast.makeText(getApplicationContext(),event.getMsg(),Toast.LENGTH_SHORT).show();
+            mkLoader.setVisibility(View.GONE);
         }
     }
 
@@ -500,9 +576,19 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
                     tvFourthTip.setText("添加单位工程用于统计单位工程质量统计");
                     tvSubmitAndEdit.setText("保存并返回");
                     unitAdapter.setShowDel(true);
+                    unitAdapter.setEdit(true);
                     memberAdapter.setShowDel(true);
                     unitAdapter.notifyDataSetChanged();
                     memberAdapter.notifyDataSetChanged();
+                    if (user.getUserID() == cProject.getUser().getUserID()) {
+//                        rlDelProject.setVisibility(View.VISIBLE);
+                        llGroupHost.setVisibility(View.VISIBLE);
+                    } else {
+//                        rlDelProject.setVisibility(View.GONE);
+                        llGroupHost.setVisibility(View.GONE);
+                    }
+
+//                    rlExitProject.setVisibility(View.VISIBLE);
                     isEdit = true;
                 } else {
                     if (etProjectName.getText().toString().trim().equals(cProject.getProjectName())) {
@@ -514,9 +600,12 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
                         tvFourthTip.setText("单位工程");
                         tvSubmitAndEdit.setText("编辑测量组");
                         unitAdapter.setShowDel(false);
+                        unitAdapter.setEdit(false);
+                        llGroupHost.setVisibility(View.GONE);
                         memberAdapter.setShowDel(false);
                         unitAdapter.notifyDataSetChanged();
                         memberAdapter.notifyDataSetChanged();
+//                        rlExitProject.setVisibility(View.GONE);
                         isEdit = false;
                     } else {
                         mkLoader.setVisibility(View.VISIBLE);
@@ -543,7 +632,7 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
             case R.id.img_add_men:
             case R.id.tv_add_men:
                 LogUtils.show("查看当前测量组:"+cProject);
-                SelectAddMethodBottomDialog bottomDialog = new SelectAddMethodBottomDialog(this, R.style.BottomDialog, cProject, ScreenUtils.getScreenWidth(this));
+                final SelectAddMethodBottomDialog bottomDialog = new SelectAddMethodBottomDialog(this, R.style.BottomDialog, cProject, ScreenUtils.getScreenWidth(this));
                 bottomDialog.show();
                 break;
 
@@ -553,7 +642,7 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
             case R.id.img_qr_code:
                 LogUtils.show("查看当前测量组:"+cProject);
 
-                QrCodeDialog dialog = new QrCodeDialog(MeasureTeamManagerActivity.this,R.style.BottomDialog,cProject.getQrCode(), ScreenUtils.getScreenWidth(this));
+                QrCodeDialog dialog = new QrCodeDialog(MeasureTeamManagerActivity.this,R.style.BottomDialog,cProject, ScreenUtils.getScreenWidth(this));
                 dialog.show();
                 break;
 
@@ -596,7 +685,97 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
                 });
                 bottomDialog1.show();
                 break;
+
+
+            /**
+             * TODO 删除测量组
+             */
+            case R.id.tv_del_group:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("删除提示");
+                builder.setMessage("是否删除测量组:" + cProject.getProjectName() + "?");
+                builder.setNegativeButton("确定删除", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        mkLoader.setVisibility(View.VISIBLE);
+                        //判断该项目是否有上传到服务器
+                        if (cProject.getServer_id() > 0) {
+                            //如果有上传到过服务器，则先请求删除服务器
+                           deleteProjectGroup();
+                        } else {
+                            String newWhere = " where " + DataBaseParams.measure_id + "=" + cProject.getId();
+                            List<RulerCheckProject> newProjectList = OperateDbUtil.queryProjectDataFromSqlite(getApplicationContext(), newWhere);
+                            if (newProjectList.size() > 0) {
+                                if (newProjectList.get(0).getServer_id() > 0) {
+                                    projectList.remove(cProject);
+                                    projectList.add(newProjectList.get(0));
+                                    cProject = newProjectList.get(0);
+                                    deleteProjectGroup();
+                                    return;
+                                }
+                            }
+                            /**
+                             * 补上传服务启动
+                             */
+                            Intent replenishIntent = new Intent(getApplicationContext(), ReplenishDataToServerIntentService.class);
+                            startService(replenishIntent);
+
+                            Toast.makeText(getApplicationContext(),"删除失败",Toast.LENGTH_SHORT).show();
+
+                            //如果只是本地的测量组，则可以在本地进行删除
+//                            String userWhere = " where " + DataBaseParams.measure_project_id + "=" + cProject.getId() + " and " + DataBaseParams.user_user_id + "=" + user.getUserID();
+//                            List<ProjectUser> userList = OperateDbUtil.queryProjectUserFromSqlite(getApplicationContext(), userWhere);
+//                            for (ProjectUser user : userList) {
+//                                OperateDbUtil.delData(getApplicationContext(), DataBaseParams.project_user_table_name, "id=?", new String[]{String.valueOf(user.getId())});
+//                            }
+//
+//                            projectList.remove(cProject);
+//                            if (projectList.size() == 0) {
+//                                startActivity(new Intent(MeasureTeamManagerActivity.this, CreateMeasureTeamActivity.class));
+//                                MeasureTeamManagerActivity.this.finish();
+//                            } else {
+//                                changeProject(projectList.get(0));
+//                                updateProjectViewData();
+//                            }
+//                            Toast.makeText(getApplicationContext(),"测量组:"+cProject.getProjectName()+"删除成功",Toast.LENGTH_SHORT).show();
+                            mkLoader.setVisibility(View.GONE);
+                        }
+
+                    }
+                });
+                builder.setPositiveButton("取消", null);
+                builder.show();
+                break;
+
+            /**
+             * Todo 退出测量组
+             */
+            case R.id.rl_exit_project:
+
+                break;
+
+
+            /**
+             * TODO 转让群主
+             */
+            case R.id.tv_turn_group:
+                SelectMemberBottomDialog selectMemberBottomDialog = new SelectMemberBottomDialog(this, R.style.BottomDialog, memberList, cProject);
+                selectMemberBottomDialog.show();
+                break;
         }
+    }
+
+    /**
+     * 向服务器请求删除测量组
+     */
+    private void deleteProjectGroup() {
+        Bundle delBundle = new Bundle();
+        delBundle.putString(NetConstant.group_project_list, String.valueOf(cProject.getServer_id()));
+        delBundle.putInt(DataBaseParams.user_user_id, user.getUserID());
+        Intent delIntent = new Intent(getApplicationContext(), ProjectManageRequestIntentService.class);
+        delIntent.putExtra(ProjectManageRequestIntentService.REQUEST_FLAG, ProjectManageRequestIntentService.flag_group_del_project);
+        delIntent.putExtra(ProjectManageRequestIntentService.key_get_value, delBundle);
+        startService(delIntent);
     }
 
     private void updateProjectViewData() {
@@ -623,6 +802,11 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
         startService(intent);
         memberAdapter.setProject(cProject);
         tvFirstProjectName.setText(cProject.getProjectName());
+        if (isEdit && user.getUserID() == cProject.getUser().getUserID()) {
+            llGroupHost.setVisibility(View.VISIBLE);
+        } else {
+            llGroupHost.setVisibility(View.GONE);
+        }
         etProjectName.setText(cProject.getProjectName());
 //        ProjectUser user = memberList.get(0);
         memberList.clear();
@@ -647,6 +831,11 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
         } else {
             HeightUtils.setListViewHeighBaseOnChildren(lvMen,5);
         }
+        if (memberList.size() == 0) {
+            memberBlackView.setVisibility(View.VISIBLE);
+        } else {
+            memberBlackView.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -658,8 +847,11 @@ public class MeasureTeamManagerActivity extends BaseActivity implements View.OnC
         etInputUnitName.setText("");
         unitAdapter.notifyDataSetChanged();
         if (this.unitEngineerList.size() == 0) {
-            rlUnitHead.setVisibility(View.VISIBLE);
-            tvFourthTip.setText("添加单位工程用于统计单位工程质量统计");
+//            rlUnitHead.setVisibility(View.VISIBLE);
+//            tvFourthTip.setText("添加单位工程用于统计单位工程质量统计");
+            unitBlackView.setVisibility(View.VISIBLE);
+        }else {
+            unitBlackView.setVisibility(View.GONE);
         }
         if (unitEngineerList.size() < 5) {
             HeightUtils.setListViewHeighBaseOnChildren(lvUnit);

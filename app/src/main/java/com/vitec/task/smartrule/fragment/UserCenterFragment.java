@@ -62,7 +62,7 @@ public class UserCenterFragment extends Fragment implements View.OnClickListener
     private RelativeLayout rlChangePsw;//修改密码
     private RelativeLayout rlCheckUpdate;//检查更新
     private RelativeLayout rlContactUs;//联系我们
-    private RelativeLayout rlHelper;//使用说明
+//    private RelativeLayout rlHelper;//使用说明
     private RelativeLayout rlMeasureTeam;//测量组
 
     private User user;
@@ -116,14 +116,14 @@ public class UserCenterFragment extends Fragment implements View.OnClickListener
         rlChangePsw = view.findViewById(R.id.rl_change_psw);
         rlCheckUpdate = view.findViewById(R.id.rl_check_update);
         rlContactUs = view.findViewById(R.id.rl_contact_us);
-        rlHelper = view.findViewById(R.id.rl_helper);
+//        rlHelper = view.findViewById(R.id.rl_helper);
         rlMeasureTeam = view.findViewById(R.id.rl_messege_team);
 
         rlEditUserData.setOnClickListener(this);
         rlCheckUpdate.setOnClickListener(this);
         rlChangePsw.setOnClickListener(this);
         rlContactUs.setOnClickListener(this);
-        rlHelper.setOnClickListener(this);
+//        rlHelper.setOnClickListener(this);
         rlMeasureTeam.setOnClickListener(this);
 
     }
@@ -271,10 +271,10 @@ public class UserCenterFragment extends Fragment implements View.OnClickListener
             /**
              * 使用说明
              */
-            case R.id.rl_helper:
-                startActivity(new Intent(getActivity(), UseInstructionActivity.class));
-                isCurrentPage = false;
-                break;
+//            case R.id.rl_helper:
+//                startActivity(new Intent(getActivity(), UseInstructionActivity.class));
+//                isCurrentPage = false;
+//                break;
 
             /**
              * 测量组

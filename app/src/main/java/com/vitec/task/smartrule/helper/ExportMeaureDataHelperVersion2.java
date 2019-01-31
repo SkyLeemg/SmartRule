@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Environment;
 import android.util.Log;
 
@@ -22,6 +23,7 @@ import jxl.Workbook;
 import jxl.format.Alignment;
 import jxl.format.Border;
 import jxl.format.BorderLineStyle;
+import jxl.format.Colour;
 import jxl.format.VerticalAlignment;
 import jxl.write.Label;
 import jxl.write.WritableCellFormat;
@@ -56,6 +58,7 @@ public class ExportMeaureDataHelperVersion2 {
     public static final String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
     private WritableFont optionTitleFont;
     private WritableCellFormat optionsTitleFormat;
+    private WritableCellFormat dataFormat;
     //    public static final String path = Environment.getExternalStorageDirectory() + "/excel";
 
     public ExportMeaureDataHelperVersion2(Context context, String fileName) {
@@ -147,6 +150,13 @@ public class ExportMeaureDataHelperVersion2 {
             contentFormat.setVerticalAlignment(VerticalAlignment.CENTRE);
             contentFormat.setWrap(true);//设置自动换行
             contentFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
+
+            dataFormat = new WritableCellFormat(contentFont);
+            dataFormat.setAlignment(Alignment.CENTRE);
+            dataFormat.setVerticalAlignment(VerticalAlignment.CENTRE);
+            dataFormat.setWrap(true);//设置自动换行
+            dataFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
+            dataFormat.setBackground(Colour.LIGHT_GREEN);
         } catch (WriteException e) {
             e.printStackTrace();
         }
@@ -231,7 +241,7 @@ public class ExportMeaureDataHelperVersion2 {
 
             if (measureTable.getPicPath() != null && !measureTable.getPicPath().equals("")) {
                 //设置图片的单元格
-                mWritableSheet.mergeCells(0, rowCucor, 9, (rowCucor + 27));
+                mWritableSheet.mergeCells(0, rowCucor, 9, (rowCucor + 28));
                 File imgFile = new File(measureTable.getPicPath());
                 if (!imgFile.exists()) {
                     try {
@@ -247,10 +257,15 @@ public class ExportMeaureDataHelperVersion2 {
                 double startX = (9 - imgW) / 2;
                 WritableImage image = new WritableImage(startX, rowCucor+0.5, imgW, 27, imgFile);
                 mWritableSheet.addImage(image);
-                rowCucor += 28;
+                Label lab = new Label(0, rowCucor, "",contentFormat);
+                mWritableSheet.addCell(lab);
+
+                rowCucor += 29;
             } else {
                 //设置图片的单元格
                 mWritableSheet.mergeCells(0, rowCucor, 9, rowCucor);
+                Label lab = new Label(0, rowCucor, "",contentFormat);
+                mWritableSheet.addCell(lab);
                 rowCucor++;
             }
 
@@ -264,7 +279,7 @@ public class ExportMeaureDataHelperVersion2 {
                 if (row.getOptionType() >2) {
                     continue;
                 }
-                rowCucor++;
+//                rowCucor++;
 //                mWritableSheet.mergeCells(0, rowCucor, 9, rowCucor);
 //                LogUtils.show("导出文件工具类---查看logo图片路径：" + row.getLogoFile().getPath());
 //                LogUtils.show("导出文件工具类---查看文件名：" + row.getOptionName());
@@ -314,7 +329,8 @@ public class ExportMeaureDataHelperVersion2 {
                 Label lab3 = new Label(3, rowCucor, "合格点数:",contentFormat);
                 Label lab4 = new Label(5, rowCucor, String.valueOf(row.getQualifiedNum()),contentFormat);
                 Label lab5 = new Label(6, rowCucor, "合格率:",contentFormat);
-                Label lab6 = new Label(8, rowCucor, String.valueOf(row.getQualifiedRate()),contentFormat);
+                String rate = String.valueOf(row.getQualifiedRate()) + "%";
+                Label lab6 = new Label(8, rowCucor,rate ,contentFormat);
                 mWritableSheet.addCell(lab1);
                 mWritableSheet.addCell(lab2);
                 mWritableSheet.addCell(lab3);
@@ -332,27 +348,27 @@ public class ExportMeaureDataHelperVersion2 {
                     if (colCursor == 0) {
                         Label lab7 = new Label(colCursor, rowCucor,"序号",contentFormat);
                         mWritableSheet.addCell(lab7);
-                        Label lab8 = new Label(colCursor, rowCucor+1,"数值",contentFormat);
+                        Label lab8 = new Label(colCursor, rowCucor+1,"数值",dataFormat);
                         mWritableSheet.addCell(lab8);
                         colCursor++;
                     }
                     Label lab7 = new Label(colCursor, rowCucor,String.valueOf(dataList.get(j).getId()),contentFormat);
-                    Label lab8 = new Label(colCursor, rowCucor+1,dataList.get(j).getData(),contentFormat);
+                    Label lab8 = new Label(colCursor, rowCucor+1,dataList.get(j).getData(),dataFormat);
                     mWritableSheet.addCell(lab7);
                     mWritableSheet.addCell(lab8);
                     mWritableSheet.setRowView(rowCucor,400);
                     mWritableSheet.setRowView(rowCucor+1,500);
                     colCursor++;
-                    if (colCursor == 10) {
+                    if (colCursor == 10 && j<(dataList.size()-1)) {
                         colCursor = 0;
                         rowCucor += 2;
                     }
                 }
                 //补填当前行
-                if (colCursor < 9) {
+                if (colCursor < 9 && colCursor != 0) {
                     do {
-                        Label lab7 = new Label(colCursor, rowCucor," ",contentFormat);
-                        Label lab8 = new Label(colCursor, rowCucor+1," ",contentFormat);
+                        Label lab7 = new Label(colCursor, rowCucor, " ", contentFormat);
+                        Label lab8 = new Label(colCursor, rowCucor + 1, " ", dataFormat);
                         mWritableSheet.addCell(lab8);
                         mWritableSheet.addCell(lab7);
                         colCursor++;
@@ -360,6 +376,8 @@ public class ExportMeaureDataHelperVersion2 {
                 }
                 rowCucor += 2;
                 mWritableSheet.mergeCells(0, rowCucor, 9, rowCucor);
+                Label lab = new Label(0, rowCucor, "",contentFormat);
+                mWritableSheet.addCell(lab);
                 rowCucor++;
             }
             rowCucor++;

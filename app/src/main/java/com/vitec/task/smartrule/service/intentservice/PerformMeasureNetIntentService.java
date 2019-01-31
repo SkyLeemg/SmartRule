@@ -122,7 +122,9 @@ public class PerformMeasureNetIntentService extends IntentService {
             case FLAG_UPDATE_DATA:
                 List<RulerCheckOptions> checkOptionsList1 = (List<RulerCheckOptions>) intent.getSerializableExtra(GET_CREATE_OPTIONS_DATA_KEY);
                 List<RulerCheckOptionsData> checkOptionsDataList = (List<RulerCheckOptionsData>) intent.getSerializableExtra(GET_UPDATE_DATA_KEY);
-                initUpdateMeasureDataJson(checkOptionsList1, checkOptionsDataList);
+                //传递一个更新标志，1或2代表是由测量服务发送过来的(分别对应垂直度和平整度)，0就是补上传服务等其他发过来的
+                int update_flag = intent.getIntExtra(DataBaseParams.upload_flag, 0);
+                initUpdateMeasureDataJson(checkOptionsList1, checkOptionsDataList,update_flag);
                 break;
 
             /**
@@ -158,7 +160,7 @@ public class PerformMeasureNetIntentService extends IntentService {
                             List<RulerCheckOptionsData> rulerCheckOptionsDataList = OperateDbUtil.queryMeasureDataFromSqlite(getApplicationContext(), rulerCheckOptions);
                             dataList.addAll(rulerCheckOptionsDataList);
                         }
-                        initUpdateMeasureDataJson(checkOptionsList2, dataList);
+                        initUpdateMeasureDataJson(checkOptionsList2, dataList,0);
                     }
                 }
 
@@ -527,15 +529,12 @@ public class PerformMeasureNetIntentService extends IntentService {
                  *  7.全部处理完成后，使用EventBus通知Activity已经处理完成
                  */
                 JSONObject responeJson = null;
+
                 try {
                     responeJson = new JSONObject(response);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
                 int code = responeJson.optInt("code");
 //                1. 根据code是否等于200判断是否响应成功
                 if (code == 200) {
-                    try {
 //                        2.获取data字段的jsonArray，
                         JSONArray dataArray = responeJson.getJSONArray("data");
                         if (dataArray.length() > 0) {
@@ -553,10 +552,10 @@ public class PerformMeasureNetIntentService extends IntentService {
                                 LogUtils.show("requestQueryMeasureData---查看本地数据库搜索条件："+where);
                                 List<RulerCheckOptions> optionsList = OperateDbUtil.queryCheckOptionFromSqlite(getApplicationContext(), check, where);
                                 LogUtils.show("requestQueryMeasureData---查看本地数据库搜索出管控要点的结果："+optionsList.size());
-
+                                RulerCheckOptions rulerCheckOptions = new RulerCheckOptions();
 //                                3.1 无则保存到本地数据库
                                 if (optionsList.size() == 0) {
-                                    RulerCheckOptions rulerCheckOptions = new RulerCheckOptions();
+
                                     rulerCheckOptions.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
                                     rulerCheckOptions.setServerId(server_id);
                                     rulerCheckOptions.setRulerCheck(check);
@@ -631,20 +630,55 @@ public class PerformMeasureNetIntentService extends IntentService {
                                         List<RulerCheckOptionsData> dataList = OperateDbUtil.queryMeasureDataFromSqlite(getApplicationContext(), new RulerCheckOptions(), dataWhere);
 //                                        6.1 无则保存到本地数据库
                                         if (dataList.size() == 0) {
-                                            RulerCheckOptionsData rulerCheckOptionsData = new RulerCheckOptionsData();
-                                            String optionWhere = " where " + DataBaseParams.server_id + " = " + server_id;
-                                            List<RulerCheckOptions> rulerOptionsList = OperateDbUtil.queryCheckOptionFromSqlite(getApplicationContext(), check, optionWhere);
-                                            if (rulerOptionsList.size() > 0) {
-                                                rulerCheckOptionsData.setRulerCheckOptions(rulerOptionsList.get(0));
+                                            RulerCheckOptions updateOption;
+                                            if (optionsList.size() > 0) {
+                                                updateOption = optionsList.get(0);
                                             } else {
-                                                rulerCheckOptionsData.setRulerCheckOptions(new RulerCheckOptions());
+                                                updateOption = rulerCheckOptions;
                                             }
-                                            rulerCheckOptionsData.setUpload_flag(1);
-                                            rulerCheckOptionsData.setData(optionDataJson.optString("data"));
-                                            rulerCheckOptionsData.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
-                                            rulerCheckOptionsData.setNumber(optionDataJson.optInt(DataBaseParams.options_data_number));
-                                            rulerCheckOptionsData.setServerId(optionDataJson.optInt("id"));
-                                            OperateDbUtil.addRealMeasureDataToSqlite(getApplicationContext(), rulerCheckOptionsData);
+                                            String data = optionDataJson.optString("data");
+                                            int number = optionDataJson.optInt(DataBaseParams.options_data_number);
+                                            //判断是新增数据还是更新数据的server_id
+                                            String optionW = " where " + DataBaseParams.options_data_check_options_id + "=" + updateOption.getId() + " and " +
+                                                    DataBaseParams.options_data_content + "=\"" + data + "\"" + " and " + DataBaseParams.options_data_number + "=" + number + " and " +
+                                                    DataBaseParams.server_id + "=0";
+                                            List<RulerCheckOptionsData> optionsDataList = OperateDbUtil.queryMeasureDataFromSqlite(getApplicationContext(), optionW);
+                                            if (optionsDataList.size() > 0) {
+                                                LogUtils.show("查询测量数据接口------");
+                                                int k= 0;
+                                                for (RulerCheckOptionsData data1 : optionsDataList) {
+                                                    if (k == 0) {
+                                                        ContentValues contentValues = new ContentValues();
+                                                        contentValues.put(DataBaseParams.server_id, (optionDataJson.optInt("id")));
+                                                        OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.options_data_table_name, "id=?", contentValues, new String[]{String.valueOf(data1.getId())});
+                                                    } else {
+                                                        OperateDbUtil.delData(getApplicationContext(), DataBaseParams.options_data_table_name, "id=?", new String[]{String.valueOf(data1.getId())});
+                                                    }
+                                                    k++;
+
+                                                }
+
+
+                                            } else {
+                                                RulerCheckOptionsData rulerCheckOptionsData = new RulerCheckOptionsData();
+//                                            String optionWhere = " where " + DataBaseParams.server_id + " = " + server_id;
+//                                            List<RulerCheckOptions> rulerOptionsList = OperateDbUtil.queryCheckOptionFromSqlite(getApplicationContext(), check, optionWhere);
+//                                            if (rulerOptionsList.size() > 0) {
+//                                                rulerCheckOptionsData.setRulerCheckOptions(rulerOptionsList.get(0));
+//                                            } else {
+//                                                rulerCheckOptionsData.setRulerCheckOptions(new RulerCheckOptions());
+//                                            }
+                                                rulerCheckOptionsData.setRulerCheckOptions(updateOption);
+                                                rulerCheckOptionsData.setUpload_flag(1);
+                                                rulerCheckOptionsData.setData(data);
+                                                rulerCheckOptionsData.setCreateTime(DateFormatUtil.transForMilliSecond(new Date()));
+                                                rulerCheckOptionsData.setNumber(number);
+                                                rulerCheckOptionsData.setServerId(optionDataJson.optInt("id"));
+                                                OperateDbUtil.addRealMeasureDataToSqlite(getApplicationContext(), rulerCheckOptionsData);
+                                            }
+
+
+
                                         }
                                     }
                                 }
@@ -652,12 +686,13 @@ public class PerformMeasureNetIntentService extends IntentService {
                             }
 
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
                 }
 //                全部处理完成后 通知界面
                 EventBus.getDefault().post(new MeasureDataMsgEvent(1));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    EventBus.getDefault().post(new MeasureDataMsgEvent(0));
+                }
 
             }
 
@@ -1003,7 +1038,7 @@ public class PerformMeasureNetIntentService extends IntentService {
     /********************************结束/停止测量接口结束*****************************************/
 
     /*********************************************TODO *更新测量数据接口开始***************************************************/
-    private void initUpdateMeasureDataJson(List<RulerCheckOptions> checkOptionsList, List<RulerCheckOptionsData> checkOptionsDataList) {
+    private void initUpdateMeasureDataJson(List<RulerCheckOptions> checkOptionsList, List<RulerCheckOptionsData> checkOptionsDataList,int upload_flag) {
         LogUtils.show("initUpdateMeasureDataJson----查看收到的checkOptionsList："+checkOptionsList);
         LogUtils.show("initUpdateMeasureDataJson----查看收到的checkOptionsDataList："+checkOptionsDataList);
         boolean isFinish = false;
@@ -1159,7 +1194,7 @@ public class PerformMeasureNetIntentService extends IntentService {
 
                 }
                 LogUtils.show("initUpdateMeasureDataJson----查看更新测量数据请求的JSON：" + rootJsArray.toString());
-                requestUpdateMeasureData(rootJsArray.toString(),checkOptionsList.get(0).getRulerOptions().getType(),isFinish);
+                requestUpdateMeasureData(rootJsArray.toString(),checkOptionsList.get(0).getRulerOptions().getType(),isFinish,upload_flag);
             }
 
         } catch (JSONException e) {
@@ -1168,7 +1203,7 @@ public class PerformMeasureNetIntentService extends IntentService {
 
     }
 
-    private void requestUpdateMeasureData(final String jsonData, final int flag,final boolean isFinish) {
+    private void requestUpdateMeasureData(final String jsonData, final int flag, final boolean isFinish, final int update_flag) {
         OkHttpUtils.Param param = new OkHttpUtils.Param(DataBaseParams.options_data_content, jsonData);
         List<OkHttpUtils.Param> dataList = new ArrayList<>();
         dataList.add(param);
@@ -1191,6 +1226,11 @@ public class PerformMeasureNetIntentService extends IntentService {
                         if (dataRootArray.length() > 0) {
                             for (int i=0;i<dataRootArray.length();i++) {
                                 JSONObject dataJson = dataRootArray.getJSONObject(i);
+                                int user_id =0;
+                                if (dataJson.has(DataBaseParams.user_user_id)) {
+                                     user_id = dataJson.optInt(DataBaseParams.user_user_id);
+                                }
+
 
                                 /**
                                  * 处理有网络情况下数据
@@ -1211,7 +1251,7 @@ public class PerformMeasureNetIntentService extends IntentService {
                                             LogUtils.show("更新数据接口---有网络模式--查看更新数据是否成功："+server_id+",返回值："+res);
 
                                         }
-                                        EventBus.getDefault().post(new HandleDataResultMsgEvent(flag));
+                                        EventBus.getDefault().post(new HandleDataResultMsgEvent(update_flag));
                                     }
                                 }
                                 /**
@@ -1275,12 +1315,22 @@ public class PerformMeasureNetIntentService extends IntentService {
 
                                                 }
                                             }
-
                                         }
-
+                                        EventBus.getDefault().post(new HandleDataResultMsgEvent(update_flag));
                                     }
 
                                     /***********更新check_project数据**************/
+                                    /**
+                                     * "check_project":{
+                                     "local_id":25,
+                                     "project_name":"自定义",
+                                     "user_id":2,
+                                     "create_time":1548398342,
+                                     "update_time":1548398342,
+                                     "group_member":{"group_id":"89"},
+                                     "id":"93"
+                                     },
+                                     */
                                     JSONObject projectJson = dataJson.getJSONObject("check_project");
                                     if (projectJson.has(DataBaseParams.local_id)) {
                                         int p_local_id = projectJson.getInt(DataBaseParams.local_id);
@@ -1289,20 +1339,43 @@ public class PerformMeasureNetIntentService extends IntentService {
                                         values.put(DataBaseParams.server_id, p_server_id);
                                         int result= bleDataDbHelper.updateDataToSqlite(DataBaseParams.check_project_table_name, values, " id=? ", new String[]{String.valueOf(p_local_id)});
                                         LogUtils.show("更新测量数据返回----查看更项目Project_server_id是否成功：" + p_server_id + ",返回值：" + result);
+
+                                        //再根据项目ID和用户ID去更新
+                                        String l_p_where=" where " + DataBaseParams.measure_project_id + "=" +p_local_id + " and " + DataBaseParams.user_user_id + "=" + user_id;
+                                        List<ProjectUser> projectUsers2 = OperateDbUtil.queryProjectUserFromSqlite(getApplicationContext(), l_p_where);
+                                        if (projectUsers2.size() > 0) {
+                                            if (projectUsers2.get(0).getServer_id() == 0) {
+                                                String groupmemberString = projectJson.getString("group_member");
+                                                ContentValues userValue = new ContentValues();
+                                                userValue.put(DataBaseParams.project_server_id, p_server_id);
+                                                int group_id=0;
+                                                if (groupmemberString.contains("{") && groupmemberString.contains("}")) {
+                                                    JSONObject groupJson = projectJson.getJSONObject("group_member");
+                                                    group_id = groupJson.optInt("group_id");
+                                                    values.put(DataBaseParams.server_id, group_id);
+                                                }
+//                                    String upwhere =DataB
+                                                int res = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.project_user_table_name, "id=?", userValue, new String[]{String.valueOf(projectUsers2.get(0).getId())});
+                                                LogUtils.show("更新用户数据接口---据项目的本地ID和用户ID去查询，查看项目ID：" + p_server_id + "查看group_id："+group_id+",查看更新返回值：" + res);
+                                            }
+                                        }
                                     }
 
                                     /*************更新unit_engineer熟***********/
+                                    /**
+                                     *  "unit_engineer":{"local_id":35,"location":"自定义","create_time":1548398342,"update_time":1548398342,"id":"141"},
+                                     */
                                     JSONObject unitJson = dataJson.getJSONObject("unit_engineer");
                                     if (unitJson.has(DataBaseParams.local_id)) {
-                                        int u_local_id = projectJson.getInt(DataBaseParams.local_id);
-                                        int u_server_id = projectJson.getInt(DataBaseParams.measure_id);
+                                        int u_local_id = unitJson.getInt(DataBaseParams.local_id);
+                                        int u_server_id = unitJson.getInt(DataBaseParams.measure_id);
                                         ContentValues values = new ContentValues();
                                         values.put(DataBaseParams.server_id, u_server_id);
                                         int result= bleDataDbHelper.updateDataToSqlite(DataBaseParams.unit_engineer_table_name, values, " id=? ", new String[]{String.valueOf(u_local_id)});
                                         LogUtils.show("更新测量数据返回----查看更新单位工程unit_engineer server_id是否成功：" + u_server_id + ",返回值：" + result);
                                     }
 
-                                    EventBus.getDefault().post(new HandleDataResultMsgEvent(flag));
+
                                 }
                             }
                         }

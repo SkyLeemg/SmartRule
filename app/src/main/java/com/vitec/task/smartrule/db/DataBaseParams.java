@@ -15,6 +15,7 @@ public class DataBaseParams {
     public static final String upload_flag = "upload_flag";
     public static final String cid = "cid";
     public static final String delete_flag = "delete_flag";
+    public static final String member_user_id = "member_user_id";
 
     /**
      * iot_ruler_ble_device的表名和列名

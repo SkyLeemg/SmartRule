@@ -46,7 +46,9 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 等待测量的界面
@@ -75,6 +77,7 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
     private RulerCheck delRulerCheck;//用户点击删除的Rulercheck
 
     private final int request_flag_edit_msg = 13;
+    private Set<Integer> checkIDSet;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,29 +85,28 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
         setContentView(R.layout.activity_wating_measure);
         EventBus.getDefault().register(this);
         initView();
-
-        initData();
     }
 
     private void initData() {
+        rulerCheckList = new ArrayList<>();
+        checkIDSet = new HashSet<>();
         /**
          * 补上传服务启动
          */
         Intent replenishIntent = new Intent(getApplicationContext(), ReplenishDataToServerIntentService.class);
         startService(replenishIntent);
 
-        rulerCheckList = new ArrayList<>();
-        /**
-         * 应当先从服务器获取，服务器获取失败再从本地获取
-         */
 
 
         measureProjectListAdapter = new MeasureProjectListAdapter(WaitingMeasureActivity.this, rulerCheckList,current_id);
         lvWaitingMeasureList.setAdapter(measureProjectListAdapter);
         measureProjectListAdapter.setiClickable(this);
 //        updatePageData();
-        getUnFinishServerCheckData();
-//        getUnFinishLocalCheck();
+//        getUnFinishServerCheckData();
+        /**
+         * 先获取本地数据再获取服务器数据
+         */
+        getUnFinishLocalCheck();
         lvWaitingMeasureList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -162,18 +164,37 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
      */
     private void getUnFinishLocalCheck() {
         mkLoader.setVisibility(View.VISIBLE);
-        User user = OperateDbUtil.getUser(getApplicationContext());
-        String where = " where " + DataBaseParams.user_user_id + " = " + user.getUserID() + " and " + DataBaseParams.measure_is_finish + "=0 ORDER BY "+ DataBaseParams.measure_create_time+" DESC;" ;
-        BleDataDbHelper dataDbHelper = new BleDataDbHelper(getApplicationContext());
-        rulerCheckList.clear();
-        rulerCheckList = dataDbHelper.queryRulerCheckTableDataFromSqlite(where);
-        LogUtils.show("查看本地搜索到的测量记录："+rulerCheckList.size()+",内容："+rulerCheckList);
-        measureProjectListAdapter.setRulerCheckList(rulerCheckList);
-        dataDbHelper.close();
-        total = rulerCheckList.size();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                User user = OperateDbUtil.getUser(getApplicationContext());
+                String where = " where " + DataBaseParams.user_user_id + " = " + user.getUserID() + " and " + DataBaseParams.measure_is_finish + "=0 ORDER BY "+ DataBaseParams.measure_create_time+" DESC;" ;
+                BleDataDbHelper dataDbHelper = new BleDataDbHelper(getApplicationContext());
+//        rulerCheckList.clear();
+                rulerCheckList = dataDbHelper.queryRulerCheckTableDataFromSqlite(where);
+//        LogUtils.show("查看本地搜索到的测量记录："+rulerCheckList.size()+",内容："+rulerCheckList);
+                for (int i = 0; i < rulerCheckList.size(); i++) {
+                    checkIDSet.add(rulerCheckList.get(i).getId());
+                }
+                dataDbHelper.close();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (rulerCheckList.size() == 0) {
+                            tvTip.setVisibility(View.VISIBLE);
+                        }
+                        measureProjectListAdapter.setRulerCheckList(rulerCheckList);
+                        total = rulerCheckList.size();
 //        updatePageData();
-        updateAdapterData();
-        mkLoader.setVisibility(View.GONE);
+                        updateAdapterData();
+                         getUnFinishServerCheckData();
+                        mkLoader.setVisibility(View.GONE);
+                    }
+                });
+
+            }
+        }).start();
+
     }
 
     private void updateAdapterData() {
@@ -200,34 +221,30 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
         measureProjectListAdapter.setRulerCheckList(rulerCheckList);
         measureProjectListAdapter.setCurrent_id(current_id);
         measureProjectListAdapter.notifyDataSetChanged();
-        int height = HeightUtils.setListViewHeighBaseOnChildren(lvWaitingMeasureList);
-        height = height + (50 * ScreenSizeUtil.getScreenWidth(getApplicationContext()) / 320);
-        ViewGroup.LayoutParams params = lvWaitingMeasureList.getLayoutParams();
-//        params.height = totalHeight + (gridView.getMeasuredHeight() * (listAdapter.getCount() - 1));
-        params.height = height;
-        lvWaitingMeasureList.setLayoutParams(params);
+        updateListViewHeight();
         if (rulerCheckList.size() == 0) {
             tvTip.setVisibility(View.VISIBLE);
         }else tvTip.setVisibility(View.GONE);
 
+        mkLoader.setVisibility(View.GONE);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        updateAdapterData();
+//        updateAdapterData();
     }
 
 
 
     /**
-     * 接受请求服务器记录表响应的数据
+     * TODO 接受请求服务器记录表响应的数据
      * @param event
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void serverMeasureRecordCallBack(MeasureRecordMsgEvent event) {
         List<RulerCheck> checkList = event.getCheckList();
-        LogUtils.show("serverMeasureRecordCallBack---查看从服务器收到的测量记录总数："+event.getTotal()+"，当前页数："+event.getCurrentPage()+"，每页条数："+event.getPageSize());
+//        LogUtils.show("serverMeasureRecordCallBack---查看从服务器收到的测量记录总数："+event.getTotal()+"，当前页数："+event.getCurrentPage()+"，每页条数："+event.getPageSize());
         LogUtils.show("serverMeasureRecordCallBack---查看从服务器收到的测量记录："+checkList.size()+"，内容："+checkList);
 //        如果checklist大小大于0，则说明请求成功，为0则说明网络请求失败，或者是真的为0
         if (checkList.size() > 0) {
@@ -235,7 +252,12 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
             pageSize = event.getPageSize();
             total = event.getTotal();
 //            rulerCheckList.clear();
-            rulerCheckList.addAll(checkList);
+            for (RulerCheck check : checkList) {
+                if (checkIDSet.add(check.getId())) {
+                    rulerCheckList.add(check);
+                }
+            }
+//            rulerCheckList.addAll(checkList);
             if (currentPage * pageSize < total) {
                 currentPage++;
                 getUnFinishServerCheckData();
@@ -243,20 +265,21 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
                 mkLoader.setVisibility(View.GONE);
                 if (rulerCheckList.size() == 0) {
                     tvTip.setVisibility(View.VISIBLE);
+                } else {
+                    tvTip.setVisibility(View.GONE);
                 }
+//                getUnFinishLocalCheck();
                 updateAdapterData();
-                /**
-                 * 补上传服务启动
-                 */
-                Intent replenishIntent = new Intent(getApplicationContext(), ReplenishDataToServerIntentService.class);
-                startService(replenishIntent);
+
             }
 
 //            updatePageData();
 
         } else {
+            mkLoader.setVisibility(View.GONE);
             getUnFinishLocalCheck();
         }
+
     }
 
     /**
@@ -337,27 +360,6 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
         }
     }
 
-    private void updatePageData() {
-
-//        if (currentPage == 1) {
-//            tvLastPage.setEnabled(false);
-//        } else {
-//            tvLastPage.setEnabled(true);
-//        }
-
-//        int totalPage = total / pageSize;
-//        if (total % pageSize > 0) {
-//            totalPage += 1;
-//        }
-//        if (currentPage == totalPage) {
-//            tvNextPage.setEnabled(false);
-//        } else {
-//            tvNextPage.setEnabled(true);
-//        }
-//        tvCurrentPage.setText(""+currentPage);
-//        tvTotal.setText("总数："+total);
-    }
-
     private void initView() {
 
         initWidget();
@@ -383,6 +385,7 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
 //        btnFinish.setOnClickListener(this);
 //        tvNextPage.setOnClickListener(this);
 //        tvLastPage.setOnClickListener(this);
+        initData();
     }
 
     @Override
@@ -527,7 +530,7 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
         rulerCheckList.remove(delRulerCheck);
         measureProjectListAdapter.notifyDataSetChanged();
         measureProjectListAdapter.setClickIndex(-1);
-        HeightUtils.setListViewHeighBaseOnChildren(lvWaitingMeasureList);
+        updateListViewHeight();
         delRulerCheck = null;
         LogUtils.show("本地数据库修改成功");
 
@@ -556,4 +559,41 @@ public class WaitingMeasureActivity extends BaseActivity implements View.OnClick
         LogUtils.show("check_id为："+rulerCheck.getId()+"的所有管控要点数据删除结果："+optionsResult);
 
     }
+
+    /**
+     * 计算Listview的高度
+     * 由于有一个点击弹出的菜单，所以要预留多一点位置在底部
+     */
+    private void updateListViewHeight() {
+        int height = HeightUtils.setListViewHeighBaseOnChildren(lvWaitingMeasureList);
+        height = height + (50 * ScreenSizeUtil.getScreenWidth(getApplicationContext()) / 320);
+        ViewGroup.LayoutParams params = lvWaitingMeasureList.getLayoutParams();
+//        params.height = totalHeight + (gridView.getMeasuredHeight() * (listAdapter.getCount() - 1));
+        params.height = height;
+        lvWaitingMeasureList.setLayoutParams(params);
+    }
+
+
+    private void updatePageData() {
+
+//        if (currentPage == 1) {
+//            tvLastPage.setEnabled(false);
+//        } else {
+//            tvLastPage.setEnabled(true);
+//        }
+
+//        int totalPage = total / pageSize;
+//        if (total % pageSize > 0) {
+//            totalPage += 1;
+//        }
+//        if (currentPage == totalPage) {
+//            tvNextPage.setEnabled(false);
+//        } else {
+//            tvNextPage.setEnabled(true);
+//        }
+//        tvCurrentPage.setText(""+currentPage);
+//        tvTotal.setText("总数："+total);
+    }
+
+
 }

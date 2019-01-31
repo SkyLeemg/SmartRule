@@ -5,18 +5,23 @@ import android.os.Looper;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.$Gson$Types;
+import com.vitec.task.smartrule.activity.MyApplication;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
 import okhttp3.FormBody;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -27,15 +32,41 @@ public class OkHttpUtils {
     private OkHttpClient mOkHttpClient;
     private Handler mDelivery;
     private Gson mGson;
-
+    private String token;
     private OkHttpUtils() {
         mOkHttpClient = new OkHttpClient.Builder()
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .writeTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
+//                .cookieJar(new CookieJar() {
+//                    private final HashMap<HttpUrl, List<Cookie>> cookieStore = new HashMap<>();
+////                    private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
+//                    @Override
+//                    public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+//                        if (cookies != null) {
+//                            for (Cookie cookie : cookies) {
+//                                LogUtils.show("---打印查看登录的cookieName:" + cookie.name() + ",cookiePath:" + cookie.path() + ",cookieValue:" + cookie.value());
+//                            }
+//                        }
+//                    }
+//
+//                    @Override
+//                    public List<Cookie> loadForRequest(HttpUrl url) {
+//                        return null;
+//                    }
+//                })
                 .build();
         mGson = new Gson();
         mDelivery = new Handler(Looper.getMainLooper());
+        StringBuffer sb = new StringBuffer();
+        sb.append("token=");
+        sb.append(TokenUtil.getToken(MyApplication.getContext()));
+        sb.append(";");
+        sb.append("type=app");
+
+        String test = "token=" + TokenUtil.getToken(MyApplication.getContext()) + ";type=app";
+
+        token =sb.toString();
     }
 
     private synchronized static OkHttpUtils getmInstance() {
@@ -46,7 +77,10 @@ public class OkHttpUtils {
     }
 
     private void getRequest(String url, final ResultCallback callback) {
-        final Request request = new Request.Builder().url(url).build();
+
+        final Request request = new Request.Builder()
+                .addHeader("Cookie",token)
+                .url(url).build();
 
         deliveryResult(callback, request);
     }
@@ -124,7 +158,7 @@ public class OkHttpUtils {
         }
         RequestBody requestBody = builder.build();
 
-        return new Request.Builder().url(url).post(requestBody).build();
+        return new Request.Builder().addHeader("Cookie",token).url(url).post(requestBody).build();
     }
 
 
@@ -196,6 +230,22 @@ public class OkHttpUtils {
 
         public Param(String key, String value) {
             this.key = key;
+            this.value = value;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
             this.value = value;
         }
 

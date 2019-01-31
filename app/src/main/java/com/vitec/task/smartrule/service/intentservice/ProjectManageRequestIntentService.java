@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.graphics.Path;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.widget.ScrollView;
 
 import com.google.gson.JsonObject;
+import com.vitec.task.smartrule.activity.EditMeasureMsgActivity;
 import com.vitec.task.smartrule.bean.ProjectUser;
 import com.vitec.task.smartrule.bean.RulerCheckProject;
 import com.vitec.task.smartrule.bean.RulerUnitEngineer;
@@ -75,6 +77,8 @@ public class ProjectManageRequestIntentService extends IntentService {
     public static final String flag_group_scan_qr_enter_project = "smart.ruler.scanQrEnterProject";
     //请求所有的测量组和单位工程/成员信息
     public static final String flag_group_quest_all_msg = "mart.ruler.request.all.msg";
+    //转让群主
+    public static final String flag_group_trasfer_master = "mart.ruler.transfer_master";
 //    获取参数内容
     public static final String key_get_value = "smart.ruler.get.value";
 
@@ -158,9 +162,75 @@ public class ProjectManageRequestIntentService extends IntentService {
             case flag_group_quest_all_msg:
                 requestAllMsg();
                 break;
+
+                /***********转让群主************/
+            case flag_group_trasfer_master:
+                transferMaster(bundle);
+                break;
         }
 
     }
+
+
+
+    /*******************TODO 转让群主开始*******************/
+    private void transferMaster(Bundle bundle) {
+        final int project_server_id = bundle.getInt(DataBaseParams.project_server_id,0);
+        //新群主id
+        final int user_id = bundle.getInt(DataBaseParams.user_user_id, 0);
+        //旧群主id
+        int owner_id = bundle.getInt(NetConstant.group_owner_id, 0);
+        OkHttpUtils.Param serverIdParam = new OkHttpUtils.Param(DataBaseParams.measure_project_id, String.valueOf(project_server_id));
+        OkHttpUtils.Param userIdParam = new OkHttpUtils.Param(DataBaseParams.user_user_id, String.valueOf(user_id));
+        OkHttpUtils.Param ownerIdParam = new OkHttpUtils.Param(NetConstant.group_owner_id, String.valueOf(owner_id));
+        List<OkHttpUtils.Param> paramList = new ArrayList<>();
+        paramList.add(serverIdParam);
+        paramList.add(userIdParam);
+        paramList.add(ownerIdParam);
+        String url = NetConstant.baseUrl + NetConstant.group_master_transfer;
+        LogUtils.show("转让群主接口----查看连接：" + url + ",查看参数：" + paramList);
+//        8-转让群主
+        final ProjectGroupAnyMsgEvent event = new ProjectGroupAnyMsgEvent();
+        event.setRequst_flag(8);
+        OkHttpUtils.post(url, new OkHttpUtils.ResultCallback<String>() {
+            @Override
+            public void onSuccess(String response) {
+                LogUtils.show("转让群主接口----------查看返回的信息：" + response);
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    int code = jsonObject.optInt("code");
+                    String msg = jsonObject.optString("msg");
+                    event.setMsg(msg);
+                    if (code == 200) {
+                        ContentValues values = new ContentValues();
+                        values.put(DataBaseParams.user_user_id, user_id);
+                        String where = DataBaseParams.server_id + "=?";
+                        int result = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.check_project_table_name, where, values, new String[]{String.valueOf(project_server_id)});
+                        LogUtils.show("转让群主接口-------查看更新群主信息是否成功：" + result);
+                        event.setObject(user_id);
+                        event.setSuccess(true);
+                        EventBus.getDefault().post(event);
+                     } else {
+                         event.setSuccess(false);
+                         EventBus.getDefault().post(event);
+                     }
+                 } catch (JSONException e) {
+                     e.printStackTrace();
+                     event.setSuccess(false);
+                     event.setMsg("数据解析错误");
+                     EventBus.getDefault().post(event);
+                 }
+              }
+
+              @Override
+              public void onFailure(Exception e) {
+                  event.setSuccess(false);
+                  event.setMsg("网络请求失败");
+                  EventBus.getDefault().post(event);
+              }
+              }, paramList);
+    }
+    /*******************转让群主结束*******************/
 
     /*******************TODO 更新单位工程开始*******************/
     private void updateUnitEngineer(Bundle bundle) {
@@ -287,7 +357,7 @@ public class ProjectManageRequestIntentService extends IntentService {
 
 
     /****************TODO 删除测量组开始*********************/
-    private void delProjectGroupFromServer(Bundle bundle) {
+    private void delProjectGroupFromServer(final Bundle bundle) {
         final String project_list = bundle.getString(NetConstant.group_project_list);
         OkHttpUtils.Param param = new OkHttpUtils.Param(NetConstant.group_project_list, project_list);
         String url = NetConstant.baseUrl + NetConstant.group_del_project_url;
@@ -307,9 +377,14 @@ public class ProjectManageRequestIntentService extends IntentService {
                     event.setMsg(msg);
                     if (code == 200) {
                         RulerCheckProject project = new RulerCheckProject();
-                        String where = DataBaseParams.server_id + "=?";
+                        String where = DataBaseParams.measure_id + "=?";
                         if (!project_list.contains(",")) {
-                            OperateDbUtil.delData(getApplicationContext(), DataBaseParams.check_project_table_name, where, new String[]{project_list});
+//
+                            String userWhere = " where " + DataBaseParams.project_server_id + "=" + project_list + " and " + DataBaseParams.user_user_id + "=" + bundle.getInt(DataBaseParams.user_user_id);
+                            List<ProjectUser> userList = OperateDbUtil.queryProjectUserFromSqlite(getApplicationContext(), userWhere);
+                            for (ProjectUser user : userList) {
+                                OperateDbUtil.delData(getApplicationContext(), DataBaseParams.project_user_table_name, where, new String[]{String.valueOf(user.getId())});
+                            }
                             project.setServer_id(Integer.parseInt(project_list));
                         } else {
 
@@ -345,13 +420,23 @@ public class ProjectManageRequestIntentService extends IntentService {
 
     /****************TODO 删除成员开始*********************/
     private void delMemberFromServer(Bundle bundle) {
+        //成员表里面的服务id
         final String group_id = bundle.getString(NetConstant.group_group_list);
-        final int user_id = bundle.getInt(DataBaseParams.user_user_id);
+        //被删除的成员的user_id
+        final int member_user_id = bundle.getInt(DataBaseParams.member_user_id,0);
+        //操作这个动作的人的user_
+        int user_id = bundle.getInt(DataBaseParams.user_user_id,0);
+        int project_id = bundle.getInt(DataBaseParams.project_server_id,0);
+
         OkHttpUtils.Param param = new OkHttpUtils.Param(NetConstant.group_group_list, group_id);
+        OkHttpUtils.Param userParam = new OkHttpUtils.Param(NetConstant.user_id, String.valueOf(user_id));
+        OkHttpUtils.Param projectParam = new OkHttpUtils.Param(DataBaseParams.measure_project_id, String.valueOf(project_id));
         final String url = NetConstant.baseUrl + NetConstant.group_del_member_url;
         List<OkHttpUtils.Param> paramList = new ArrayList<>();
         paramList.add(param);
-        LogUtils.show("删除成员接口:"+url+",参数:"+param);
+        paramList.add(userParam);
+        paramList.add(projectParam);
+        LogUtils.show("删除成员接口:"+url+",参数:"+paramList);
         final ProjectGroupAnyMsgEvent event = new ProjectGroupAnyMsgEvent();
         event.setRequst_flag(5);
         OkHttpUtils.post(url, new OkHttpUtils.ResultCallback<String>() {
@@ -377,7 +462,7 @@ public class ProjectManageRequestIntentService extends IntentService {
                         } else {
                             user.setServer_id(0);
                         }
-                        user.setUser_id(user_id);
+                        user.setUser_id(member_user_id);
                         event.setObject(user);
                         event.setSuccess(true);
                         EventBus.getDefault().post(event);
@@ -713,12 +798,13 @@ public class ProjectManageRequestIntentService extends IntentService {
                             for (int i = 0; i < dataArray.length(); i++) {
                                 JSONObject dataJson = dataArray.getJSONObject(i);
                                 int project_server_id = dataJson.optInt("id");
+                                int user_id = dataJson.optInt(DataBaseParams.user_user_id);
                                 String where = " where " + DataBaseParams.server_id + "=" + project_server_id;
                                 /**********判断是否要保存项目数据到项目表***********/
                                 List<RulerCheckProject> projectList = OperateDbUtil.queryProjectDataFromSqlite(getApplicationContext(), where);
                                 RulerCheckProject project = new RulerCheckProject();
                                 if (projectList.size() == 0) {
-
+                                    //不存在则新增到数据库
                                     project.setServer_id(project_server_id);
                                     project.setProjectName(dataJson.optString(DataBaseParams.check_project_name));
                                     project.setQrCode(dataJson.optString(DataBaseParams.check_project_qrcode));
@@ -731,7 +817,9 @@ public class ProjectManageRequestIntentService extends IntentService {
                                     project.setId(result);
                                     LogUtils.show("查看是否新增成功：" + result + "，" + project);
                                 } else {
+                                    //存在则判断是否要更新数据内容
                                     project = projectList.get(0);
+                                    //是否要更新项目名
                                     if (!projectList.get(0).getProjectName().equals(dataJson.optString(DataBaseParams.check_project_name))) {
                                         ContentValues values = new ContentValues();
                                         values.put(DataBaseParams.check_project_name, dataJson.optString(DataBaseParams.check_project_name));
@@ -739,6 +827,7 @@ public class ProjectManageRequestIntentService extends IntentService {
                                         int res=OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(),DataBaseParams.check_project_table_name,upwhere, values, new String[]{String.valueOf(project_server_id)});
                                         LogUtils.show("查询项目数据接口---查看prject_server_id："+project_server_id+",查看更新返回值："+res);
                                     }
+                                    //是否要更新二维码
                                     if (projectList.get(0).getQrCode()==null || !projectList.get(0).getQrCode().equals(dataJson.optString(DataBaseParams.check_project_qrcode))) {
                                         ContentValues values = new ContentValues();
                                         values.put(DataBaseParams.check_project_qrcode, dataJson.optString(DataBaseParams.check_project_qrcode));
@@ -746,23 +835,46 @@ public class ProjectManageRequestIntentService extends IntentService {
                                         int res=OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(),DataBaseParams.check_project_table_name,upwhere, values, new String[]{String.valueOf(project_server_id)});
                                         LogUtils.show("查询项目数据接口---查更新二维码："+project_server_id+",查看更新返回值："+res);
                                     }
+                                    //是否要更新群主
+                                    if (project.getUser().getUserID() != user_id) {
+                                        ContentValues values = new ContentValues();
+                                        values.put(DataBaseParams.user_user_id, user_id);
+                                        String upwhere = DataBaseParams.server_id + "=?";
+                                        int res=OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(),DataBaseParams.check_project_table_name,upwhere, values, new String[]{String.valueOf(project_server_id)});
+                                        LogUtils.show("查询项目数据接口---查更新群主："+project_server_id+",查看更新返回值："+res);
+                                    }
                                 }
 
                                 /*************判断是否要保存数据到项目成员表***************/
                                 int group_id = dataJson.getInt("group_id");
+                                //根据服务id去查询是否存在该条数据
                                 String mWhere = " where " + DataBaseParams.server_id + "=" + group_id;
                                 List<ProjectUser> memberList = OperateDbUtil.queryProjectUserFromSqlite(getApplicationContext(), mWhere);
                                 if (memberList.size() == 0) {
+                                    //不存在也有两种情况，一种是新增数据，一种是更新id到本地数据
                                     User user = OperateDbUtil.getUser(getApplicationContext());
-                                    ProjectUser member = new ProjectUser();
-                                    member.setUserName(user.getUserName());
-                                    member.setServer_id(group_id);
-                                    member.setUser_id(user.getUserID());
-                                    member.setMobile(user.getMobile());
-                                    member.setProjectId(project.getId());
-                                    member.setProjectServerId(project_server_id);
-                                    int r = OperateDbUtil.addProjectUserToSqlite(getApplicationContext(), member);
-                                    LogUtils.show("查询项目表接口---有未保存的成员---查看保存返回值：" + r);
+                                    String userWhere = " where " + DataBaseParams.project_server_id + "=" + project.getServer_id() + " and " + DataBaseParams.user_user_id + "=" + user.getUserID();
+                                    List<ProjectUser> userList = OperateDbUtil.queryProjectUserFromSqlite(getApplicationContext(), userWhere);
+                                    //根据项目服务id和用户id去查询是否存在
+                                    if (userList.size() == 0) {
+                                        //不存在则添加一条数据到数据库
+                                        ProjectUser member = new ProjectUser();
+                                        member.setUserName(user.getUserName());
+                                        member.setServer_id(group_id);
+                                        member.setUser_id(user.getUserID());
+                                        member.setMobile(user.getMobile());
+                                        member.setProjectId(project.getId());
+                                        member.setProjectServerId(project_server_id);
+                                        int r = OperateDbUtil.addProjectUserToSqlite(getApplicationContext(), member);
+                                        LogUtils.show("查询项目表接口---有未保存的成员---查看保存返回值：" + r);
+                                    } else {
+                                        //存在则更新数据库
+                                        ContentValues values = new ContentValues();
+                                        values.put(DataBaseParams.server_id, group_id);
+                                        int r = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.project_user_table_name, "id=?", values, new String[]{String.valueOf(userList.get(0).getId())});
+                                        LogUtils.show("查询项目表接口---有未更新ID的成员---查看保存返回值：" + r);
+                                    }
+
                                 }
 
                             }
@@ -913,28 +1025,95 @@ public class ProjectManageRequestIntentService extends IntentService {
                         if (unitArray.length() > 0) {
 //                            String delw = DataBaseParams.project_server_id + "=? and "+DataBaseParams.server_id+"!=?";
 //                            OperateDbUtil.delData(getApplicationContext(), DataBaseParams.unit_engineer_table_name, delw, new String[]{String.valueOf(project_server_id),String.valueOf(0)});
+                            /***
+                             * 先搜索出所有服务id>0,属于该项目下的单位工程
+                             * 用于其他手机做了删除 另外一部手机同一用户也同步删除的操作
+                             * ****/
+                            String delWhere;
+                            if (checkProject.getId() > 0) {
+                                delWhere = " where " + DataBaseParams.server_id + ">0" + " and (" + DataBaseParams.project_server_id + "=" + checkProject.getServer_id() + " or " + DataBaseParams.measure_project_id + "=" + checkProject.getId() + ")";
+                            } else {
+                                delWhere = " where " + DataBaseParams.server_id + ">0" + " and " + DataBaseParams.project_server_id + "=" + checkProject.getServer_id();
+                            }
+                            List<RulerUnitEngineer> delUnitList = OperateDbUtil.queryUnitEngineerDataFromSqlite(getApplicationContext(), delWhere);
                             for (int i=0;i<unitArray.length();i++) {
                                 JSONObject unitJson = unitArray.getJSONObject(i);
                                 int server_id = unitJson.optInt("id");
                                 String unitWhere = " where " + DataBaseParams.server_id + "=" + server_id;
+                                String location = unitJson.optString(DataBaseParams.unit_engineer_location);
+                                //如果该单位工程存在，则从delUnitList集合中移除出去
+                                for (RulerUnitEngineer engineer : delUnitList) {
+                                    if (engineer.getServer_id() == server_id) {
+                                        delUnitList.remove(engineer);
+                                        break;
+                                    }
+                                }
+
+
                                 List<RulerUnitEngineer> unitList = OperateDbUtil.queryUnitEngineerDataFromSqlite(getApplicationContext(), unitWhere);
+                                //如果有数据在数据库则查询是否要更新单位工程名
                                 if (unitList.size() > 0) {
                                     if (!unitList.get(0).getLocation().equals(unitJson.optString(DataBaseParams.unit_engineer_location))) {
                                         ContentValues values = new ContentValues();
-                                        values.put(DataBaseParams.unit_engineer_location, unitJson.optString(DataBaseParams.unit_engineer_location));
+                                        values.put(DataBaseParams.unit_engineer_location,location);
                                         String upwhere = DataBaseParams.server_id + "=?";
-                                        int res=OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(),DataBaseParams.unit_engineer_table_name,upwhere, values, new String[]{String.valueOf(server_id)});
-                                        LogUtils.show("查找单位工程数据接口---查看unit_id："+server_id+",查看更新返回值："+res);
+                                        int res = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.unit_engineer_table_name, upwhere, values, new String[]{String.valueOf(server_id)});
+                                        LogUtils.show("查找单位工程数据接口---查看unit_id：" + server_id + ",查看更新返回值：" + res);
+                                    }
+                                    if (unitList.get(0).getProject_server_id() == 0) {
+                                        ContentValues values = new ContentValues();
+                                        values.put(DataBaseParams.project_server_id,checkProject.getServer_id());
+                                        String upwhere = DataBaseParams.server_id + "=?";
+                                        int res = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.unit_engineer_table_name, upwhere, values, new String[]{String.valueOf(server_id)});
+                                        LogUtils.show("查找单位工程数据接口---有单位工程的project_server_id未更新，unit_id：" + server_id + ",查看更新返回值：" + res);
                                     }
                                     continue;
+                                } else {
+                                    //如果不存在，则更新项目id和单位工程名去查询是否已经存在一条数据
+                                    String where = "";
+                                    if (checkProject.getId() > 0) {
+                                        where = " where (" + DataBaseParams.project_server_id + "=" + checkProject.getServer_id() + " or " + DataBaseParams.measure_project_id + "=" +
+                                                checkProject.getId() + ") and " + DataBaseParams.unit_engineer_location + "=\"" + location+"\"";
+                                    } else {
+                                        where = " where "  + DataBaseParams.measure_project_id + "=" +
+                                                checkProject.getId() + " and " + DataBaseParams.unit_engineer_location + "=\"" + location+"\"";
+                                    }
+                                    List<RulerUnitEngineer> unitEngineerList = OperateDbUtil.queryUnitEngineerDataFromSqlite(getApplicationContext(), where);
+                                    if (unitEngineerList.size() == 0) {
+                                        //如果都不存在，则新建一条数据
+                                        RulerUnitEngineer unit = new RulerUnitEngineer();
+                                        unit.setServer_id(server_id);
+                                        unit.setLocation(location);
+                                        unit.setProject_server_id(unitJson.optInt("check_project_id"));
+                                        unit.setProject_id(checkProject.getId());
+                                        unit.setUpdateTime(unitJson.optInt(DataBaseParams.measure_update_time));
+                                        unit.setCreateTime(unitJson.optInt(DataBaseParams.measure_create_time));
+                                       int r= OperateDbUtil.addUnitPositionDataToSqlite(getApplicationContext(), unit);
+                                        LogUtils.show("查询测量组成员和单位工程接口-----有未添加的单位工程,查看是否添加成功："+r+",具体信息："+unit);
+                                    } else {
+                                      //如果存在，则更新数据到数据库
+                                        ContentValues values = new ContentValues();
+                                        values.put(DataBaseParams.project_server_id, checkProject.getServer_id());
+                                        if (checkProject.getId() > 0) {
+                                            values.put(DataBaseParams.measure_project_id, checkProject.getId());
+                                        }
+                                        values.put(DataBaseParams.server_id,server_id);
+                                        int r = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.unit_engineer_table_name, "id=?", values, new String[]{String.valueOf(unitEngineerList.get(0).getId())});
+                                        LogUtils.show("查询测量组成员和单位工程接口-----有单位工程的id："+server_id+"未更新,查看是否更新成功："+r);
+                                    }
+
                                 }
-                                RulerUnitEngineer unit = new RulerUnitEngineer();
-                                unit.setServer_id(server_id);
-                                unit.setLocation(unitJson.optString("location"));
-                                unit.setProject_server_id(unitJson.optInt("check_project_id"));
-                                unit.setProject_id(checkProject.getId());
-                                OperateDbUtil.addUnitPositionDataToSqlite(getApplicationContext(), unit);
                             }
+                            //最后做个判断，如果delUnitList集合中还有元素存在，则说明本地数据库中该项已经在其他设备中删除了，我们要做个删除标志
+                            if (delUnitList.size() > 0) {
+                                for (RulerUnitEngineer engineer : delUnitList) {
+                                    ContentValues contentValues = new ContentValues();
+                                    contentValues.put(DataBaseParams.delete_flag, 1);
+                                    int r = OperateDbUtil.updateOptionsDataToSqlite(getApplicationContext(), DataBaseParams.unit_engineer_table_name, "id=?", contentValues, new String[]{String.valueOf(engineer.getId())});
+                                    LogUtils.show("查询测量组成员和单位工程接口-----有其他设备删除了的单位工程，查看删除的单位工程："+engineer.getLocation()+",是否更新成功："+r);
+                                }
+                            }
+
                         }
                         event.setSuccess(true);
                         EventBus.getDefault().post(event);

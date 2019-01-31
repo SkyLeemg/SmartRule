@@ -43,6 +43,7 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
 //    private Button btnShareFile;
     private TextView tvDelFile;
     private TextView tvhasChoose;
+    private TextView tvTip;
     private ListView lvDisplayFile;
     private RelativeLayout rlSelectable;
     private MKLoader mkLoader;
@@ -85,11 +86,12 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
                 }
             }
         }
+
         measureFileAdapter = new DisplayMeasureFileAdapter(MeasureFileActivity.this, displayFileList,this);
         lvDisplayFile.setAdapter(measureFileAdapter);
         HeightUtils.setListViewHeighBaseOnChildren(lvDisplayFile);
         mkLoader.setVisibility(View.GONE);
-
+        showTip();
         /**
          * 设置Listview中复选框的选中事件的监听
          */
@@ -113,8 +115,12 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
 
         tvKeyWord.addTextChangedListener(textWatcher);
 
+    }
 
-
+    private void showTip() {
+        if (displayFileList.size() == 0) {
+            tvTip.setVisibility(View.VISIBLE);
+        } else tvTip.setVisibility(View.GONE);
     }
 
     private void initView() {
@@ -134,7 +140,8 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
         tvhasChoose = findViewById(R.id.tv_has_choose);
         mkLoader = findViewById(R.id.mkloader);
         tvChoose = findViewById(R.id.tv_choose);
-
+        tvTip = findViewById(R.id.tv_tip);
+        tvTip.setVisibility(View.GONE);
         rlSelectable.setVisibility(View.GONE);
 //        btnShareFile.setOnClickListener(this);
         tvDelFile.setOnClickListener(this);
@@ -252,6 +259,7 @@ public class MeasureFileActivity extends BaseActivity implements View.OnClickLis
 
             measureFileAdapter.setFileList(displayFileList);
             measureFileAdapter.notifyDataSetChanged();
+            showTip();
 
         }
     };

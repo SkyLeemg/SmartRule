@@ -10,6 +10,7 @@ public class ProjectGroupAnyMsgEvent {
      * 5-删除成员
      * 6-删除测量组
      * 7-更新单位工程名
+     * 8-转让群主
      */
     private int requst_flag;//
     private boolean isSuccess;

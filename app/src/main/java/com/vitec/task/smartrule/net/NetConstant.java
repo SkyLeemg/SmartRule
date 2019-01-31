@@ -1,6 +1,9 @@
 package com.vitec.task.smartrule.net;
 
-public class NetConstant {
+public  class NetConstant {
+
+
+
 
     public static final String baseUrl = "http://iot-test.vkforest.com";
 //    public static final String baseUrl = "http://iot.vkforest.com";
@@ -188,11 +191,14 @@ public class NetConstant {
     public static final String group_del_unit_engineer_url = "/api/ruler/deleteUnitEngineer";
     //查询测量组成员和单位工程
     public static final String group_get_member_and_unit_url = "/api/ruler/getGroupMemberAndUnitEngineer";
+    //转让群主
+    public static final String group_master_transfer = "/api/ruler/groupMasterTransfer";
 
     //通用参数
     public static final String group_project_list = "project_list";
     public static final String group_group_list = "group_list";
     public static final String group_unit_list = "unit_list";
+    public static final String group_owner_id = "owner_id";
 
 
 }

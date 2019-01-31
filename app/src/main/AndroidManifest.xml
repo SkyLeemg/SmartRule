@@ -23,7 +23,7 @@
 
 
     <application
-        android:name=".aliyun.app.AliYunApplication"
+        android:name=".activity.MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/instructions_logo_3x"
         android:label="@string/app_name"

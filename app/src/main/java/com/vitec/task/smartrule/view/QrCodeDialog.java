@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.luck.picture.lib.tools.ScreenUtils;
 import com.vitec.task.smartrule.R;
+import com.vitec.task.smartrule.bean.RulerCheckProject;
 import com.vitec.task.smartrule.utils.HeightUtils;
 import com.vitec.task.smartrule.utils.LogUtils;
 import com.vitec.task.smartrule.utils.ZXingUtils;
@@ -26,6 +27,7 @@ public class QrCodeDialog extends Dialog implements View.OnClickListener {
     private ImageView imgQrCode;
     private TextView tvCancel;
     private String qrString;
+    private RulerCheckProject project;
     private int size;
 
 
@@ -33,9 +35,10 @@ public class QrCodeDialog extends Dialog implements View.OnClickListener {
         super(context);
     }
 
-    public QrCodeDialog(@NonNull Context context, int themeResId,String qrString,int size) {
+    public QrCodeDialog(@NonNull Context context, int themeResId, RulerCheckProject project, int size) {
         super(context, themeResId);
-        this.qrString = qrString;
+        this.qrString = project.getQrCode();
+        this.project = project;
         this.size = size;
     }
 
@@ -68,6 +71,8 @@ public class QrCodeDialog extends Dialog implements View.OnClickListener {
         LogUtils.show("打印查看二维码宽度:" + wsize);
         Bitmap bitmap = ZXingUtils.createQRImage(qrString, 500,  500);
         imgQrCode.setImageBitmap(bitmap);
+        tvProjectName.setText(project.getProjectName()+"项目测量组");
+
     }
 
 

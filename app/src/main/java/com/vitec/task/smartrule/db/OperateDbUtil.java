@@ -280,6 +280,24 @@ public class OperateDbUtil {
      */
     public static int addProjectUserToSqlite(Context context, ProjectUser user) {
         int index = 0;
+        //先查找是否已经存在了一条数据
+//        String userWhere = " where (" + DataBaseParams.measure_project_id + "=" + user.getProjectId() + " or " + user.getProjectServerId() + "="
+//                + user.getProjectServerId() + ") and " + DataBaseParams.user_user_id + "=" + user.getUser_id();
+//        List<ProjectUser> projectUsers = queryProjectUserFromSqlite(context, userWhere);
+//        if (projectUsers.size() > 0) {
+//            index = projectUsers.get(0).getId();
+//            if (user.getServer_id() > 0 && projectUsers.get(0).getServer_id() == 0) {
+//                ContentValues values = new ContentValues();
+//                values.put(DataBaseParams.server_id, user.getServer_id());
+//                if (user.getProjectServerId() > 0) {
+//                    values.put(DataBaseParams.project_server_id, user.getProjectServerId());
+//                }
+//                updateOptionsDataToSqlite(context, DataBaseParams.project_user_table_name, values, new String[]{String.valueOf(projectUsers.get(0).getId())});
+//            }
+//            LogUtils.show("addProjectUserToSqlite-----该成员已经存在，直接返回");
+//            return index;
+//        }
+
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(context);
         ContentValues values = new ContentValues();
         values.put(DataBaseParams.user_user_id, user.getUser_id());
@@ -480,7 +498,9 @@ public class OperateDbUtil {
                 project.setCreateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_create_time)));
                 project.setUpdateTime(cursor.getInt(cursor.getColumnIndex(DataBaseParams.measure_update_time)));
                 project.setQrCode(cursor.getString(cursor.getColumnIndex(DataBaseParams.check_project_qrcode)));
-                project.setUser(getUser(context));
+                User user = new User();
+                user.setUserID(cursor.getInt(cursor.getColumnIndex(DataBaseParams.user_user_id)));
+                project.setUser(user);
 //                查询当前项目对应的单位工程
                 String unitWhere;
 
@@ -496,6 +516,7 @@ public class OperateDbUtil {
 //                LogUtils.show("查找出的项目信息----"+project);
             } while (cursor.moveToNext());
         }
+        cursor.close();
         bleDataDbHelper.close();
         return projectList;
     }
@@ -518,6 +539,7 @@ public class OperateDbUtil {
                 unitList.add(unit);
             } while (cursor.moveToNext());
         }
+        cursor.close();
         bleDataDbHelper.close();
         return unitList;
     }
@@ -555,6 +577,7 @@ public class OperateDbUtil {
             } while (cursor.moveToNext());
         }
 //        Log.e(TAG, "queryMeasureDataFromSqlite: 查看返回的数据内容："+checkOptionsDataList );
+        cursor.close();
         bleDataDbHelper.close();
         return checkOptionsDataList;
     }
@@ -590,6 +613,7 @@ public class OperateDbUtil {
             } while (cursor.moveToNext());
         }
 //        Log.e(TAG, "queryMeasureDataFromSqlite: 查看返回的数据内容："+checkOptionsDataList );
+        cursor.close();
         bleDataDbHelper.close();
         return checkOptionsDataList;
     }
@@ -633,6 +657,7 @@ public class OperateDbUtil {
             } while (cursor.moveToNext());
         }
 //        Log.e(TAG, "queryMeasureDataFromSqlite: 查看返回的数据内容："+checkOptionsDataList );
+        cursor.close();
         bleDataDbHelper.close();
         return checkOptionsDataList;
     }
@@ -696,7 +721,8 @@ public class OperateDbUtil {
 //                Log.e(TAG, "queryData: 查询历史的RulerCheckOption:"+checkOption.toString() );
             } while (cursor.moveToNext());
         }
-
+        cursor.close();
+        bleDataDbHelper.close();
         return checkOptionsList;
     }
 
@@ -748,6 +774,7 @@ public class OperateDbUtil {
 //                Log.e(TAG, "queryData: 查询历史的RulerCheckOption:"+checkOption.toString() );
             } while (cursor.moveToNext());
         }
+        cursor.close();
         bleDataDbHelper.close();
         return checkOptionsList;
     }
@@ -803,6 +830,7 @@ public class OperateDbUtil {
 //                Log.e(TAG, "queryData: 查询历史的RulerCheckOption:"+checkOption.toString() );
             } while (cursor.moveToNext());
         }
+        cursor.close();
         bleDataDbHelper.close();
         return checkOptionsList;
     }
@@ -833,6 +861,7 @@ public class OperateDbUtil {
         BleDataDbHelper dataDbHelper = new BleDataDbHelper(context);
         int result = dataDbHelper.updateDataToSqlite(DataBaseParams.options_data_table_name, values, " id =? ", id);
 //        LogUtils.show("updateOptionsDataToSqlite----查看更新返回值："+result+",更新的值："+values);
+
         dataDbHelper.close();
         return result;
     }

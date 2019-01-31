@@ -183,10 +183,10 @@ public class HandleBleMeasureDataReceiverService extends Service {
         flags = START_STICKY;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-            builder.setContentTitle("Beacon正在运行");
+            builder.setContentTitle("靠尺服务正在运行");
             builder.setContentText("");
             builder.setAutoCancel(false);
-            builder.setSmallIcon(R.mipmap.vlogo);
+            builder.setSmallIcon(R.mipmap.instructions_logo_3x);
             startForeground(DAEMON_SERVICE_ID, builder.build());
             Log.e("onStartCommand", "版本号大于等于6.0");
             Intent innerIntent = new Intent(this,DaemonInnerService.class);
@@ -340,6 +340,16 @@ public class HandleBleMeasureDataReceiverService extends Service {
         LogUtils.show("在后台服务-----收到上次成功的回调");
         switch (event.getFlag()) {
             case 1:
+                if (!(verticalOption.getServerId() > 0)) {
+//                    String where = " where " + DataBaseParams.measure_id + "=" + verticalOption.getId();
+//                    List<RulerCheckOptions> vs = OperateDbUtil.queryCheckOptionFromSqlite(getApplicationContext(), where);
+//                    if (vs.size() > 0) {
+//                        verticalOption.setServerId(vs.get(0).getServerId());
+//                        verticalOption.getRulerOptions().setServerID(vs.get(0).getRulerCheck().getServerId());
+//
+//                    }
+                    updateServerID();
+                }
                 verticalOptinsDataList.clear();
                 LogUtils.show("uploadResponeCallBack-----垂直度数据清空了");
                 vQualifiedNum = verticalOption.getQualifiedNum();
@@ -347,6 +357,15 @@ public class HandleBleMeasureDataReceiverService extends Service {
                 break;
 
             case 2:
+                if (levelOption.getServerId() == 0) {
+//                    String where = " where " + DataBaseParams.measure_id + "=" + levelOption.getId();
+//                    List<RulerCheckOptions> vs = OperateDbUtil.queryCheckOptionFromSqlite(getApplicationContext(), where);
+//                    if (vs.size() > 0) {
+//                        levelOption.setServerId(vs.get(0).getServerId());
+//                        levelOption.getRulerOptions().setServerID(vs.get(0).getRulerCheck().getServerId());
+//                    }
+                    updateServerID();
+                }
                 levelOptionsDataList.clear();
                 lQualifiedNum = levelOption.getQualifiedNum();
                 lRealNum = levelOption.getMeasuredNum();
@@ -368,6 +387,11 @@ public class HandleBleMeasureDataReceiverService extends Service {
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void netBussCallBack(String flag) {
         LogUtils.show("netBussCallBack---查看创建好记录表后返回的标志:"+flag);
+       updateServerID();
+    }
+
+    private void updateServerID() {
+        LogUtils.show("处理测量数据的服务------------开始更新服务id");
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(getApplicationContext());
 //        先更新RulerCheck的server_id
         String where = " where id = " + verticalOption.getRulerCheck().getId() + " or id = " + levelOption.getRulerCheck().getId();
@@ -378,7 +402,8 @@ public class HandleBleMeasureDataReceiverService extends Service {
                     RulerCheck rulerCheck = verticalOption.getRulerCheck();
                     rulerCheck.setServerId(check.getServerId());
                     verticalOption.setRulerCheck(rulerCheck);
-                } else if (check.getId() == levelOption.getRulerCheck().getId()) {
+                }
+                if (check.getId() == levelOption.getRulerCheck().getId()) {
                     RulerCheck rulerCheck = levelOption.getRulerCheck();
                     rulerCheck.setServerId(check.getServerId());
                     levelOption.setRulerCheck(rulerCheck);
@@ -402,6 +427,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
         }
     }
 
+
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void heightFloorCallBack(HeightFloorMsgEvent event) {
         LogUtils.show("heightFloorCallBack----层高改变了："+event.toString());
@@ -422,7 +448,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
              * 蓝牙连接成功
              */
             if (action.equals(BleParam.ACTION_GATT_CONNECTED)) {
-                textToSpeechHelper.speakChinese("蓝牙连接成功");
+//                textToSpeechHelper.speakChinese("蓝牙连接成功");
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     @Override
@@ -453,7 +479,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
              */
             if (action.equals(BleParam.ACTION_GATT_DISCONNECTED)) {
 //                bleCallBackResult.bleDisconnected();
-                textToSpeechHelper.speakChinese("蓝牙连接断开");
+//                textToSpeechHelper.speakChinese("蓝牙连接断开");
             }
 
 
@@ -607,6 +633,7 @@ public class HandleBleMeasureDataReceiverService extends Service {
         intent.putExtra(PerformMeasureNetIntentService.GET_FLAG_KEY, PerformMeasureNetIntentService.FLAG_UPDATE_DATA);
         intent.putExtra(PerformMeasureNetIntentService.GET_CREATE_OPTIONS_DATA_KEY, (Serializable) list);
         intent.putExtra(PerformMeasureNetIntentService.GET_UPDATE_DATA_KEY, (Serializable) dataList);
+        intent.putExtra(DataBaseParams.upload_flag, checkOptions.getRulerOptions().getType());
         startService(intent);
     }
 

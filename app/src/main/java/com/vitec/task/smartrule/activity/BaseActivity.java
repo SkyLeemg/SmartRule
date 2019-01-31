@@ -285,7 +285,7 @@ public class BaseActivity extends FragmentActivity {
                 try {
                     String text = new String(txValue, "UTF-8");
                     bleCallBackResult.bleReceviceData(text, uuid);
-                    LogUtils.show("在base界面中收到蓝牙数据：" + text);
+//                    LogUtils.show("在base界面中收到蓝牙数据：" + text);
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }

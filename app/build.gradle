@@ -56,18 +56,17 @@ dependencies {
     implementation 'jexcelapi:jxl:2.6'
     implementation files('libs/open_sdk_r6019_lite.jar')
     implementation 'no.nordicsemi.android:dfu:1.6.1'
-//    打开拍照/相册
+    //    打开拍照/相册
     implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.2.3'
-//    左滑菜单
+    //    左滑菜单
     implementation 'com.github.mcxtzhang:SwipeDelMenuLayout:V1.3.0'
-//    圆形头像
+    //    圆形头像
     implementation 'de.hdodenhof:circleimageview:2.2.0'
-//    生成二维码
+    //    生成二维码
     implementation 'com.google.zxing:core:3.2.1'
     implementation 'cn.bingoogolapple:bga-qrcodecore:1.1.7@aar'
     implementation 'cn.bingoogolapple:bga-zxing:1.1.7@aar'
-
-
     //加载大图的框架
-//    implementation 'com.shizhefei:LargeImageView:1.1.0'
+    //    implementation 'com.shizhefei:LargeImageView:1.1.0'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
 }

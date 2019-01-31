@@ -6,6 +6,8 @@ import java.util.List;
 
 public class MeasureRecordMsgEvent {
 
+    private boolean isSuccess;
+    private int code;
     private List<RulerCheck> checkList;
     private int total;
     private int currentPage;
@@ -41,6 +43,22 @@ public class MeasureRecordMsgEvent {
 
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
+    }
+
+    public boolean isSuccess() {
+        return isSuccess;
+    }
+
+    public void setSuccess(boolean success) {
+        isSuccess = success;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
     }
 
     @Override

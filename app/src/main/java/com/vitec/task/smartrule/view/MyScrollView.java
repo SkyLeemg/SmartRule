@@ -3,6 +3,7 @@ package com.vitec.task.smartrule.view;
 import android.content.Context;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.widget.ScrollView;
 
 public class MyScrollView extends ScrollView {
@@ -18,9 +19,12 @@ public class MyScrollView extends ScrollView {
         super(context, attrs, defStyleAttr);
     }
 
-
     @Override
-    protected int computeScrollDeltaToGetChildRectOnScreen(Rect rect) {
-        return 0;
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            onTouchEvent(ev);
+            return false;
+        }
+        return super.onInterceptTouchEvent(ev);
     }
 }

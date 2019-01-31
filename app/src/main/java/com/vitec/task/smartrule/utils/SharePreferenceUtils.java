@@ -2,6 +2,10 @@ package com.vitec.task.smartrule.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import com.google.zxing.decoding.Intents;
+import com.vitec.task.smartrule.db.DataBaseParams;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -37,6 +41,7 @@ public class SharePreferenceUtils {
         return keySet;
     }
 
+
     /**
      * 用于保存数据到SharePreference中
      * @param context 传递一个上下文对象，用于初次实例化sharedPreferences对象
@@ -51,6 +56,7 @@ public class SharePreferenceUtils {
             editor.putString(keyString, map.get(keyString));
         }
         editor.commit();
+
     }
 
 
@@ -71,5 +77,26 @@ public class SharePreferenceUtils {
 
         return map;
     }
+
+    /**
+     * 存储token
+     * @param context
+     * @param token
+     */
+    public static void saveToken(Context context, String token) {
+        Map<String, String> map = new HashMap<>();
+        map.put(DataBaseParams.user_token, token);
+        savaData(context,map,"tokenSave");
+    }
+
+    public static String getToken(Context context){
+        Set<String> setString = new HashSet<>();
+        setString.add(DataBaseParams.user_token);
+        Map<String, String> map = getData(context, setString, "tokenSave");
+        String token = map.get(DataBaseParams.user_token);
+        return token;
+    }
+
+
 
 }

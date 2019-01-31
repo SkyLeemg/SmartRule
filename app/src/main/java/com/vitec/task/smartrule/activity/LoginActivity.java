@@ -15,10 +15,12 @@ import android.widget.Toast;
 import com.tuyenmonkey.mkloader.MKLoader;
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.WxResultMessage;
+import com.vitec.task.smartrule.bean.event.LoginMsgEvent;
 import com.vitec.task.smartrule.db.CopyDbFileFromAsset;
 import com.vitec.task.smartrule.db.DataBaseParams;
 import com.vitec.task.smartrule.db.UserDbHelper;
 import com.vitec.task.smartrule.helper.WeChatHelper;
+import com.vitec.task.smartrule.net.LoginOkHttpUtils;
 import com.vitec.task.smartrule.net.NetConstant;
 import com.vitec.task.smartrule.service.intentservice.GetMudelIntentService;
 import com.vitec.task.smartrule.utils.LogUtils;
@@ -154,38 +156,41 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                     public void run() {
                         OkHttpUtils.Param nameParam = new OkHttpUtils.Param(NetConstant.login_mobile, loginName);
                         OkHttpUtils.Param pwdParam = new OkHttpUtils.Param(NetConstant.login_password, pwd);
+                        OkHttpUtils.Param typeParam = new OkHttpUtils.Param(DataBaseParams.options_type, "app");
                         List<OkHttpUtils.Param> paramList = new ArrayList<>();
                         paramList.add(nameParam);
                         paramList.add(pwdParam);
+                        paramList.add(typeParam);
 
                         StringBuffer url = new StringBuffer();
                         url.append(NetConstant.baseUrl);
                         url.append(NetConstant.loginUrl);
                         LogUtils.show( "run: 查看登录请求的信息："+ url+"参数："+ paramList.toString());
-                        OkHttpUtils.post(url.toString(), new OkHttpUtils.ResultCallback<String>() {
-                            @Override
-                            public void onSuccess(String response) {
-                                LogUtils.show("LoginActivity-----查看登录界面返回的登录信息："+response);
-                                LoginSuccess loginSuccess = new LoginSuccess(LoginActivity.this);
-                                OkHttpUtils.Param pwdParam = new OkHttpUtils.Param(NetConstant.login_password, pwd);
-                                List<OkHttpUtils.Param> paramList = new ArrayList<>();
-                                paramList.add(pwdParam);
-                                loginSuccess.doSuccess(response, paramList, mkLoader);
-                                isLoginSuccess = true;
-                            }
-
-                            @Override
-                            public void onFailure(Exception e) {
-                                Log.e(TAG, "onFailure: 网络请求失败：" + e.getMessage());
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mkLoader.setVisibility(View.GONE);
-                                        Toast.makeText(getApplicationContext(), "网络请求失败", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        }, paramList);
+                        LoginOkHttpUtils.loginRequest(getApplicationContext(),url.toString(), paramList);
+//                        OkHttpUtils.post(url.toString(), new OkHttpUtils.ResultCallback<String>() {
+//                            @Override
+//                            public void onSuccess(String response) {
+//                                LogUtils.show("LoginActivity-----查看登录界面返回的登录信息："+response);
+//                                LoginSuccess loginSuccess = new LoginSuccess(LoginActivity.this);
+//                                OkHttpUtils.Param pwdParam = new OkHttpUtils.Param(NetConstant.login_password, pwd);
+//                                List<OkHttpUtils.Param> paramList = new ArrayList<>();
+//                                paramList.add(pwdParam);
+//                                loginSuccess.doSuccess(response, paramList, mkLoader);
+//                                isLoginSuccess = true;
+//                            }
+//
+//                            @Override
+//                            public void onFailure(Exception e) {
+//                                Log.e(TAG, "onFailure: 网络请求失败：" + e.getMessage());
+//                                runOnUiThread(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        mkLoader.setVisibility(View.GONE);
+//                                        Toast.makeText(getApplicationContext(), "网络请求失败", Toast.LENGTH_SHORT).show();
+//                                    }
+//                                });
+//                            }
+//                        }, paramList);
                     }
                 }).start();
 
@@ -228,56 +233,74 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     }
 
 
+    /**
+     * 登录响应
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void loginResultCallBack(LoginMsgEvent event) {
+        if (event.isSuccess()) {
+            LoginSuccess loginSuccess = new LoginSuccess(LoginActivity.this);
+            List<OkHttpUtils.Param> paramList = new ArrayList<>();
+            loginSuccess.doSuccess(event.getRespone(), paramList, mkLoader);
+            isLoginSuccess = true;
+        } else {
+            Toast.makeText(getApplicationContext(),event.getMsg(),Toast.LENGTH_SHORT).show();
+            mkLoader.setVisibility(View.GONE);
+        }
+    }
+
+
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void wxLoginCallBack(WxResultMessage message) {
-//        if (message.getFlag() == 1) {
-            String unionId = message.getUionId();
-            final String data = message.getData();
-            OkHttpUtils.Param param = new OkHttpUtils.Param(NetConstant.login_data, data);
-            List<OkHttpUtils.Param> paramList = new ArrayList<>();
-            paramList.add(param);
-            StringBuffer url = new StringBuffer();
-            url.append(NetConstant.baseUrl);
-            url.append(NetConstant.loginUrl);
-            LogUtils.show("查看微信登录请求参数："+paramList.toString()+",链接："+url.toString());
-            OkHttpUtils.post(url.toString(), new OkHttpUtils.ResultCallback<String>() {
-                @Override
-                public void onSuccess(String response) {
-                    /**
-                     * {"status":"success",
-                     * "code":200,
-                     * "data":
-                     *    {"token":"768d33bae04333cb842088405839c6cc",
-                     *    "user_info":
-                     *       {"status":200,
-                     *        "statusInfo":"ok",
-                     *        "data":
-                     *          {"userid":"452",
-                     *          "username":"xjbank",
-                     *          "language":"",
-                     *          "name":"xjbank",
-                     *          "file":"http:\/\/vitec.oss-cn-shenzhen.aliyuncs.com\/vitec\/locales\/20180830\/用户.png",
-                     *          "mobile":"15107620711",
-                     *          "projectName":"xj_bank",
-                     *          "classification":1,
-                     *          "projectImg":"http:\/\/vitec.oss-cn-shenzhen.aliyuncs.com\/vitec\/locales\/20180907logo.png","belong":"506","admin":"0","role":["管理员"],"department":[],"authObj":[{"id":177,"name":"人员定位"},{"id":178,"name":"管理员"},{"id":179,"name":"技术员"}],"auth":[177,178,179],"authName":["人员定位","管理员","技术员"],"project":[{"id":506,"name":"xj_bank"}]}}},
-                     *          "msg":"登录成功"}
-                     */
-                    LogUtils.show( "onSuccess: 查看返回的微信登录信息："+response );
-                    LoginSuccess loginSuccess = new LoginSuccess(LoginActivity.this);
-                    List<OkHttpUtils.Param> paramList = new ArrayList<>();
-                    OkHttpUtils.Param param1 = new OkHttpUtils.Param(DataBaseParams.user_data, data);
-                    paramList.add(param1);
-                    loginSuccess.doSuccess(response,paramList,mkLoader);
-                    LogUtils.show("登录界面----请求成功的回调方法");
-                    isLoginSuccess = true;
-                }
 
-                @Override
-                public void onFailure(Exception e) {
-                    Log.e(TAG, "onFailure: 网络请求失败："+e.getMessage() );
-                }
-            },paramList);
+//        if (message.getFlag() == 1) {
+        String unionId = message.getUionId();
+        final String data = message.getData();
+        OkHttpUtils.Param param = new OkHttpUtils.Param(NetConstant.login_data, data);
+        List<OkHttpUtils.Param> paramList = new ArrayList<>();
+        paramList.add(param);
+        StringBuffer url = new StringBuffer();
+        url.append(NetConstant.baseUrl);
+        url.append(NetConstant.loginUrl);
+        LogUtils.show("查看微信登录请求参数：" + paramList.toString() + ",链接：" + url.toString());
+        OkHttpUtils.post(url.toString(), new OkHttpUtils.ResultCallback<String>() {
+            @Override
+            public void onSuccess(String response) {
+                /**
+                 * {"status":"success",
+                 * "code":200,
+                 * "data":
+                 *    {"token":"768d33bae04333cb842088405839c6cc",
+                 *    "user_info":
+                 *       {"status":200,
+                 *        "statusInfo":"ok",
+                 *        "data":
+                 *          {"userid":"452",
+                 *          "username":"xjbank",
+                 *          "language":"",
+                 *          "name":"xjbank",
+                 *          "file":"http:\/\/vitec.oss-cn-shenzhen.aliyuncs.com\/vitec\/locales\/20180830\/用户.png",
+                 *          "mobile":"15107620711",
+                 *          "projectName":"xj_bank",
+                 *          "classification":1,
+                 *          "projectImg":"http:\/\/vitec.oss-cn-shenzhen.aliyuncs.com\/vitec\/locales\/20180907logo.png","belong":"506","admin":"0","role":["管理员"],"department":[],"authObj":[{"id":177,"name":"人员定位"},{"id":178,"name":"管理员"},{"id":179,"name":"技术员"}],"auth":[177,178,179],"authName":["人员定位","管理员","技术员"],"project":[{"id":506,"name":"xj_bank"}]}}},
+                 *          "msg":"登录成功"}
+                 */
+                LogUtils.show("onSuccess: 查看返回的微信登录信息：" + response);
+                LoginSuccess loginSuccess = new LoginSuccess(LoginActivity.this);
+                List<OkHttpUtils.Param> paramList = new ArrayList<>();
+                OkHttpUtils.Param param1 = new OkHttpUtils.Param(DataBaseParams.user_data, data);
+                paramList.add(param1);
+                loginSuccess.doSuccess(response, paramList, mkLoader);
+                LogUtils.show("登录界面----请求成功的回调方法");
+                isLoginSuccess = true;
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e(TAG, "onFailure: 网络请求失败：" + e.getMessage());
+            }
+        }, paramList);
 //            }
     }
 

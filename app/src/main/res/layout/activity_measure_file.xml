@@ -121,13 +121,22 @@
                 android:layout_height="0.5dp"
                 android:background="@color/color_gv_border"/>
 
+            <TextView
+                android:id="@+id/tv_tip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="暂无文件"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="15dp"
+                android:textColor="@color/color_unselect_bar"
+                />
+
             <com.vitec.task.smartrule.view.SwipeListView
                 android:id="@+id/lv_display_file"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
                 android:divider="#00000000"
-
                 ></com.vitec.task.smartrule.view.SwipeListView>
 
         </LinearLayout>

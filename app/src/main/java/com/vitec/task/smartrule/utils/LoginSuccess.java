@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.aliyun.alink.linksdk.tools.ThreadTools.getProcessName;
 import static com.aliyun.alink.linksdk.tools.ThreadTools.runOnUiThread;
 
 public class LoginSuccess {
@@ -67,7 +68,8 @@ public class LoginSuccess {
                 String data = jsonObject.optString("data");
                 JSONObject dataJson = new JSONObject(data);
 //                获取token,token的时效是两个小时，每次登录后都要进行更新
-                String token = dataJson.optString("token");
+//                String token = dataJson.optString("token");
+                String token =SharePreferenceUtils.getToken(context);
 //                获取user_info的json
                 String user_info = dataJson.optString("user_info");
 //                user_info字段的JSON

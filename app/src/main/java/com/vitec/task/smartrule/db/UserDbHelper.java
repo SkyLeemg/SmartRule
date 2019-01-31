@@ -65,6 +65,7 @@ public class UserDbHelper {
                 userList.add(user);
             } while (cursor.moveToNext());
         }
+        cursor.close();
         return userList;
     }
 
@@ -83,6 +84,7 @@ public class UserDbHelper {
                 userList.add(user);
             } while (cursor.moveToNext());
         }
+        cursor.close();
         return userList;
     }
 

@@ -116,7 +116,8 @@ public class CheckUpdateActivity extends BaseActivity implements View.OnClickLis
                      * CD01---请求靠尺版本信息
                      */
                     LogUtils.show("在主界面中写入数据：");
-                    bleService.writeRxCharacteristic(ConnectDeviceService.SYSTEM_RX_SERVICE_UUID, ConnectDeviceService.SYSTEM_RX_CHAR_UUID, "CD01".getBytes());
+                    bleService.writeRxCharacteristic(ConnectDeviceService.SYSTEM_RX_SERVICE_UUID, ConnectDeviceService.SYSTEM_RX_CHAR_UUID, "CD02".getBytes());
+
                 } else {
                     if (loadingDialog.isShowing())
                     loadingDialog.dismiss();

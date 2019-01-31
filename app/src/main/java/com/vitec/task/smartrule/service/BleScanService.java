@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by skyel on 2018/9/27.
@@ -43,6 +45,7 @@ public class BleScanService extends Service implements BeaconConsumer {
     private List<Beacon> beacons;
     private Region region;
     private Beacon lastBeacon;
+    private Set<String> macSet;
 
     @Nullable
     @Override
@@ -59,6 +62,7 @@ public class BleScanService extends Service implements BeaconConsumer {
 
     private void initData() {
         beacons = new ArrayList<>();
+        macSet = new HashSet<>();
     }
 
     private void initBeacon() {
@@ -83,12 +87,12 @@ public class BleScanService extends Service implements BeaconConsumer {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> collection, Region region) {
                 Log.e(TAG, "didRangeBeaconsInRegion: 查看搜索到的beacon总数:"+collection.size());
-                beacons.clear();
+//                beacons.clear();
                 if (collection.size() > 0) {
                     //符合要求的beacon集合
                     for (Beacon beacon : collection) {
 //                        判断该beacon的UUID是否为我们感兴趣的
-                        if (beacon.getId1().toString().equalsIgnoreCase(FILTER_UUID2) ){
+                        if (beacon.getId1().toString().equalsIgnoreCase(FILTER_UUID2) && macSet.add(beacon.getBluetoothAddress()) ){
 //                            是则添加到集合
                             beacons.add(beacon);
                         }

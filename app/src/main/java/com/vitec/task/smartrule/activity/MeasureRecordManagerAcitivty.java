@@ -84,6 +84,7 @@ public class MeasureRecordManagerAcitivty extends BaseFragmentActivity {
         Log.e(TAG, "initData: 查看收到的rulercheck:"+rulerCheck.toString() );
         checkOptionsList = new ArrayList<>();
         bleDataDbHelper = new BleDataDbHelper(getApplicationContext());
+        tvToolBarTitle.setText(rulerCheck.getEngineer().getEngineerName());
 
         /**
          * 先查找Iot_ruler_check_options表格有没有同样checkid的，如果有则，不创建直接用之前的
@@ -199,6 +200,7 @@ public class MeasureRecordManagerAcitivty extends BaseFragmentActivity {
                 Log.e(TAG, "queryData: 查询历史的RulerCheckOption:"+checkOption.toString() );
             } while (cursor.moveToNext());
         }
+        cursor.close();
         return checkOptionsList.size() > 0 ? true : false;
     }
 

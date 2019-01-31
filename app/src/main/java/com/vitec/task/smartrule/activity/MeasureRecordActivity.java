@@ -142,7 +142,7 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
     private void getUnFinishLocalCheck() {
         mkLoader.setVisibility(View.VISIBLE);
         User user = OperateDbUtil.getUser(getApplicationContext());
-        String where = " where " + DataBaseParams.user_user_id + " = " + user.getUserID() + " and " + DataBaseParams.measure_is_finish + "=1 or "+  DataBaseParams.measure_is_finish + "=2 ORDER BY " + DataBaseParams.measure_create_time + " DESC;";
+        String where = " where " + DataBaseParams.user_user_id + " = " + user.getUserID() + " and (" + DataBaseParams.measure_is_finish + "=1 or "+  DataBaseParams.measure_is_finish + "=2) ORDER BY " + DataBaseParams.measure_create_time + " DESC;";
         LogUtils.show("查看本地搜索的条件：" + where);
         BleDataDbHelper dataDbHelper = new BleDataDbHelper(getApplicationContext());
         allRulerCheckList.clear();
@@ -730,13 +730,25 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
                     fileNameEt.setText(fileName);
                     builder.setMessage(msg.toString());
                     builder.setView(fileNameEt);
-
-
+                    builder.setCancelable(false);
                     builder.setNegativeButton("取消", null);
-                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    builder.setPositiveButton("确定", null);
+                    final AlertDialog dialog = builder.create();
+                    dialog.show();
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                         @Override
-                        public void onClick(DialogInterface dialogInterface, int p) {
+                        public void onClick(View view) {
                             newFileName = fileNameEt.getText().toString().trim();
+                            if (newFileName.equals("")) {
+                                if (fileNameEt.getText().toString().length() > 0) {
+                                    Toast.makeText(getApplicationContext(), "文件名不能是空格", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(getApplicationContext(),"文件名不能为空",Toast.LENGTH_SHORT).show();
+                                }
+
+                                return;
+
+                            }
                             File newfile = new File(ExportMeaureDataHelper.path, newFileName + ".xls");
                             if (newfile.exists()) {
                                 AlertDialog.Builder tipBulder = new AlertDialog.Builder(MeasureRecordActivity.this);
@@ -781,9 +793,18 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
                                     startService(serviceIntent);
                                 }
                             }
+                            dialog.dismiss();
                         }
                     });
-                    builder.show();
+
+//
+//                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialogInterface, int p) {
+//
+//                        }
+//                    });
+//                    builder.show();
 
 
                 } else {
@@ -797,6 +818,10 @@ public class MeasureRecordActivity extends BaseActivity implements View.OnClickL
              * 删除记录表
              */
             case R.id.btn_del_record:
+                if (checkedRulerCheckList.size() == 0) {
+                    Toast.makeText(getApplicationContext(),"请选择要删除的测量记录",Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 mkLoader.setVisibility(View.VISIBLE);
                 StringBuffer check_ids = new StringBuffer();
                 for (int i = 0; i < checkedRulerCheckList.size(); i++) {

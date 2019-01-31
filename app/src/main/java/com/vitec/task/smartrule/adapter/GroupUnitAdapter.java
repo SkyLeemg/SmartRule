@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.RulerUnitEngineer;
 import com.vitec.task.smartrule.db.DataBaseParams;
+import com.vitec.task.smartrule.helper.TextToSpeechHelper;
 import com.vitec.task.smartrule.net.NetConstant;
 import com.vitec.task.smartrule.service.intentservice.ProjectManageRequestIntentService;
 
@@ -28,6 +29,7 @@ public class GroupUnitAdapter extends BaseAdapter {
     private boolean isShowDel = false;//是否显示删除按钮
     private int clickIndex = -1;//是否被点击了，被点击的项目显示出编辑按钮
     private int showEditIndex = -1;//是否点击了编辑i按钮，被点击编辑按钮的项目显示出修改页面---输入框和确定修改按钮
+    private boolean isEdit = false;
 
     public GroupUnitAdapter(Context context, List<RulerUnitEngineer> unitEngineers) {
         this.context = context;
@@ -61,6 +63,7 @@ public class GroupUnitAdapter extends BaseAdapter {
             holder.tvEdit = view.findViewById(R.id.tv_edit);
             holder.tvChangeUnit = view.findViewById(R.id.tv_change_unit);
             holder.etUnitName = view.findViewById(R.id.et_input_unit_name);
+            holder.tvCancel = view.findViewById(R.id.tv_cancel_unit);
             view.setTag(holder);
         } else {
             holder = (ViewHolder) view.getTag();
@@ -77,7 +80,7 @@ public class GroupUnitAdapter extends BaseAdapter {
         }
 
         //是否显示编辑按钮，被点击的项目才显示编辑按钮
-        if (clickIndex==i) {
+        if (isEdit && clickIndex==i) {
             holder.tvEdit.setVisibility(View.VISIBLE);
             holder.imgDel.setVisibility(View.GONE);
         }else {
@@ -85,20 +88,24 @@ public class GroupUnitAdapter extends BaseAdapter {
         }
 
         //是否显示编辑页面
-        if (showEditIndex==i) {
+        if (isEdit && showEditIndex==i) {
             holder.etUnitName.setVisibility(View.VISIBLE);
             holder.tvChangeUnit.setVisibility(View.VISIBLE);
             holder.tvUnitName.setVisibility(View.INVISIBLE);
             holder.imgDel.setVisibility(View.GONE);
+            holder.tvCancel.setVisibility(View.VISIBLE);
             holder.etUnitName.setText(unitEngineerList.get(i).getLocation());
         }else {
             holder.etUnitName.setVisibility(View.GONE);
             holder.tvChangeUnit.setVisibility(View.GONE);
             holder.tvUnitName.setVisibility(View.VISIBLE);
+            holder.tvCancel.setVisibility(View.INVISIBLE);
         }
 
         if (i == unitEngineerList.size() - 1) {
             holder.line.setVisibility(View.INVISIBLE);
+        } else {
+            holder.line.setVisibility(View.VISIBLE);
         }
 
         //删除按钮的点击事件
@@ -122,6 +129,19 @@ public class GroupUnitAdapter extends BaseAdapter {
                     }
                 });
                 builder.show();
+            }
+        });
+
+        //取消按钮-退出编辑单位工程的状态·点击事件
+        holder.tvCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showEditIndex = -1;
+                holder.etUnitName.setVisibility(View.GONE);
+                holder.tvChangeUnit.setVisibility(View.GONE);
+                holder.tvUnitName.setVisibility(View.VISIBLE);
+                holder.tvCancel.setVisibility(View.INVISIBLE);
+                holder.imgDel.setVisibility(View.VISIBLE);
             }
         });
 
@@ -187,6 +207,10 @@ public class GroupUnitAdapter extends BaseAdapter {
         return showEditIndex;
     }
 
+    public void setEdit(boolean edit) {
+        isEdit = edit;
+    }
+
     public void setShowEditIndex(int showEditIndex) {
         this.showEditIndex = showEditIndex;
     }
@@ -198,6 +222,7 @@ public class GroupUnitAdapter extends BaseAdapter {
         TextView tvEdit;
         TextView tvChangeUnit;
         EditText etUnitName;
+        TextView tvCancel;
     }
 }
 

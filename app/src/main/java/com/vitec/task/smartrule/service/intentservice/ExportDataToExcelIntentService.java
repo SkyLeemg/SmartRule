@@ -51,21 +51,21 @@ public class ExportDataToExcelIntentService extends IntentService {
         List<MeasureTable> tableList = initExportDataFormat(exportRulerCheckList);
         final ExportMeaureDataHelperVersion2 exportMeaureData = new ExportMeaureDataHelperVersion2(getApplicationContext(), fileName);
         LogUtils.show("onHandleIntent---准备开始导出文件，总数："+tableList.size()+",内容："+tableList.toString());
-        if (tableList.size() > 0) {
-            for (int i=0;i<tableList.size();i++) {
-                exportMeaureData.addExcelData(tableList.get(i));
-            }
-            exportMeaureData.write(new IAddExcelResultCallBack() {
-                @Override
-                public void onSuccess(String title) {
-                    //                                一定要关闭，不然表格内容会为空
-                    exportMeaureData.close();
-                    ExportMsgEvent exportMsgEvent = new ExportMsgEvent(true);
-                    exportMsgEvent.setMsg(title);
-                    exportMsgEvent.setFilePath(title);
+                    if (tableList.size() > 0) {
+                        for (int i=0;i<tableList.size();i++) {
+                            exportMeaureData.addExcelData(tableList.get(i));
+                        }
+                        exportMeaureData.write(new IAddExcelResultCallBack() {
+                            @Override
+                            public void onSuccess(String title) {
+                                //                                一定要关闭，不然表格内容会为空
+                                exportMeaureData.close();
+                                ExportMsgEvent exportMsgEvent = new ExportMsgEvent(true);
+                                exportMsgEvent.setMsg(title);
+                                exportMsgEvent.setFilePath(title);
 
-                    EventBus.getDefault().post(exportMsgEvent);
-                    LogUtils.show("导出成功:"+title);
+                                EventBus.getDefault().post(exportMsgEvent);
+                                LogUtils.show("导出成功:"+title);
                 }
 
                 @Override
@@ -160,7 +160,7 @@ public class ExportDataToExcelIntentService extends IntentService {
                             datalist.add(data);
                         }
                     } else {
-                        for (int n = 0; n < 20; n++) {
+                        for (int n = 0; n < 9; n++) {
                             MeasureData data = new MeasureData();
                             data.setData("");
                             data.setId(n + 1);

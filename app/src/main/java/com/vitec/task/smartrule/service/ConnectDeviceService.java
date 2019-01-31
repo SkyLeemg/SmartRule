@@ -1,5 +1,6 @@
 package com.vitec.task.smartrule.service;
 
+import android.app.Notification;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -14,13 +15,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.audiofx.AudioEffect;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.vitec.task.smartrule.R;
 import com.vitec.task.smartrule.bean.BleMessage;
+import com.vitec.task.smartrule.helper.TextToSpeechHelper;
 import com.vitec.task.smartrule.utils.BleParam;
 import com.vitec.task.smartrule.utils.LogUtils;
 
@@ -48,7 +53,7 @@ public class ConnectDeviceService extends Service {
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
     public static int mConnectionState = STAAE_DISCONNECTED;
-
+    private final static int DAEMON_SERVICE_ID = -5111;
 
     public static final UUID TX_POWER_UUID = UUID.fromString("00001804-0000-1000-8000-00805f9b34fb");
     public static final UUID TX_POWER_LEVEL_UUID = UUID.fromString("00002a07-0000-1000-8000-00805f9b34fb");
@@ -76,6 +81,8 @@ public class ConnectDeviceService extends Service {
     public static int LEVEL_DISCOVER_FLAG = 0;
     public static int VERTICAL_DISCOVER_FLAG = 0;
 
+    private TextToSpeechHelper textToSpeechHelper;
+
 
 
     public static String current_connecting_mac_address = "";//连接成功后的地址
@@ -91,6 +98,30 @@ public class ConnectDeviceService extends Service {
         return mBinder;
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        textToSpeechHelper = new TextToSpeechHelper(getApplicationContext(),"");
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        /************************做服务保活---设置为前台服务***************************/
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+            builder.setContentTitle("蓝牙服务正在接收靠尺数据");
+            builder.setContentText("");
+            builder.setAutoCancel(false);
+            builder.setSmallIcon(R.mipmap.instructions_logo_3x);
+            startForeground(DAEMON_SERVICE_ID, builder.build());
+            Intent innerIntent = new Intent(this,DaemonInnerService.class);
+            startService(innerIntent);
+        }else {
+            startForeground(DAEMON_SERVICE_ID,new Notification());
+        }
+        return super.onStartCommand(intent, flags, startId);
+    }
 
     public class LocalBinder extends Binder {
         public ConnectDeviceService getService() {
@@ -110,7 +141,7 @@ public class ConnectDeviceService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
+        textToSpeechHelper.stopSpeech();
         Log.e(TAG, "onDestroy: 蓝牙服务类销毁了" );
         close();
     }
@@ -213,8 +244,7 @@ public class ConnectDeviceService extends Service {
                 message.setConnectState(STATE_CONNECTED);
                 Log.e(TAG, "vitec 连接成功onConnectionStateChange: Connected to gatt server" );
 //                连接成功
-
-
+                textToSpeechHelper.speakChinese("蓝牙连接成功");
 //                EventBus.getDefault().post(message);
                 Log.e(TAG, "vitec 连接成功onConnectionStateChange: attempting to start service discovery:"+mBluetoothGatt.discoverServices() );
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -225,6 +255,7 @@ public class ConnectDeviceService extends Service {
                 LEVEL_DISCOVER_FLAG = 0;
                 Log.e(TAG, "vitec 蓝牙断开连接onConnectionStateChange: Disconnect from gatt server" );
                 broadcastUpdate(intentAction);
+                textToSpeechHelper.speakChinese("蓝牙连接断开");
 //                EventBus.getDefault().post(false);
             }
         }
@@ -322,29 +353,30 @@ public class ConnectDeviceService extends Service {
             try {
                 text = new String(txValue, "UTF-8");
                 LogUtils.show("broadcastUpdate: 收到一个系统UUID的数据："+text);
-//                writeRxCharacteristic(SYSTEM_RX_SERVICE_UUID,SYSTEM_RX_CHAR_UUID,"CD01".getBytes());
+//                writeRxCharacteristic(SYSTEM_RX_SERVICE_UUID,SYSTEM_RX_CHAR_UUID,"CD02".getBytes());
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
 
-        } else if (LEVELNESS_TX_CHAR_UUID.equals(characteristic.getUuid())) {
-            try {
-                text = new String(txValue, "UTF-8");
-                LogUtils.show( "broadcastUpdate: 收到一个水平度UUID的数据："+text);
-
-                writeRxCharacteristic(LEVELNESS_SERVICE_UUID,LEVELNESS_RX_CHAR_UUID,"level".getBytes());
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        } else if (VERTICALITY_TX_CHAR_UUID.equals(characteristic.getUuid())) {
-            try {
-                text = new String(txValue, "UTF-8");
-                LogUtils.show( "broadcastUpdate: 收到一个垂直度UUID的数据："+text);
-                writeRxCharacteristic(VERTICALITY_SERVICE_UUID,VERTICALITY_RX_CHAR_UUID,"vertical".getBytes());
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
         }
+//        else if (LEVELNESS_TX_CHAR_UUID.equals(characteristic.getUuid())) {
+//            try {
+//                text = new String(txValue, "UTF-8");
+//                LogUtils.show( "broadcastUpdate: 收到一个水平度UUID的数据："+text);
+//
+//                writeRxCharacteristic(LEVELNESS_SERVICE_UUID,LEVELNESS_RX_CHAR_UUID,"level".getBytes());
+//            } catch (UnsupportedEncodingException e) {
+//                e.printStackTrace();
+//            }
+//        } else if (VERTICALITY_TX_CHAR_UUID.equals(characteristic.getUuid())) {
+//            try {
+//                text = new String(txValue, "UTF-8");
+//                LogUtils.show( "broadcastUpdate: 收到一个垂直度UUID的数据："+text);
+//                writeRxCharacteristic(VERTICALITY_SERVICE_UUID,VERTICALITY_RX_CHAR_UUID,"vertical".getBytes());
+//            } catch (UnsupportedEncodingException e) {
+//                e.printStackTrace();
+//            }
+//        }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
@@ -440,6 +472,35 @@ public class ConnectDeviceService extends Service {
 
     public static void stopDeviceService(Context context) {
         context.stopService(new Intent(context, ConnectDeviceService.class));
+    }
+
+
+
+    /**
+     * 实现一个内部的 Service，实现让后台服务的优先级提高到前台服务，这里利用了 android 系统的漏洞，
+     * 不保证所有系统可用，测试在7.1.1 之前大部分系统都是可以的，不排除个别厂商优化限制
+     */
+    public static class DaemonInnerService extends Service {
+
+        @Nullable
+        @Override
+        public IBinder onBind(Intent intent) {
+            return null;
+        }
+
+        @Override
+        public int onStartCommand(Intent intent, int flags, int startId) {
+            Log.e("DaemonInnerService", "ceshi,DaemonInnerService.CLASS开启");
+            startForeground(DAEMON_SERVICE_ID,new Notification());
+            stopSelf();
+            return super.onStartCommand(intent, flags, startId);
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            Log.e("DaemonInnerService", "ceshi,DaemonInnerService销毁了");
+        }
     }
 
 }

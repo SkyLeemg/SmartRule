@@ -40,7 +40,9 @@ import com.vitec.task.smartrule.utils.OptionsMeasureUtils;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MeasureManagerAcitivty extends BaseFragmentActivity {
 
@@ -142,21 +144,44 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
                 checkOptionsList.add(rulerCheckOption);
             }
             startRequestServer();
-            initFragmentData();
 
-        } else {
-            initFragmentData();
-            /**
-             * 还有一种情况之前创建过，但是没有网络，所以未请求服务器，现在就要补交
-             *  根据其upload_flag来进行判断，1-代表已经请求过，0-代表未请求过
-             */
+
+        }
+        Set<Integer> idSet = new HashSet<>();
+        for (int i = 0; i < checkOptionsList.size(); i++) {
+
+            if (!idSet.add(checkOptionsList.get(i).getRulerOptions().getServerID())) {
+                if (checkOptionsList.get(i).getServerId() == 0) {
+                    delCheckOption(checkOptionsList.get(i));
+                    checkOptionsList.remove(i);
+                    i--;
+                } else {
+                    for (int j=0;j<i;j++) {
+                        if (checkOptionsList.get(i).getRulerOptions().getServerID() == checkOptionsList.get(j).getRulerOptions().getServerID()) {
+                            if (checkOptionsList.get(j).getServerId() == 0) {
+                                delCheckOption(checkOptionsList.get(j));
+                                checkOptionsList.remove(j);
+                                i--;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
+
+
+        initFragmentData();
 //        controller = new MeasureFragmentControllerImpl(this,bottomNavigationBar,checkOptionsList);
 //        controller.initBottomNav();
         HandleBleMeasureDataReceiverService.startHandleService(getApplicationContext(),checkOptionsList);
 //        controller.addBottomNav();
 
+    }
+
+    private void delCheckOption(RulerCheckOptions options) {
+        OperateDbUtil.delData(getApplicationContext(), DataBaseParams.measure_option_table_name, "id=?", new String[]{String.valueOf(options.getId())});
     }
 
 
@@ -284,6 +309,7 @@ public class MeasureManagerAcitivty extends BaseFragmentActivity {
                 Log.e(TAG, "queryData: 查询历史的RulerCheckOption:"+checkOption.toString() );
             } while (cursor.moveToNext());
         }
+        cursor.close();
         return checkOptionsList.size() > 0 ? true : false;
     }
 

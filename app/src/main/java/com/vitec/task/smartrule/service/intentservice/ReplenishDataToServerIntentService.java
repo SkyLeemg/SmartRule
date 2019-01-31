@@ -52,6 +52,7 @@ public class ReplenishDataToServerIntentService extends IntentService{
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         BleDataDbHelper bleDataDbHelper = new BleDataDbHelper(getApplicationContext());
+        Set<Integer> projectIdSet = new HashSet<>();
         /************************补上传测量数据*****************************/
         /**
          * 搜索ruler_check表格中server_id为0的数据项
@@ -64,6 +65,7 @@ public class ReplenishDataToServerIntentService extends IntentService{
              * 该接口上传数据需要将RulerCheckOptions集合对象和RulerCheckOptionsData对象传给PerformMeasureNetIntentService
              */
             for (int i = 0; i < rulerCheckList.size(); i++) {
+                projectIdSet.add(rulerCheckList.get(i).getProject().getId());
                 List<RulerCheckOptions> checkOptionsList = OperateDbUtil.queryCheckOptionFromSqlite(getApplicationContext(), rulerCheckList.get(i));
                 List<RulerCheckOptionsData> optionsDataList = new ArrayList<>();
                 for (RulerCheckOptions checkOptions : checkOptionsList) {
@@ -83,6 +85,7 @@ public class ReplenishDataToServerIntentService extends IntentService{
         } else {
             String dataWhere = " where " + DataBaseParams.server_id + "= 0  ";
             List<RulerCheckOptionsData> dataList = OperateDbUtil.queryMeasureDataFromSqlite(getApplicationContext(), dataWhere);
+            LogUtils.show("ReplenishDataToServerIntentService----有网络：查看需要上传的数据内容：" + dataList);
             if (dataList.size() > 0) {
 
                 Set<RulerCheckOptions> optionsSet = new HashSet<>();
@@ -159,22 +162,25 @@ public class ReplenishDataToServerIntentService extends IntentService{
         }
 
 
-        /*************************请求创建记录表失败的部分*******************************/
+        /*************************请求创建测量组失败的部分*******************************/
         String projectWhere = " where " + DataBaseParams.server_id + "=0";
         List<RulerCheckProject> projectList = OperateDbUtil.queryProjectDataFromSqlite(getApplicationContext(), projectWhere);
         if (projectList.size() > 0) {
             for (RulerCheckProject project : projectList) {
-                Intent pintent = new Intent(getApplicationContext(), ProjectManageRequestIntentService.class);
-                Bundle bundle = new Bundle();
-                bundle.putString(DataBaseParams.check_project_name, project.getProjectName());
-                bundle.putString(DataBaseParams.user_user_id, String.valueOf(project.getUser().getUserID()));
-                bundle.putInt(DataBaseParams.measure_project_id, project.getId());
+                if (projectIdSet.add(project.getId())) {
+                    Intent pintent = new Intent(getApplicationContext(), ProjectManageRequestIntentService.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString(DataBaseParams.check_project_name, project.getProjectName());
+                    bundle.putString(DataBaseParams.user_user_id, String.valueOf(project.getUser().getUserID()));
+                    bundle.putInt(DataBaseParams.measure_project_id, project.getId());
 //                bundle.putSerializable(NetConstant.group_project_list, project);
-                pintent.putExtra(ProjectManageRequestIntentService.REQUEST_FLAG, ProjectManageRequestIntentService.flag_group_create_project);
-                pintent.putExtra(ProjectManageRequestIntentService.key_get_value, bundle);
-                startService(pintent);
+                    pintent.putExtra(ProjectManageRequestIntentService.REQUEST_FLAG, ProjectManageRequestIntentService.flag_group_create_project);
+                    pintent.putExtra(ProjectManageRequestIntentService.key_get_value, bundle);
+                    startService(pintent);
+                    LogUtils.show("补上传服务-----有创建失败的测量组："+projectList.size());
+                }
             }
-            LogUtils.show("补上传服务-----有创建失败的测量组："+projectList.size());
+
         }
 
     }

@@ -101,7 +101,7 @@ public class SelectAddMethodBottomDialog extends Dialog implements View.OnClickL
              * 面对面扫二维码添加按钮
              */
             case R.id.ll_face_to_face:
-                QrCodeDialog dialog = new QrCodeDialog(getContext(),R.style.BottomDialog,project.getQrCode(),size);
+                QrCodeDialog dialog = new QrCodeDialog(getContext(),R.style.BottomDialog,project,size);
                 dialog.show();
                 dismiss();
                 break;

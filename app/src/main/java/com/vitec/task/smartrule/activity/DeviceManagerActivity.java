@@ -65,7 +65,7 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
     private Beacon beacon;//点击添加设备时，用户点击的那个蓝牙设备
     private BleDeviceDbHelper deviceDbHelper;
     private ServiceConnecteHelper serviceConnecteHelper;
-    private TextToSpeechHelper mTextToSpeechHelper;
+//    private TextToSpeechHelper mTextToSpeechHelper;
     private int current_connected_device_id;
 
     private ConnectDeviceService mService;
@@ -97,7 +97,7 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
         gvLaser = findViewById(R.id.gv_laser);
 
 //        llAddDev.setOnClickListener(this);
-        mTextToSpeechHelper = new TextToSpeechHelper(getApplicationContext(),"");
+//        mTextToSpeechHelper = new TextToSpeechHelper(getApplicationContext(),"");
     }
 
     private void initViewData() {
@@ -141,7 +141,6 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
                         serviceConnecteHelper = new ServiceConnecteHelper(getApplicationContext(), rules.get(i).getBleMac());
                     }
                 } else {
-
                     mDialog = new ConnectDialog(DeviceManagerActivity.this,DeviceManagerActivity.this);
                     mDialog.show();
                 }
@@ -242,7 +241,7 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
         super.onDestroy();
 //        EventBus.getDefault().unregister(getActivity());
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(UARTStatusChangeReceiver);
-        mTextToSpeechHelper.stopSpeech();
+//        mTextToSpeechHelper.stopSpeech();
         if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
             mLoadingDialog.dismiss();
 
@@ -344,7 +343,7 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
                 Toast.makeText(context,"连接成功", Toast.LENGTH_SHORT).show();
                 Intent bindIntent = new Intent(getApplicationContext(), ConnectDeviceService.class);
                 bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-                mTextToSpeechHelper.speakChinese("蓝牙连接成功");
+//                mTextToSpeechHelper.speakChinese("蓝牙连接成功");
                 /**
                  * 连接成功后，判断该设备是否已经保存过数据库，如果没有则将该设备保存到数据库
                  */
@@ -411,7 +410,7 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
 
             //*********************//
             if (action.equals(BleParam.ACTION_GATT_DISCONNECTED)) {
-                mTextToSpeechHelper.speakChinese("蓝牙连接断开");
+//                mTextToSpeechHelper.speakChinese("蓝牙连接断开");
                 Toast.makeText(context,"连接断开", Toast.LENGTH_SHORT).show();
                 current_connected_device_id = -1;
                 setDeviceImg(current_connected_device_id);
@@ -463,6 +462,13 @@ public class DeviceManagerActivity extends BaseActivity implements View.OnClickL
 
                         }
                     }, 5000);
+
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                                mService.writeRxCharacteristic(ConnectDeviceService.SYSTEM_RX_SERVICE_UUID, ConnectDeviceService.SYSTEM_RX_CHAR_UUID, "CD02".getBytes());
+                        }
+                    }, 6000);
 
                 }
 //                发现一个服务

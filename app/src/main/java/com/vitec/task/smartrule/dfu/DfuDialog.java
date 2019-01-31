@@ -100,6 +100,7 @@ public class DfuDialog extends Dialog {
 //            }
 //            LogUtils.show("查看升级的文件路径："+path);
             starter.setZip(path);
+//            starter.set
             DfuServiceController controller = starter.start(getContext(), DfuService.class);
 
         }

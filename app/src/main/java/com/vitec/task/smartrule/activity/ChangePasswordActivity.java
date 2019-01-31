@@ -58,8 +58,28 @@ public class ChangePasswordActivity extends BaseActivity implements View.OnClick
             case R.id.btn_submit:
                 final String newPwd = etNewPwd.getText().toString();
                 String newRepeatPwd = etNewRepeatPwd.getText().toString();
+                if (etOldPwd.getText().toString().length() == 0) {
+                    Toast.makeText(getApplicationContext(),"请输入旧密码",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (newPwd.length() == 0) {
+                    Toast.makeText(getApplicationContext(),"请输入新密码", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (newRepeatPwd.length() == 0) {
+                    Toast.makeText(getApplicationContext(),"请输入确认密码",Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 if (!newPwd.equals(newRepeatPwd)) {
                     Toast.makeText(getApplicationContext(),"密码不一致",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (newPwd.contains(" ")) {
+                    Toast.makeText(getApplicationContext(),"密码不能包含空格",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (newPwd.length() < 6) {
+                    Toast.makeText(getApplicationContext(),"密码长度不能小于6",Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -91,25 +111,32 @@ public class ChangePasswordActivity extends BaseActivity implements View.OnClick
                                     JSONObject object = new JSONObject(response);
                                     int code = object.optInt("code");
                                     if (code == 200) {
-                                        Toast.makeText(getApplicationContext(), "修改成功", Toast.LENGTH_SHORT);
+                                        Toast.makeText(getApplicationContext(), "密码修改成功", Toast.LENGTH_SHORT).show();
                                         etNewPwd.setText("");
                                         etNewRepeatPwd.setText("");
                                         etOldPwd.setText("");
 
                                     } else {
-                                        JSONObject msgJson = new JSONObject(object.optString("msg"));
-                                        String info = msgJson.optString("statusInfo");
-                                        Toast.makeText(getApplicationContext(),"修改失败，"+info,Toast.LENGTH_SHORT).show();
+//                                        JSONObject msgJson = new JSONObject(object.optString("msg"));
+                                        String msg = object.optString("msg");
+                                        if (msg.contains("未登录")) {
+                                            Toast.makeText(getApplicationContext(), "登录已过期,请重新登录再重试", Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            Toast.makeText(getApplicationContext(),msg,Toast.LENGTH_SHORT).show();
+                                        }
+//                                        String info = msgJson.optString("statusInfo");
+
                                     }
 
                                 } catch (JSONException e) {
                                     e.printStackTrace();
+                                    Toast.makeText(getApplicationContext(),"修改失败",Toast.LENGTH_SHORT).show();
                                 }
                             }
 
                             @Override
                             public void onFailure(Exception e) {
-
+                                Toast.makeText(getApplicationContext(),"网络请求失败",Toast.LENGTH_SHORT).show();
                             }
                         },paramList);
                     }

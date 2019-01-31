@@ -66,6 +66,7 @@ public class BleDeviceDbHelper {
                 Log.e(TAG, "queryAllDevice: 查看查询出来的设备："+device );
             } while (cursor.moveToNext());
         }
+        cursor.close();
         return devices;
 
     }

@@ -101,7 +101,7 @@ public class RulerCheckOptionsData implements Serializable{
                 ", number=" + number +
                 ", data='" + data + '\'' +
                 ", isQualified=" + isQualified +
-                ", createTime=" + createTime +
+//                ", createTime=" + createTime +
                 ", updateFlag=" + updateFlag +
                 ", upload_flag=" + upload_flag +
 //                ", rulerCheckOptions=" + rulerCheckOptions +

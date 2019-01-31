@@ -129,6 +129,7 @@ public class MeasureDataView extends RelativeLayout {
 
 //        接下来根据rulerOptionsID去数据库查找有没有相同的数据，有则显示出来，无则新建
         usingCheckOptionsDataList= OperateDbUtil.queryMeasureDataFromSqlite(context, rulerCheckOptions);
+        LogUtils.show("测量页面------查看搜索到的所有数据内容："+usingCheckOptionsDataList);
         //实际有数据的统计个数
         realDataCount = usingCheckOptionsDataList.size();
 //        如果没有测量数据，则模拟空的数据传过来
