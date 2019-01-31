@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    >
+
+
+    <RelativeLayout
+        android:id="@+id/rl_oval"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_oval_green_team"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="10dp"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/radio_btn"
+        >
+        <TextView
+            android:id="@+id/tv_oval_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="好动"
+            android:layout_centerInParent="true"
+            android:textSize="15sp"
+            />
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tv_menber_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="@color/title_color"
+        android:text="才好动"
+        android:layout_toRightOf="@+id/rl_oval"
+        android:layout_centerVertical="true"
+        />
+    <View
+        android:id="@+id/line"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/color_unselect_bar"
+        android:layout_below="@+id/rl_oval"
+        android:layout_alignLeft="@+id/tv_menber_name"
+        />
+    <ImageView
+        android:id="@+id/img_del"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@mipmap/ico_minus_3x"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="15dp"
+        android:visibility="gone"
+        />
+
+
+</RelativeLayout>

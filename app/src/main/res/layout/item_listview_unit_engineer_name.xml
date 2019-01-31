@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+
+    <TextView
+        android:id="@+id/tv_item_unit_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="取消"
+        android:background="#FFFFFF"
+        android:textColor="@color/title_color"
+        android:textSize="16sp"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_centerVertical="true"
+        />
+    <View
+        android:id="@+id/line"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/word_color"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="15dp"
+
+        android:layout_below="@+id/tv_item_unit_name"
+
+        />
+
+    <ImageView
+        android:id="@+id/img_del"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@mipmap/ico_minus_3x"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="15dp"
+        android:visibility="gone"
+        />
+    <TextView
+        android:id="@+id/tv_edit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="编辑"
+        android:textColor="@color/color_word"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="15dp"
+        android:visibility="gone"
+        android:textSize="16sp"
+        />
+
+    <EditText
+        android:id="@+id/et_input_unit_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="17dp"
+        android:hint="请输入"
+        android:layout_marginLeft="15dp"
+        android:textColor="@color/title_color"
+        android:visibility="gone"
+        android:layout_centerVertical="true"
+        android:layout_above="@+id/line"
+        android:background="#00000000"
+        />
+    <TextView
+        android:id="@+id/tv_change_unit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/tv_cancel_unit"
+        android:text="更改"
+        android:textColor="@color/color_word"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="10dp"
+        android:visibility="gone"
+        android:textSize="16sp"
+        />
+
+    <TextView
+        android:id="@+id/tv_cancel_unit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:text="取消"
+        android:textColor="@color/color_word"
+        android:layout_centerVertical="true"
+        android:visibility="gone"
+        android:layout_marginRight="15dp"
+        android:textSize="16sp"
+        />
+
+</RelativeLayout>
